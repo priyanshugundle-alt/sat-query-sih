@@ -13,7 +13,13 @@ public class RsvqaAdapter {
             File datasetFile = new File("sample-data/rsvqa_test.json");
             if (datasetFile.exists()) {
                 try {
-                    System.out.println("RSVQA: Loading real dataset annotations from " + datasetFile.getPath());
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    List<BenchmarkSample> parsed = mapper.readValue(datasetFile, 
+                            new com.fasterxml.jackson.core.type.TypeReference<List<BenchmarkSample>>() {});
+                    if (parsed != null) {
+                        samples.addAll(parsed);
+                    }
+                    System.out.println("RSVQA: Loaded " + samples.size() + " samples from " + datasetFile.getPath());
                 } catch (Exception e) {
                     System.err.println("RSVQA parsing error: " + e.getMessage());
                 }

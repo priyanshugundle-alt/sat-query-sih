@@ -1,0 +1,30 @@
+[
+  {
+    "sampleId": "rsvqa-01",
+    "imagePaths": ["uploads/rsvqa_image1.png"],
+    "question": {
+      "questionId": "q-rsvqa-01",
+      "questionText": "Are agricultural fields visible in this image?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "yes",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "rsvqa-02",
+    "imagePaths": ["uploads/rsvqa_image2.png"],
+    "question": {
+      "questionId": "q-rsvqa-02",
+      "questionText": "Is there a major reservoir in the region?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "no",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  }
+]

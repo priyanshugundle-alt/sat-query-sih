@@ -13,7 +13,13 @@ public class CdvqaAdapter {
             File datasetFile = new File("sample-data/cdvqa_test.json");
             if (datasetFile.exists()) {
                 try {
-                    System.out.println("CDVQA: Loading real dataset annotations from " + datasetFile.getPath());
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    List<BenchmarkSample> parsed = mapper.readValue(datasetFile, 
+                            new com.fasterxml.jackson.core.type.TypeReference<List<BenchmarkSample>>() {});
+                    if (parsed != null) {
+                        samples.addAll(parsed);
+                    }
+                    System.out.println("CDVQA: Loaded " + samples.size() + " samples from " + datasetFile.getPath());
                 } catch (Exception e) {
                     System.err.println("CDVQA parsing error: " + e.getMessage());
                 }

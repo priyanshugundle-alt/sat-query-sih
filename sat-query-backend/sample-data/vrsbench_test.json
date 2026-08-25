@@ -1,0 +1,30 @@
+[
+  {
+    "sampleId": "vrs-01",
+    "imagePaths": ["uploads/vrs_image1.png"],
+    "question": {
+      "questionId": "q-vrs-01",
+      "questionText": "Describe the land-cover and agricultural features in this image.",
+      "questionType": "CAPTION"
+    },
+    "expectedAnswer": {
+      "answerText": "The image shows agricultural field boundaries interspersed with Mixed forests.",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "vrs-02",
+    "imagePaths": ["uploads/vrs_image2.png"],
+    "question": {
+      "questionId": "q-vrs-02",
+      "questionText": "Highlight the water body referred to in the query.",
+      "questionType": "GROUNDING"
+    },
+    "expectedAnswer": {
+      "answerText": "Water body successfully detected and highlighted.",
+      "boundingBox": "[18.962, 72.824, 18.981, 72.855]",
+      "changeMapPath": null
+    }
+  }
+]

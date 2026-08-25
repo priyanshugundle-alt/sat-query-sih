@@ -1,0 +1,16 @@
+[
+  {
+    "sampleId": "cdvqa-01",
+    "imagePaths": ["uploads/cdvqa_t1.png", "uploads/cdvqa_t2.png"],
+    "question": {
+      "questionId": "q-cdvqa-01",
+      "questionText": "What changed in this area between January and June?",
+      "questionType": "CHANGE_VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "Agricultural built-up sprawl increased significantly.",
+      "boundingBox": null,
+      "changeMapPath": "outputs/change-cdvqa-01.png"
+    }
+  }
+]

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import com.satquery.client.HttpModelClient;
 import com.satquery.client.MockModelClient;
 import com.satquery.client.ModelClient;
 import com.satquery.controller.AgentController;
@@ -28,7 +29,7 @@ public class App {
     private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
-    private static final ModelClient modelClient = new MockModelClient(); // default Mock client
+    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000"); // Connect to VLM REST API
     private static final AgentController agentController = new AgentController(modelClient);
 
     public static void main(String[] args) throws IOException {
@@ -36,12 +37,16 @@ public class App {
         Files.createDirectories(Paths.get("uploads"));
         Files.createDirectories(Paths.get("outputs"));
 
+        // Initialize SQLite DB
+        com.satquery.database.DatabaseManager.initialize();
+
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/api/health", new HealthHandler());
         server.createContext("/api/upload", new UploadHandler());
         server.createContext("/api/analyze", new AnalyzeHandler());
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
+        server.createContext("/api/history", new HistoryHandler());
         server.createContext("/", new StaticFileHandler());
 
         server.setExecutor(Executors.newFixedThreadPool(10));
@@ -169,6 +174,7 @@ public class App {
                 ImageAsset asset = new ImageAsset(imageId, filename, targetPath.toAbsolutePath().toString(), metadata);
 
                 imageRegistry.put(imageId, asset);
+                com.satquery.database.DatabaseManager.saveImageAsset(asset);
 
                 sendJsonResponse(exchange, 200, asset);
             } catch (Exception e) {
@@ -221,6 +227,12 @@ public class App {
                 if (request.getImageIds() != null) {
                     for (String id : request.getImageIds()) {
                         ImageAsset asset = imageRegistry.get(id);
+                        if (asset == null) {
+                            asset = com.satquery.database.DatabaseManager.getImageAsset(id);
+                            if (asset != null) {
+                                imageRegistry.put(id, asset);
+                            }
+                        }
                         if (asset != null) {
                             images.add(asset);
                         }
@@ -229,6 +241,9 @@ public class App {
 
                 // Process task
                 TaskResult result = agentController.processQuery(request, images);
+
+                // Save task result to SQLite Database
+                com.satquery.database.DatabaseManager.saveTaskResult(result);
 
                 // Cache reports and build PDF
                 if ("SUCCESS".equalsIgnoreCase(result.getStatus())) {
@@ -265,6 +280,12 @@ public class App {
 
             String queryId = parts[3];
             TaskResult report = reportRegistry.get(queryId);
+            if (report == null) {
+                report = com.satquery.database.DatabaseManager.getTaskResult(queryId);
+                if (report != null) {
+                    reportRegistry.put(queryId, report);
+                }
+            }
 
             if (report == null) {
                 sendJsonResponse(exchange, 404, Map.of("error", "Report not found for ID: " + queryId));
@@ -430,6 +451,27 @@ public class App {
             OutputStream os = exchange.getResponseBody();
             os.write(bytes);
             os.close();
+        }
+    }
+
+    static class HistoryHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            try {
+                List<TaskResult> history = com.satquery.database.DatabaseManager.getHistory();
+                sendJsonResponse(exchange, 200, history);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Failed to fetch history: " + e.getMessage()));
+            }
         }
     }
 }

@@ -11,12 +11,16 @@ public class VrsBenchAdapter {
         List<BenchmarkSample> samples = new ArrayList<>();
 
         if (evaluationMode) {
-            // In evaluation mode, attempt to load real annotation file if available
             File datasetFile = new File("sample-data/vrsbench_test.json");
             if (datasetFile.exists()) {
                 try {
-                    // Parse real dataset annotations here when available
-                    System.out.println("VRSBench: Loading real dataset annotations from " + datasetFile.getPath());
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    List<BenchmarkSample> parsed = mapper.readValue(datasetFile, 
+                            new com.fasterxml.jackson.core.type.TypeReference<List<BenchmarkSample>>() {});
+                    if (parsed != null) {
+                        samples.addAll(parsed);
+                    }
+                    System.out.println("VRSBench: Loaded " + samples.size() + " samples from " + datasetFile.getPath());
                 } catch (Exception e) {
                     System.err.println("VRSBench parsing error: " + e.getMessage());
                 }

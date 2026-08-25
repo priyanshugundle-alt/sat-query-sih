@@ -9,6 +9,7 @@ com\satquery\model\Evidence.class
 com\satquery\registry\ParameterRule.class
 com\satquery\client\HttpModelClient.class
 com\satquery\registry\ToolValidationResult.class
+com\satquery\database\DatabaseManager.class
 com\satquery\model\ValidationResult.class
 com\satquery\handler\EvidenceCombiner.class
 com\satquery\handler\GroundingHandler.class
@@ -19,7 +20,9 @@ com\satquery\registry\ToolRegistry.class
 com\satquery\model\TaskType.class
 com\satquery\handler\HandlerFactory.class
 com\satquery\App.class
+com\satquery\benchmark\VrsBenchAdapter$1.class
 com\satquery\handler\VqaHandler.class
+com\satquery\benchmark\CdvqaAdapter$1.class
 com\satquery\observer\TraceLogger.class
 com\satquery\client\MockModelClient$1.class
 com\satquery\strategy\TaskStrategy.class
@@ -27,12 +30,15 @@ com\satquery\client\MockModelClient.class
 com\satquery\App$UploadHandler.class
 com\satquery\model\TaskResult.class
 com\satquery\benchmark\BenchmarkSample.class
+com\satquery\App$HistoryHandler.class
 com\satquery\model\TraceRecord.class
 com\satquery\App$AnalyzeHandler.class
 com\satquery\App$ReportHandler.class
 com\satquery\model\TraceEvent.class
+com\satquery\database\DatabaseManager$1.class
 com\satquery\benchmark\BenchmarkQuestion.class
 com\satquery\strategy\ChangeExplanationGenerator.class
+com\satquery\benchmark\RsvqaAdapter$1.class
 com\satquery\metadata\ImageMetadataReader.class
 com\satquery\client\ModelClient.class
 com\satquery\client\ModelResponse.class
