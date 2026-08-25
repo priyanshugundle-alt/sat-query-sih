@@ -42,6 +42,7 @@ public class App {
         server.createContext("/api/analyze", new AnalyzeHandler());
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
+        server.createContext("/", new StaticFileHandler());
 
         server.setExecutor(Executors.newFixedThreadPool(10));
         System.out.println("SatQuery Java Backend starting on port " + PORT + "...");
@@ -382,5 +383,53 @@ public class App {
     // Direct helper to add image assets manually for testing/mocking
     public static void registerImageAsset(ImageAsset asset) {
         imageRegistry.put(asset.getImageId(), asset);
+    }
+
+    static class StaticFileHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            String path = exchange.getRequestURI().getPath();
+            if (path.equals("/")) {
+                path = "/index.html";
+            }
+
+            // Serve files from the "sat-query-backend/web" or "web" folder in the project root
+            File file = new File("web" + path);
+            if (!file.exists() || file.isDirectory()) {
+                file = new File("sat-query-backend/web" + path);
+            }
+
+            if (!file.exists() || file.isDirectory()) {
+                exchange.sendResponseHeaders(404, -1);
+                return;
+            }
+
+            String contentType = "text/plain";
+            if (path.endsWith(".html")) contentType = "text/html";
+            else if (path.endsWith(".css")) contentType = "text/css";
+            else if (path.endsWith(".js")) contentType = "application/javascript";
+            else if (path.endsWith(".png")) contentType = "image/png";
+            else if (path.endsWith(".jpg") || path.endsWith(".jpeg")) contentType = "image/jpeg";
+            else if (path.endsWith(".pdf")) contentType = "application/pdf";
+
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            
+            // Add CORS headers to static files
+            exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.sendResponseHeaders(200, bytes.length);
+            OutputStream os = exchange.getResponseBody();
+            os.write(bytes);
+            os.close();
+        }
     }
 }

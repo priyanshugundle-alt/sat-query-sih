@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SatQuery AI — Geospatial Workstation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. NASA/ESA Mission & Session Header -->
+    <header class="hud-header">
+        <div class="header-left">
+            <div class="hud-logo">
+                <div class="pulse-ring"></div>
+                <h1>SATQUERY AI</h1>
+                <span class="status-indicator">ONLINE</span>
+            </div>
+            <div class="mission-info">
+                <span class="lbl">MISSION</span>
+                <span id="active-mission-title" class="val">Agricultural Change Analysis</span>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="session-data">
+                <span class="lbl">DATA SENSOR</span>
+                <span id="active-sensor-title" class="val">Sentinel-2 • 10m • 2026-08-25</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <!-- Mode Switcher -->
+            <div class="mode-control">
+                <span class="mode-label">MODE</span>
+                <div class="toggle-switch-wrapper">
+                    <span id="demo-mode-label" class="mode-status active">DEMO</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mode-toggle">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <span id="real-mode-label" class="mode-status">REAL</span>
+                </div>
+            </div>
+            <div class="header-status-metrics">
+                <span class="metric">LATENCY: <strong id="header-latency-val">1.24s</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace: Three Columns (Data Sources | Satellite View | AI Insights) -->
+    <div class="console-workspace">
+        
+        <!-- Left Sidebar: Data Sources & Query Console -->
+        <aside class="sidebar-left">
+            
+            <!-- Data Sources -->
+            <section class="console-card">
+                <div class="card-header">
+                    <h2>DATA SOURCES</h2>
+                </div>
+                
+                <div class="source-cards-list">
+                    <!-- Primary Sensor Card -->
+                    <div class="source-input-card active" id="source-card-1">
+                        <div class="card-top">
+                            <span class="icon">🛰</span>
+                            <div class="info">
+                                <h3>PRIMARY IMAGE</h3>
+                                <span class="desc" id="source-desc-1">Sentinel-2 • 10m • RGB + NIR</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-source-action" id="btn-slot-1-upload">Upload Primary</button>
+                            <input type="file" id="file-input-1" style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Secondary Sensor Card -->
+                    <div class="source-input-card" id="source-card-2">
+                        <div class="card-top">
+                            <span class="icon">◈</span>
+                            <div class="info">
+                                <h3>SECONDARY IMAGE</h3>
+                                <span class="desc" id="source-desc-2">No secondary source loaded</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-source-action" id="btn-slot-2-upload">Load Temporal</button>
+                            <input type="file" id="file-input-2" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto-compatibility Audit display -->
+                <div id="compatibility-card" class="compatibility-box" style="display: none;">
+                    <div class="compat-header">
+                        <span>PAIR COMPATIBILITY</span>
+                        <span id="compat-badge" class="badge">PENDING</span>
+                    </div>
+                    <div id="compat-audit-lines" class="compat-lines"></div>
+                </div>
+            </section>
+
+            <!-- Analysis Mode Selector -->
+            <section class="console-card">
+                <div class="card-header">
+                    <h2>ANALYSIS MODE</h2>
+                </div>
+                <div class="analysis-modes-list">
+                    <label class="radio-wrapper">
+                        <input type="radio" name="analysis-mode" value="VQA" checked>
+                        <span class="radio-mark"></span>
+                        Ask the imagery
+                    </label>
+                    <label class="radio-wrapper">
+                        <input type="radio" name="analysis-mode" value="GROUNDING">
+                        <span class="radio-mark"></span>
+                        Detect objects / Grounding
+                    </label>
+                    <label class="radio-wrapper">
+                        <input type="radio" name="analysis-mode" value="CHANGE_ANALYSIS">
+                        <span class="radio-mark"></span>
+                        Compare temporal changes
+                    </label>
+                    <label class="radio-wrapper">
+                        <input type="radio" name="analysis-mode" value="FUSION_ANALYSIS">
+                        <span class="radio-mark"></span>
+                        Optical + SAR Fusion
+                    </label>
+                </div>
+            </section>
+
+            <!-- Query Box -->
+            <section class="console-card query-composer-card">
+                <div class="card-header">
+                    <h2>✦ ASK SATQUERY</h2>
+                </div>
+                <div class="query-input-wrap">
+                    <textarea id="query-input" placeholder="Type query in natural language..."></textarea>
+                    <div class="query-actions">
+                        <button class="mic-btn" title="Voice Input">🎙</button>
+                        <button class="send-btn" id="run-btn" title="Run Analysis">↑</button>
+                    </div>
+                </div>
+                <div class="query-chips-row">
+                    <span class="chips-label">Try:</span>
+                    <button class="chip" data-query="Describe the land-cover and agricultural features in this image.">Describe scene</button>
+                    <button class="chip" data-query="Highlight the water body referred to in the query.">Find water</button>
+                    <button class="chip" data-query="What changed in this area between January and June?">What changed?</button>
+                </div>
+
+                <div class="params-block">
+                    <div class="slider-wrapper">
+                        <div class="slider-info">
+                            <span>CHANGE SENSITIVITY</span>
+                            <span id="threshold-val">0.25</span>
+                        </div>
+                        <input type="range" id="threshold-slider" min="0.05" max="0.95" step="0.05" value="0.25">
+                    </div>
+                </div>
+
+                <div class="benchmark-override-panel">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="benchmark-override-cb">
+                        <span class="checkbox-mark"></span>
+                        Enable Benchmark Context
+                    </label>
+                    <select id="benchmark-select" style="display: none;">
+                        <option value="VRSBENCH">VRSBENCH (VQA / Grounding)</option>
+                        <option value="RSVQA">RSVQA (Sentinel-2 VQA)</option>
+                        <option value="CDVQA">CDVQA (Change VQA)</option>
+                    </select>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Center Column: Satellite View & Operational Viewport -->
+        <main class="main-workspace">
+            <section class="console-card viewport-card">
+                <div class="card-header flex-between">
+                    <div class="header-title-wrap">
+                        <span class="viewport-meta" id="viewport-sub-header">SENTINEL-2 • MULTISPECTRAL</span>
+                        <h2 id="viewport-mode-title">SATELLITE VIEW</h2>
+                    </div>
+                    <div class="view-toggles">
+                        <button class="view-toggle-btn active" id="btn-view-image">IMAGE</button>
+                        <button class="view-toggle-btn" id="btn-view-map">MAP</button>
+                        <button class="view-toggle-btn" id="btn-view-split">SPLIT</button>
+                    </div>
+                </div>
+
+                <div class="viewport-display" id="viewport-canvas">
+                    
+                    <!-- Floating Layer Controller -->
+                    <div class="floating-layer-control" id="floating-layer-control" style="display: none;">
+                        <div class="layer-control-header">LAYERS</div>
+                        <div class="layer-items">
+                            <label class="layer-cb">
+                                <input type="checkbox" id="layer-rgb" checked>
+                                <span class="mark"></span>
+                                RGB Satellite
+                            </label>
+                            <label class="layer-cb">
+                                <input type="checkbox" id="layer-detections" checked>
+                                <span class="mark"></span>
+                                Detections Overlay
+                            </label>
+                            <label class="layer-cb">
+                                <input type="checkbox" id="layer-water">
+                                <span class="mark"></span>
+                                Water Masks
+                            </label>
+                            <label class="layer-cb">
+                                <input type="checkbox" id="layer-ndvi">
+                                <span class="mark"></span>
+                                NDVI Veg Index
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Floating Map Legend (Shows when Map mode is active) -->
+                    <div class="floating-legend" id="viewport-legend" style="display: none;">
+                        <div class="legend-header">LEGEND</div>
+                        <div class="legend-items">
+                            <div class="legend-item"><span class="color-dot water"></span> Water bodies</div>
+                            <div class="legend-item"><span class="color-dot buildings"></span> Detected structures</div>
+                            <div class="legend-item"><span class="color-dot vegetation"></span> High-NDVI vegetation</div>
+                        </div>
+                    </div>
+
+                    <!-- Landing / Empty State with radar scope behind -->
+                    <div class="landing-empty-state" id="radar-placeholder">
+                        <div class="radar-radar">
+                            <div class="radar-line"></div>
+                            <div class="radar-circles circ-1"></div>
+                            <div class="radar-circles circ-2"></div>
+                            <div class="radar-circles circ-3"></div>
+                        </div>
+                        <div class="empty-state-info">
+                            <span class="icon">🛰</span>
+                            <h3>READY FOR ANALYSIS</h3>
+                            <p>Upload satellite imagery or select one of the try chips to inspect sample spatial telemetry.</p>
+                            <button class="btn-landing-upload" id="btn-landing-upload-action">Upload Imagery</button>
+                            <span class="supported-formats">Supported sensors: Sentinel-1 (SAR), Sentinel-2, Landsat</span>
+                        </div>
+                    </div>
+
+                    <!-- Single View Mode -->
+                    <div class="view-mode-single" id="view-single" style="display: none;">
+                        <div class="sat-viewport">
+                            <img id="img-single-main" src="" alt="Satellite Main">
+                            <canvas id="canvas-single-overlay" class="overlay-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Temporal comparison (Before/After Slider) -->
+                    <div class="view-mode-change" id="view-change" style="display: none;">
+                        <div class="slider-comparison">
+                            <div class="comp-img-wrapper" id="before-img-wrapper">
+                                <img id="img-change-before" src="" alt="Time 1">
+                                <span class="img-date-label" id="date-label-before">DATE 1</span>
+                            </div>
+                            <div class="comp-img-wrapper" id="after-img-wrapper">
+                                <img id="img-change-after" src="" alt="Time 2">
+                                <span class="img-date-label" id="date-label-after">DATE 2</span>
+                            </div>
+                            <div class="change-overlay-wrap" id="change-overlay-wrap" style="display: none;">
+                                <img id="img-change-overlay" src="" alt="Change detection overlay">
+                            </div>
+                            <div class="viewport-controls">
+                                <button class="btn-vp-control active" id="btn-toggle-t1">TIME 1</button>
+                                <button class="btn-vp-control" id="btn-toggle-t2">TIME 2</button>
+                                <button class="btn-vp-control" id="btn-toggle-diff">CHANGE OVERLAY</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optical-SAR Fusion Split -->
+                    <div class="view-mode-fusion" id="view-fusion" style="display: none;">
+                        <div class="fusion-split">
+                            <div class="split-col">
+                                <span class="col-lbl">OPTICAL EVIDENCE (SENTINEL-2)</span>
+                                <img id="img-fusion-optical" src="" alt="Optical view">
+                            </div>
+                            <div class="split-col">
+                                <span class="col-lbl">SAR BACKSCATTER (SENTINEL-1)</span>
+                                <img id="img-fusion-sar" src="" alt="SAR radar backscatter">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="viewport-toolbar" id="viewport-toolbar-actions" style="display: none;">
+                    <button class="toolbar-btn" id="btn-add-layer">+ Layer</button>
+                    <button class="toolbar-btn" id="btn-detect-objects">◉ Detect</button>
+                    <button class="toolbar-btn" id="btn-toggle-fullscreen">⛶ Fullscreen</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Sidebar: AI Insight & Why Drawer -->
+        <aside class="sidebar-right">
+            
+            <!-- AI Insight Panel -->
+            <section class="console-card insight-card">
+                <div class="card-header">
+                    <h2>✦ AI INSIGHTS</h2>
+                </div>
+                
+                <div class="insight-body">
+                    <div class="insight-answer-block">
+                        <span class="lbl-status" id="active-task-label">CLASSIFIED TASK: VQA</span>
+                        <p id="answer-text" class="main-answer">Awaiting satellite image specification...</p>
+                    </div>
+
+                    <!-- Confidence Bar -->
+                    <div class="confidence-container" id="confidence-container" style="display: none;">
+                        <div class="confidence-label-row">
+                            <span>CONFIDENCE</span>
+                            <span id="confidence-percentage">92%</span>
+                        </div>
+                        <div class="confidence-track">
+                            <div class="confidence-fill" id="confidence-bar-fill"></div>
+                        </div>
+                        <span class="confidence-state-badge" id="confidence-val">HIGH CONFIDENCE</span>
+                    </div>
+
+                    <!-- Mission Summary details -->
+                    <div class="mission-summary-box" id="mission-summary-box" style="display: none;">
+                        <h4>MISSION SUMMARY</h4>
+                        <div class="summary-grid">
+                            <span class="lbl">TARGET:</span>
+                            <span class="val" id="summary-target">Region Grid [72.8, 18.9]</span>
+                            
+                            <span class="lbl">TASK:</span>
+                            <span class="val" id="summary-task">Change Detection</span>
+                            
+                            <span class="lbl">DATA SENSORS:</span>
+                            <span class="val" id="summary-sensors">Sentinel-2 + Sentinel-1</span>
+                            
+                            <span class="lbl">PERIOD:</span>
+                            <span class="val" id="summary-period">Jan 2026 → Jun 2026</span>
+                        </div>
+                    </div>
+
+                    <!-- Evidence & Limitations -->
+                    <div class="evidence-block" id="evidence-display-area" style="display: none;">
+                        <h4>EVIDENCE BASES</h4>
+                        <div id="evidence-list" class="evidence-list-grid"></div>
+                    </div>
+
+                    <!-- Auditable Warnings / Caveats -->
+                    <div class="limitations-block" id="limitations-card" style="display: none;">
+                        <h4>AUDIT CAVEATS</h4>
+                        <ul class="limitations-ul" id="limitations-ul"></ul>
+                    </div>
+
+                    <!-- Why this result? trigger -->
+                    <div class="explainability-action" id="why-btn-wrap" style="display: none;">
+                        <button class="btn-explain" id="why-btn">✦ WHY THIS RESULT?</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Metadata Audit -->
+            <section class="console-card" id="metadata-card" style="display: none;">
+                <div class="card-header">
+                    <h2>METADATA AUDIT</h2>
+                </div>
+                <div class="metadata-grid" id="metadata-grid-content">
+                    <!-- Filled dynamically -->
+                </div>
+            </section>
+
+            <!-- SQL Query History -->
+            <section class="console-card history-card">
+                <div class="card-header">
+                    <h2>SQL QUERY HISTORY</h2>
+                </div>
+                <div class="history-list" id="history-container">
+                    <div class="history-empty">No query records logged.</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <!-- 2. Bottom HUD: Horizontal Execution Trace Pipeline & Status Bar -->
+    <footer class="hud-footer">
+        
+        <!-- Execution trace timeline -->
+        <div class="trace-hud-block">
+            <span class="title">✦ AI EXECUTION</span>
+            <div class="trace-horizontal-pipeline" id="trace-pipeline">
+                <div class="pipeline-node empty">Agent inactive. Specify mission parameters.</div>
+            </div>
+        </div>
+
+        <!-- Telemetry Status Bar -->
+        <div class="telemetry-status-row">
+            <div class="status-left">
+                <span class="lbl">DB CONTEXT:</span>
+                <span id="db-status" class="value status-ok">SQLITE_ONLINE</span>
+                
+                <span class="lbl margin-left">SYS STATUS:</span>
+                <span id="sys-status" class="value status-ok">NOMINAL</span>
+            </div>
+            
+            <div class="status-center">
+                <button id="toggle-eval-suite-btn" class="eval-btn-trigger">DATASET EVALUATION SUITE</button>
+            </div>
+
+            <div class="status-right">
+                <button id="download-pdf-btn" class="export-btn" disabled>PDF REPORT</button>
+                <button id="download-json-btn" class="export-btn" disabled>JSON TRACE</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Benchmark Evaluation Modal Drawer -->
+    <div class="eval-panel" id="eval-suite-panel">
+        <div class="eval-panel-header">
+            <h3>BENCHMARK PERFORMANCE EVALUATOR</h3>
+            <button id="close-eval-panel" class="close-panel-btn">&times;</button>
+        </div>
+        <div class="eval-panel-body">
+            <div class="eval-form-row">
+                <div class="input-group">
+                    <label>EVALUATION TARGET:</label>
+                    <select id="eval-dataset-select">
+                        <option value="VRSBENCH">VRSBENCH (Scene description, target location)</option>
+                        <option value="RSVQA">RSVQA (Sentinel-2 VQA questions)</option>
+                        <option value="CDVQA">CDVQA (Bi-temporal Change detection)</option>
+                    </select>
+                </div>
+                <div class="input-group checkbox-group">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="eval-mode-cb">
+                        <span class="checkbox-mark"></span>
+                        Live Evaluation Split (Loads actual annotations)
+                    </label>
+                </div>
+                <button id="eval-run-btn" class="btn-eval-run">RUN BATCH EVALUATION</button>
+            </div>
+
+            <!-- Stats dashboard -->
+            <div class="eval-stats-dashboard" id="eval-stats-dashboard" style="display: none;">
+                <div class="stat-card-hud">
+                    <span class="label">SAMPLES EVALUATED</span>
+                    <span class="value" id="eval-samples-count">0</span>
+                </div>
+                <div class="stat-card-hud">
+                    <span class="label">TASK ROUTING ACCURACY</span>
+                    <span class="value" id="eval-routing-acc">0%</span>
+                </div>
+                <div class="stat-card-hud">
+                    <span class="label">PREDICTION SIMILARITY (NLP)</span>
+                    <span class="value" id="eval-score-acc">0%</span>
+                </div>
+                <div class="stat-card-hud">
+                    <span class="label">AVERAGE CONTROLLER LATENCY</span>
+                    <span class="value" id="eval-avg-latency">0ms</span>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="eval-table-wrap" id="eval-table-wrap" style="display: none;">
+                <table class="eval-data-table">
+                    <thead>
+                        <tr>
+                            <th>Sample ID</th>
+                            <th>Target Query</th>
+                            <th>Expected Ground-Truth</th>
+                            <th>Model Prediction</th>
+                            <th>Scoring</th>
+                            <th>Latency</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eval-table-rows"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- "Why This Result" Explanatory Slideout Drawer -->
+    <div class="why-drawer" id="why-drawer">
+        <div class="drawer-header">
+            <h3>EXPLAINABILITY DASHBOARD</h3>
+            <button id="close-why-btn" class="close-drawer-btn">&times;</button>
+        </div>
+        <div class="drawer-body" id="why-drawer-body">
+            <!-- Filled dynamically -->
+        </div>
+    </div>
+
+    <!-- Trace Event Click Modal -->
+    <div class="trace-modal" id="trace-modal">
+        <div class="trace-modal-content">
+            <div class="trace-modal-header">
+                <h3 id="trace-modal-title">Event Detail</h3>
+                <button id="close-trace-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="trace-modal-body" id="trace-modal-body"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

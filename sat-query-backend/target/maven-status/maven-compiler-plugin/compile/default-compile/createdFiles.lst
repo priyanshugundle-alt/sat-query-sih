@@ -1,5 +1,6 @@
 com\satquery\benchmark\DatasetContext.class
 com\satquery\handler\ChangeHandler.class
+com\satquery\App$StaticFileHandler.class
 com\satquery\benchmark\CdvqaAdapter.class
 com\satquery\controller\AgentController$1.class
 com\satquery\handler\FusionHandler.class
