@@ -23,9 +23,9 @@ To ensure judge-facing auditability and clean execution, the application uses **
 Ensure that you have **Java 21** installed on your system.
 
 ### 1. Compile & Build the Backend
-Navigate to the `sat-query-backend` folder and run the Maven wrapper:
+Navigate to the `backend` folder and run the Maven wrapper:
 ```powershell
-cd sat-query-backend
+cd backend
 .\mvnw.cmd clean compile
 ```
 
@@ -55,7 +55,7 @@ http://localhost:8080/
 ---
 
 ## 🗃️ Database Initialization & Schema
-Operational histories are saved automatically to a local SQLite database file `satquery.db` in the `sat-query-backend` directory.
+Operational histories are saved automatically to a local SQLite database file `satquery.db` in the `backend` directory.
 - The schema layout is configured in `database/schema.sql`.
 - Pre-populated test telemetry can be loaded at startup using `database/seed.sql`.
 - Direct queries can be verified using the SQL definitions in `database/queries.sql`.
