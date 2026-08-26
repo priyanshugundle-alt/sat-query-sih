@@ -318,7 +318,7 @@ export default function Home() {
       <div className="flex min-h-screen">
         <aside className="prism-side hidden w-[258px] shrink-0 flex-col px-5 py-6 xl:flex">
           <div className="brand-block">
-            <img src="/manus-storage/satquery-prism-mark_70ad8e52.png" alt="SatQuery graphic mark" className="h-12 w-12 object-contain" />
+            <img src="/satquery-prism-mark.png" alt="SatQuery graphic mark" className="h-12 w-12 object-contain" />
             <div>
               <p className="font-display text-[18px] font-extrabold tracking-[-0.05em] text-[#112557]">SatQuery AI</p>
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#6679a7]">Prism observatory</p>
@@ -359,7 +359,7 @@ export default function Home() {
 
         <main className="min-w-0 flex-1">
           <header className="prism-header px-5 md:px-8 xl:px-10">
-            <div className="flex items-center gap-3 xl:hidden"><img src="/manus-storage/satquery-prism-mark_70ad8e52.png" alt="SatQuery mark" className="h-9 w-9 object-contain" /><span className="font-display font-extrabold tracking-[-0.04em]">SatQuery AI</span></div>
+            <div className="flex items-center gap-3 xl:hidden"><img src="/satquery-prism-mark.png" alt="SatQuery mark" className="h-9 w-9 object-contain" /><span className="font-display font-extrabold tracking-[-0.04em]">SatQuery AI</span></div>
             <div className="hidden items-center gap-2 text-sm text-[#536b9b] xl:flex"><Orbit size={18} className="text-[#5145d8]" /><span>{navItems.find((item) => item.id === view)?.label}</span><span className="text-[#a9b8d9]">/</span><span className="font-medium text-[#233b71]">Case 042</span></div>
             <div className="ml-auto flex items-center gap-3"><button className="header-button" onClick={() => setShowGuide(true)} aria-label="Open Java and OOP guide"><BookOpen size={18} /></button><div className="mode-badge"><span className="h-2 w-2 rounded-full bg-[#ff6c5c]" /> Demo mode <span className="hidden text-[#9aaccf] sm:inline">· local data</span></div><div className="hidden h-9 w-9 items-center justify-center rounded-full bg-[#112557] font-mono text-[10px] text-white sm:flex">SQ</div></div>
           </header>
@@ -439,7 +439,7 @@ function InvestigationBoard({ scenario, scenarioId, query, setQuery, selectScena
       <section className="investigation-plane stage-plane overflow-hidden">
         <div className="stage-chrome"><div className="flex items-center gap-2"><Globe2 size={16} className="text-[#1179ff]" /><p className="eyebrow text-[#4c6faa]">Observation field</p></div><div className="flex items-center gap-2"><span className="mini-pill mini-pill-blue">OPTICAL</span>{scenarioId === "fusion" && <span className="mini-pill mini-pill-violet">SAR</span>}</div></div>
         <div className="relative h-[330px] overflow-hidden md:h-[425px]">
-          <img src="/manus-storage/satquery-prism-hero_fa3e1001.jpg" alt="Bright satellite observation of a delta landscape" className="absolute inset-0 h-full w-full object-cover" />
+          <img src="/satquery-prism-hero.png" alt="Bright satellite observation of a delta landscape" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,251,255,.96)_0%,rgba(248,251,255,.52)_42%,rgba(248,251,255,.06)_72%)]" />
           <div className="stage-grid-overlay absolute inset-0" />
           <div className="orbital-halo absolute -right-12 top-10 h-56 w-56 md:h-72 md:w-72" />
@@ -470,7 +470,7 @@ function InvestigationBoard({ scenario, scenarioId, query, setQuery, selectScena
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e1e8fc] pt-5"><div><p className="eyebrow text-[#667bb0]">Java route preview</p><p className="mt-1 flex items-center gap-2 font-display text-lg font-bold tracking-[-.04em] text-[#18336b]"><span>{scenario.handler}</span><ArrowRight size={16} className="text-[#5145d8]" /><span>ModelClient</span></p></div><button onClick={onAnalyze} disabled={running} className="secondary-button"><Zap size={15} /> {running ? "Case running" : "Build evidence case"}</button></div>
       </section>
 
-      <section className="investigation-plane plane-violet p-6"><div className="flex items-center justify-between"><div className="flex items-center gap-2"><Radar size={17} className="text-[#5145d8]" /><p className="eyebrow text-[#6956a6]">Sensor lenses</p></div><span className="font-mono text-[9px] text-[#7c68b4]">{evidence.length} SELECTED</span></div><div className="mt-5 grid grid-cols-2 gap-3"><Evidence image="/manus-storage/satquery-prism-optical_546132c7.jpg" label="Optical" note="surface context" tone="blue" /><Evidence image="/manus-storage/satquery-prism-sar_e14f29aa.jpg" label="SAR" note="structure signal" tone="violet" /></div><p className="mt-5 text-sm leading-6 text-[#5e4c99]">The evidence library preserves distinct sensor sources, so the real fusion path can state whether they agree, complement each other, or need review.</p></section>
+      <section className="investigation-plane plane-violet p-6"><div className="flex items-center justify-between"><div className="flex items-center gap-2"><Radar size={17} className="text-[#5145d8]" /><p className="eyebrow text-[#6956a6]">Sensor lenses</p></div><span className="font-mono text-[9px] text-[#7c68b4]">{evidence.length} SELECTED</span></div><div className="mt-5 grid grid-cols-2 gap-3"><Evidence image="/satquery-prism-optical.png" label="Optical" note="surface context" tone="blue" /><Evidence image="/satquery-prism-sar.png" label="SAR" note="structure signal" tone="violet" /></div><p className="mt-5 text-sm leading-6 text-[#5e4c99]">The evidence library preserves distinct sensor sources, so the real fusion path can state whether they agree, complement each other, or need review.</p></section>
     </section>
 
     <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
