@@ -30,6 +30,7 @@ com\satquery\client\MockModelClient.class
 com\satquery\App$UploadHandler.class
 com\satquery\model\TaskResult.class
 com\satquery\benchmark\BenchmarkSample.class
+com\satquery\App$1.class
 com\satquery\App$HistoryHandler.class
 com\satquery\model\TraceRecord.class
 com\satquery\App$AnalyzeHandler.class

@@ -26,5 +26,75 @@
       "boundingBox": "[18.962, 72.824, 18.981, 72.855]",
       "changeMapPath": null
     }
+  },
+  {
+    "sampleId": "vrs-03",
+    "imagePaths": ["uploads/vrs_image3.png"],
+    "question": {
+      "questionId": "q-vrs-03",
+      "questionText": "Is there any dense urban sector visible?",
+      "questionType": "VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "The image contains no dense urban sectors, showing only scattered rural settlements and farm buildings.",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "vrs-04",
+    "imagePaths": ["uploads/vrs_image4.png"],
+    "question": {
+      "questionId": "q-vrs-04",
+      "questionText": "Highlight the major highway or road infrastructure.",
+      "questionType": "GROUNDING"
+    },
+    "expectedAnswer": {
+      "answerText": "Highway infrastructure detected and highlighted.",
+      "boundingBox": "[19.012, 72.850, 19.045, 72.890]",
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "vrs-05",
+    "imagePaths": ["uploads/vrs_image5.png"],
+    "question": {
+      "questionId": "q-vrs-05",
+      "questionText": "What type of vegetation cover is dominant in the northwest sector?",
+      "questionType": "VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "The northwest sector is dominated by dense evergreen forest cover with high spectral canopy values.",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "vrs-06",
+    "imagePaths": ["uploads/vrs_image6.png"],
+    "question": {
+      "questionId": "q-vrs-06",
+      "questionText": "Locate the cargo vessel at the harbor dock.",
+      "questionType": "GROUNDING"
+    },
+    "expectedAnswer": {
+      "answerText": "Cargo vessel located successfully.",
+      "boundingBox": "[18.940, 72.810, 18.948, 72.818]",
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "vrs-07",
+    "imagePaths": ["uploads/vrs_image7.png"],
+    "question": {
+      "questionId": "q-vrs-07",
+      "questionText": "Are there any active industrial zones visible in this sector?",
+      "questionType": "VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "Yes, there is an active refinery/factory zone visible in the eastern quadrant.",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
   }
 ]

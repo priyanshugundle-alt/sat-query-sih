@@ -29,7 +29,20 @@ public class App {
     private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
-    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000"); // Connect to VLM REST API
+    private static final ModelClient modelClient = new ModelClient() {
+        private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
+        private final MockModelClient mockClient = new MockModelClient();
+
+        @Override
+        public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
+            try {
+                return httpClient.run(taskType, request, images);
+            } catch (Exception e) {
+                System.err.println("[SatQuery Backend] Remote VLM server is offline or returned an error (" + e.getMessage() + "). Falling back to MockModelClient.");
+                return mockClient.run(taskType, request, images);
+            }
+        }
+    };
     private static final AgentController agentController = new AgentController(modelClient);
 
     public static void main(String[] args) throws IOException {

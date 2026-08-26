@@ -12,5 +12,75 @@
       "boundingBox": null,
       "changeMapPath": "outputs/change-cdvqa-01.png"
     }
+  },
+  {
+    "sampleId": "cdvqa-02",
+    "imagePaths": ["uploads/cdvqa_t3.png", "uploads/cdvqa_t4.png"],
+    "question": {
+      "questionId": "q-cdvqa-02",
+      "questionText": "Has land cover changed on the agricultural boundary?",
+      "questionType": "CHANGE_VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "DEMO_MODE_ONLY: Built-up agricultural sprawl expanded by +127 structures (14.5% change) within bounds.",
+      "boundingBox": null,
+      "changeMapPath": "outputs/change-cdvqa-02.png"
+    }
+  },
+  {
+    "sampleId": "cdvqa-03",
+    "imagePaths": ["uploads/cdvqa_t5.png", "uploads/cdvqa_t6.png"],
+    "question": {
+      "questionId": "q-cdvqa-03",
+      "questionText": "Identify any major changes in water body borders.",
+      "questionType": "CHANGE_VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "The reservoir boundary contracted by approximately 8.2% due to seasonal drying.",
+      "boundingBox": null,
+      "changeMapPath": "outputs/change-cdvqa-03.png"
+    }
+  },
+  {
+    "sampleId": "cdvqa-04",
+    "imagePaths": ["uploads/cdvqa_t7.png", "uploads/cdvqa_t8.png"],
+    "question": {
+      "questionId": "q-cdvqa-04",
+      "questionText": "What is the nature of the change in the forested zone?",
+      "questionType": "CHANGE_VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "Slight forest degradation and logging roads detected in the central forest sector.",
+      "boundingBox": null,
+      "changeMapPath": "outputs/change-cdvqa-04.png"
+    }
+  },
+  {
+    "sampleId": "cdvqa-05",
+    "imagePaths": ["uploads/cdvqa_t9.png", "uploads/cdvqa_t10.png"],
+    "question": {
+      "questionId": "q-cdvqa-05",
+      "questionText": "Has the road network expanded between these two dates?",
+      "questionType": "CHANGE_VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "Yes, a new bypass road is visible linking the industrial zone to the main highway.",
+      "boundingBox": null,
+      "changeMapPath": "outputs/change-cdvqa-05.png"
+    }
+  },
+  {
+    "sampleId": "cdvqa-06",
+    "imagePaths": ["uploads/cdvqa_t11.png", "uploads/cdvqa_t12.png"],
+    "question": {
+      "questionId": "q-cdvqa-06",
+      "questionText": "Are there new building constructions in the residential sector?",
+      "questionType": "CHANGE_VQA"
+    },
+    "expectedAnswer": {
+      "answerText": "Several new residential foundations are visible in the southern district.",
+      "boundingBox": null,
+      "changeMapPath": "outputs/change-cdvqa-06.png"
+    }
   }
 ]

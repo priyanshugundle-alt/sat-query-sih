@@ -26,5 +26,75 @@
       "boundingBox": null,
       "changeMapPath": null
     }
+  },
+  {
+    "sampleId": "rsvqa-03",
+    "imagePaths": ["uploads/rsvqa_image3.png"],
+    "question": {
+      "questionId": "q-rsvqa-03",
+      "questionText": "Are there high-density structures in the central grid?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "yes",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "rsvqa-04",
+    "imagePaths": ["uploads/rsvqa_image4.png"],
+    "question": {
+      "questionId": "q-rsvqa-04",
+      "questionText": "Are clouds covering more than 20% of the image?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "no",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "rsvqa-05",
+    "imagePaths": ["uploads/rsvqa_image5.png"],
+    "question": {
+      "questionId": "q-rsvqa-05",
+      "questionText": "Is there a coastal harbor facility visible?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "yes",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "rsvqa-06",
+    "imagePaths": ["uploads/rsvqa_image6.png"],
+    "question": {
+      "questionId": "q-rsvqa-06",
+      "questionText": "Are forest woodlands dominant in the southwest sector?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "yes",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
+  },
+  {
+    "sampleId": "rsvqa-07",
+    "imagePaths": ["uploads/rsvqa_image7.png"],
+    "question": {
+      "questionId": "q-rsvqa-07",
+      "questionText": "Are there any linear irrigation channels present?",
+      "questionType": "VQA_PRESENCE"
+    },
+    "expectedAnswer": {
+      "answerText": "yes",
+      "boundingBox": null,
+      "changeMapPath": null
+    }
   }
 ]

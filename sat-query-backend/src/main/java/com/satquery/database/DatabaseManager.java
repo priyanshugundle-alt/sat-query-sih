@@ -47,9 +47,55 @@ public class DatabaseManager {
                 }
                 executeSchemaSql(schemaSql);
             }
+
+            // Seed database if empty
+            if (isDatabaseEmpty()) {
+                File seedFile = new File("database/seed.sql");
+                if (!seedFile.exists()) {
+                    seedFile = new File("sat-query-backend/database/seed.sql");
+                }
+                if (seedFile.exists()) {
+                    System.out.println("Seeding database with sample records...");
+                    try {
+                        String seedSql = Files.readString(seedFile.toPath(), StandardCharsets.UTF_8);
+                        executeSqlScript(seedSql);
+                        System.out.println("Database seeded successfully.");
+                    } catch (Exception e) {
+                        System.err.println("Database seeding failed: " + e.getMessage());
+                    }
+                }
+            }
         } catch (Exception e) {
             System.err.println("Failed to initialize SQLite database: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private static boolean isDatabaseEmpty() {
+        String sql = "SELECT COUNT(*) FROM analysis_requests WHERE query_id != 'UNASSIGNED'";
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt(1) == 0;
+            }
+        } catch (SQLException e) {
+            return true;
+        }
+        return true;
+    }
+
+    private static void executeSqlScript(String sqlScript) throws SQLException {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA foreign_keys = ON;");
+            String[] queries = sqlScript.split(";");
+            for (String query : queries) {
+                String trimmed = query.trim();
+                if (!trimmed.isEmpty()) {
+                    stmt.execute(trimmed);
+                }
+            }
         }
     }
 
