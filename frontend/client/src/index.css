@@ -286,3 +286,28 @@
   .proof-banner::after { content: ""; position: absolute; right: 11%; top: -54px; height: 165px; width: 165px; border: 28px solid rgba(120,70,215,.11); border-radius: 50%; transform: rotate(18deg); pointer-events: none; }
   @media (max-width: 720px) { .case-ribbon { padding: 0; } .ribbon-step:not(:last-child)::after { right: 14px; top: auto; bottom: -1px; width: calc(100% - 28px); height: 2px; } .investigation-board { padding: 8px 0; } .investigation-board::after { display: none; } .stage-plane { transform: none; } .stage-plane::before { top: 66px; right: 10px; } .stage-plane::after { display: none; } .proof-card:nth-child(odd) { transform: none; } }
 }
+
+@layer components {
+  /* A quiet evidence rail and a compact color-coded route preserve focus without adding new controls. */
+  .prism-shell > header { position: relative; }
+  .prism-shell > header::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: linear-gradient(#1179ff 0 34%, #7846d7 34% 67%, #b7f23a 67%); }
+  .prism-shell > header img { filter: drop-shadow(0 3px 5px rgba(81,69,216,.18)); }
+  .prism-shell > header img + div { position: relative; }
+  .prism-shell > header img + div::after { content: ""; position: absolute; right: -23px; top: -8px; height: 26px; width: 26px; border: 5px solid rgba(183,242,58,.45); border-radius: 50%; pointer-events: none; }
+  .prism-shell main > section:nth-of-type(2) { position: relative; border-top-color: #5145d8; background: linear-gradient(90deg, #e9f6ff 0%, #f4f1ff 47%, #f4ffd8 100%); box-shadow: 0 16px 32px rgba(54,83,146,.08); }
+  .prism-shell main > section:nth-of-type(2)::before { content: "CASE ROUTE"; position: absolute; right: 16px; top: -28px; color: #7386ac; font-family: "IBM Plex Mono", monospace; font-size: 8px; font-weight: 700; letter-spacing: .14em; }
+  .prism-shell main > section:nth-of-type(2) > div { background: transparent; }
+  .prism-shell main > section:nth-of-type(2) > div:nth-child(1) { border-left: 4px solid #1179ff; }
+  .prism-shell main > section:nth-of-type(2) > div:nth-child(2) { border-left: 4px solid #7846d7; }
+  .prism-shell main > section:nth-of-type(2) > div:nth-child(3) { border-left: 4px solid #b7f23a; }
+  .prism-shell main > section:nth-of-type(2) > div:not(:last-child)::after { content: ""; position: absolute; z-index: 2; right: -18px; top: 37px; width: 36px; height: 3px; background: linear-gradient(90deg, #6eb9ff, #8f70db); }
+  .prism-shell main > section:nth-of-type(2) > div:nth-child(2)::after { background: linear-gradient(90deg, #8f70db, #b7f23a); }
+  .prism-shell main > section:nth-of-type(3) > article:first-child { border-top-color: #7846d7; }
+  .prism-shell main > section:nth-of-type(3) > article:last-child { position: relative; overflow: hidden; }
+  .prism-shell main > section:nth-of-type(3) > article:last-child::after { content: ""; position: absolute; right: -26px; top: -34px; height: 94px; width: 94px; border: 17px solid rgba(17,121,255,.12); border-radius: 50%; pointer-events: none; }
+  .prism-shell main > section:nth-of-type(4) { position: relative; }
+  .prism-shell main > section:nth-of-type(4)::before { content: ""; position: absolute; z-index: 2; left: 43%; top: -20px; height: 40px; border-left: 3px dashed rgba(120,70,215,.46); }
+  .prism-shell main > section:nth-of-type(5) { position: relative; background: linear-gradient(90deg, #fff7d7, #fffbea 70%, #f4ffd9); }
+  .prism-shell main > section:nth-of-type(5)::after { content: "NEXT ACTION"; position: absolute; right: 22px; top: 18px; color: #997827; font-family: "IBM Plex Mono", monospace; font-size: 8px; font-weight: 700; letter-spacing: .12em; }
+  @media (max-width: 640px) { .prism-shell > header::before { display: none; } .prism-shell main > section:nth-of-type(2)::before, .prism-shell main > section:nth-of-type(5)::after { display: none; } .prism-shell main > section:nth-of-type(2) > div:not(:last-child)::after { right: auto; left: 30px; top: auto; bottom: -2px; width: 3px; height: 4px; background: #8f70db; } .prism-shell main > section:nth-of-type(4)::before { display: none; } }
+}
