@@ -4,7 +4,7 @@ export function usePersistFn(fn) {
   fnRef.current = fn;
   const persistFn = useRef(null);
   if (!persistFn.current) {
-    persistFn.current = function(...args) {
+    persistFn.current = function (...args) {
       return fnRef.current.apply(this, args);
     };
   }

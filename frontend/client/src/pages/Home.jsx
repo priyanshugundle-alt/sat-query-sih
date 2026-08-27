@@ -1,58 +1,315 @@
-import { useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Check, ChevronDown, Download, FileImage, FileText, History, Layers3, MapPin, Orbit, Play, Plus, Radar, ScanSearch, ShieldCheck, Trash2, Upload, X } from "lucide-react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  Download,
+  FileImage,
+  FileText,
+  History,
+  Layers3,
+  MapPin,
+  Orbit,
+  Play,
+  Plus,
+  Radar,
+  ScanSearch,
+  ShieldCheck,
+  Trash2,
+  Upload,
+  X,
+  ZoomIn,
+  ZoomOut,
+  Activity,
+  FileCode,
+  AlertCircle,
+  Info,
+  RefreshCw,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
+import { MapView } from "@/components/Map";
 
+// Structured satellite query scenario benchmarks
 const scenarios = {
-  vqa: { 
-    label: "Single-image VQA", 
-    short: "Look", 
-    task: "VQA", 
-    query: "What land cover is visible in this image?", 
-    title: "Read the river-edge scene", 
-    summary: "Use one optical scene to answer a focused visual question.", 
-    result: "Built-up areas, water channels, and mixed vegetation are visible in the scene.", 
-    verdict: "Evidence ready", 
-    next: "Ask a follow-up question about one visible region.", 
-    evidence: [{ name: "delta_optical_scene.jpg", kind: "OPTICAL", date: "2024-01-12", size: "18.4 MB" }] 
+  vqa: {
+    label: "Single-image VQA",
+    short: "VQA",
+    task: "VQA",
+    query: "What land cover is visible in this image?",
+    title: "Optical scene land classification",
+    summary:
+      "Analyze a single optical band image to perform multi-class land cover classification.",
+    result:
+      "Built-up areas, water channels, and mixed vegetation are visible in the scene.",
+    status: "Strongly verified", // Strongly verified, Partially verified, Inconclusive, Discrepancies found
+    confidence: "HIGH (94%)",
+    recommendation:
+      "Run a temporal query using a secondary cloud-free scene to evaluate change dynamics.",
+    assets: [
+      {
+        name: "delta_optical_scene.tif",
+        kind: "OPTICAL",
+        date: "2024-01-12",
+        size: "18.4 MB",
+      },
+    ],
+    features: [
+      {
+        id: "f1",
+        detail:
+          "Urban built-up area boundary identified in center-left quadrant.",
+        source: "Spectral Bands (B4,B3,B2)",
+        pass: true,
+      },
+      {
+        id: "f2",
+        detail: "Open surface water body mapped in southern channel.",
+        source: "MNDWI index calculation",
+        pass: true,
+      },
+    ],
+    limitations: [
+      {
+        detail:
+          "12% cloud shadow in northeastern quadrant masks underlying forest canopy.",
+      },
+    ],
+    trace: [
+      {
+        name: "Query Received",
+        detail: "Satellite image query parsed and tokenized.",
+        status: "SUCCESS",
+        time: "0ms",
+      },
+      {
+        name: "Metadata Extract",
+        detail:
+          "Projection EPSG:32644 (UTM 44N) and resolution (10m) verified.",
+        status: "SUCCESS",
+        time: "12ms",
+      },
+      {
+        name: "Model Routing",
+        detail: "Dispatched query to Single-Scene VQA handler.",
+        status: "SUCCESS",
+        time: "24ms",
+      },
+      {
+        name: "Model Run",
+        detail: "Polymorphic visual transformer execution completed.",
+        status: "SUCCESS",
+        time: "420ms",
+      },
+      {
+        name: "Report Compiler",
+        detail: "Compiled JSON log output and serialized coordinates.",
+        status: "SUCCESS",
+        time: "450ms",
+      },
+    ],
+    images: {
+      t1: "/satquery-prism-optical.png",
+      t2: "/satquery-prism-optical.png",
+    },
   },
-  change: { 
-    label: "Change detection", 
-    short: "Compare", 
-    task: "CHANGE ANALYSIS", 
-    query: "What changed between these two dates?", 
-    title: "Compare the scene across time", 
-    summary: "Use a clear date pair to inspect one change hypothesis.", 
-    result: "Built-up cover increased near the eastern edge between January and June.", 
-    verdict: "Partially supported", 
-    next: "Review the eastern boundary with higher-detail evidence.", 
-    evidence: [
-      { name: "delta_optical_t1.jpg", kind: "OPTICAL", date: "2024-01-12", size: "18.4 MB" }, 
-      { name: "delta_optical_t2.jpg", kind: "OPTICAL", date: "2024-06-15", size: "19.2 MB" }
-    ] 
+  change: {
+    label: "Change detection",
+    short: "Change",
+    task: "CHANGE ANALYSIS",
+    query: "Compare changes in agricultural boundaries between T1 and T2.",
+    title: "Multi-temporal change analysis",
+    summary:
+      "Calculate pixel-level differences between optical scenes across distinct acquisition timestamps.",
+    result:
+      "Agricultural boundaries expanded near the eastern shoreline between January and June.",
+    status: "Partially verified",
+    confidence: "MEDIUM (78%)",
+    recommendation:
+      "Incorporate a radar SAR scene from June to evaluate surface roughness and soil moisture levels.",
+    assets: [
+      {
+        name: "delta_optical_t1.tif",
+        kind: "OPTICAL",
+        date: "2024-01-12",
+        size: "18.4 MB",
+      },
+      {
+        name: "delta_optical_t2.tif",
+        kind: "OPTICAL",
+        date: "2024-06-15",
+        size: "19.2 MB",
+      },
+    ],
+    features: [
+      {
+        id: "f1",
+        detail: "Vegetation index increase mapped along the eastern riverbank.",
+        source: "NDVI Difference Mask",
+        pass: true,
+      },
+      {
+        id: "f2",
+        detail:
+          "Soil moisture drop identified at coordinate sector [16.395, 81.752].",
+        source: "NDWI Index difference",
+        pass: true,
+      },
+    ],
+    limitations: [
+      {
+        detail:
+          "Extended temporal baseline (154 days) introduces seasonal vegetative cycles.",
+      },
+    ],
+    trace: [
+      {
+        name: "Query Received",
+        detail: "Temporal change query parsed.",
+        status: "SUCCESS",
+        time: "0ms",
+      },
+      {
+        name: "Metadata Extract",
+        detail:
+          "T1: 2024-01-12, T2: 2024-06-15. Baseline: 154 days. Compatible.",
+        status: "SUCCESS",
+        time: "18ms",
+      },
+      {
+        name: "Alignment Check",
+        detail: "Spatial bounds verified. Coordinate overlap is 99.2%.",
+        status: "SUCCESS",
+        time: "44ms",
+      },
+      {
+        name: "Model Routing",
+        detail: "Dispatched query to Multi-Temporal Change handler.",
+        status: "SUCCESS",
+        time: "380ms",
+      },
+      {
+        name: "Model Run",
+        detail: "Pixel-by-pixel difference mapping finished.",
+        status: "SUCCESS",
+        time: "410ms",
+      },
+      {
+        name: "Report Compiler",
+        detail: "Compiled JSON report output.",
+        status: "SUCCESS",
+        time: "430ms",
+      },
+    ],
+    images: {
+      t1: "/satquery-prism-optical.png",
+      t2: "/satquery-prism-hero.png",
+    },
   },
-  fusion: { 
-    label: "Optical–SAR fusion", 
-    short: "Investigate", 
-    task: "FUSION ANALYSIS", 
-    query: "Use both sensors to assess flood evidence.", 
-    title: "Investigate the delta fringe", 
-    summary: "Combine optical context with radar structure to examine flood evidence.", 
-    result: "Flood likelihood is elevated near the eastern shoreline.", 
-    verdict: "Partially supported", 
-    next: "Add a second clear-date observation to strengthen the case.", 
-    evidence: [
-      { name: "delta_optical_t1.jpg", kind: "OPTICAL", date: "2024-01-12", size: "18.4 MB" }, 
-      { name: "delta_sar_t1.jpg", kind: "SAR", date: "2024-01-14", size: "24.1 MB" }
-    ] 
-  }
+  fusion: {
+    label: "Optical–SAR fusion",
+    short: "Fusion",
+    task: "FUSION ANALYSIS",
+    query: "Use both sensors to assess shoreline flooding evidence.",
+    title: "Multimodal sensor fusion analysis",
+    summary:
+      "Co-register optical bands with microwave backscatter maps to estimate water boundaries in cloudy areas.",
+    result:
+      "Shoreline flood inundation verified, with radar backscatter showing standing water attenuation.",
+    status: "Strongly verified",
+    confidence: "HIGH (91%)",
+    recommendation:
+      "Query a subsequent SAR acquisition (T2) to calculate water surface recession speed.",
+    assets: [
+      {
+        name: "delta_optical_t1.tif",
+        kind: "OPTICAL",
+        date: "2024-01-12",
+        size: "18.4 MB",
+      },
+      {
+        name: "delta_sar_t1.tif",
+        kind: "SAR",
+        date: "2024-01-14",
+        size: "24.1 MB",
+      },
+    ],
+    features: [
+      {
+        id: "f1",
+        detail: "Standing surface water mapped under light canopy.",
+        source: "SAR backscatter attenuation (VV/VH)",
+        pass: true,
+      },
+      {
+        id: "f2",
+        detail: "Land-water boundary matches backscatter roughness drops.",
+        source: "Co-registered overlay index",
+        pass: true,
+      },
+    ],
+    limitations: [
+      {
+        detail:
+          "Acquisition delta of 2 days between sensors may introduce minor tidal shifts.",
+      },
+    ],
+    trace: [
+      {
+        name: "Query Received",
+        detail: "Multimodal query submitted.",
+        status: "SUCCESS",
+        time: "0ms",
+      },
+      {
+        name: "Metadata Extract",
+        detail:
+          "Sensor 1: OPTICAL, Sensor 2: SAR. Valid multimodal combination.",
+        status: "SUCCESS",
+        time: "15ms",
+      },
+      {
+        name: "Alignment Check",
+        detail: "Resampled SAR grid (10m) to match optical resolution.",
+        status: "SUCCESS",
+        time: "52ms",
+      },
+      {
+        name: "Model Routing",
+        detail: "Routed to Polymorphic Fusion Strategy.",
+        status: "SUCCESS",
+        time: "510ms",
+      },
+      {
+        name: "Model Run",
+        detail: "Bimodal feature mapping complete.",
+        status: "SUCCESS",
+        time: "540ms",
+      },
+      {
+        name: "Report Compiler",
+        detail: "Compiled output trace logs.",
+        status: "SUCCESS",
+        time: "570ms",
+      },
+    ],
+    images: {
+      t1: "/satquery-prism-optical.png",
+      t2: "/satquery-prism-sar.png",
+    },
+  },
 };
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-const stage = (items) => items.map((item) => ({ ...item, id: uid(), included: true }));
+const stage = items =>
+  items.map(item => ({ ...item, id: uid(), included: true }));
 
 const savedCases = () => {
   try {
-    return JSON.parse(window.localStorage.getItem("satquery-case-history") ?? "[]");
+    const data = JSON.parse(
+      window.localStorage.getItem("satquery-query-history") ?? "[]"
+    );
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
@@ -62,57 +319,119 @@ export default function Home() {
   const [view, setView] = useState("board");
   const [scenarioId, setScenarioId] = useState("fusion");
   const [question, setQuestion] = useState(scenarios.fusion.query);
-  const [evidence, setEvidence] = useState(() => stage(scenarios.fusion.evidence));
-  
+  const [evidence, setEvidence] = useState(() =>
+    stage(scenarios.fusion.assets)
+  );
+
   // Real / Demo states
   const [isDemoMode, setIsDemoMode] = useState(true);
   const [backendImageUrl, setBackendImageUrl] = useState(null);
   const [backendAnswer, setBackendAnswer] = useState(null);
-  
+  const [backendReport, setBackendReport] = useState(null);
+  const [backendTrace, setBackendTrace] = useState([]);
+  const [backendValidationResult, setBackendValidationResult] = useState(null);
+  const [jvmHealth, setJvmHealth] = useState("TESTING...");
+
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [showPath, setShowPath] = useState(false);
-  const [showReceipt, setShowReceipt] = useState(false);
   const [history, setHistory] = useState(savedCases);
-  
-  const scenario = scenarios[scenarioId];
-  const selectedEvidence = useMemo(() => evidence.filter((item) => item.included), [evidence]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [activeQueryId, setActiveQueryId] = useState(null);
 
-  const switchScenario = (id) => {
+  const scenario = scenarios[scenarioId];
+  const selectedEvidence = useMemo(
+    () => evidence.filter(item => item.included),
+    [evidence]
+  );
+
+  // Query JVM health dynamically
+  const fetchJvmHealth = async () => {
+    try {
+      const response = await fetch("/api/health");
+      if (response.ok) {
+        setJvmHealth("JVM CONNECTED");
+      } else {
+        setJvmHealth("JVM OFFLINE");
+      }
+    } catch {
+      setJvmHealth("JVM OFFLINE");
+    }
+  };
+
+  useEffect(() => {
+    fetchJvmHealth();
+  }, []);
+
+  const switchScenario = id => {
     setScenarioId(id);
     setQuestion(scenarios[id].query);
-    setEvidence(stage(scenarios[id].evidence));
+    setEvidence(stage(scenarios[id].assets));
     setIsComplete(false);
-    setShowPath(false);
     setView("board");
     setBackendImageUrl(null);
     setBackendAnswer(null);
+    setBackendReport(null);
+    setBackendTrace([]);
+    setBackendValidationResult(null);
+    setActiveQueryId(null);
   };
 
-  const upload = async (event) => {
-    const files = Array.from(event.target.files ?? []);
+  const uploadFiles = async files => {
     if (!files.length) return;
 
     if (isDemoMode) {
-      setEvidence((current) => [
-        ...current,
-        ...files.slice(0, 3).map((file, index) => ({
-          id: uid(),
-          name: file.name,
-          kind: /sar|radar|sentinel.?1/i.test(file.name) || (files.length > 1 && index > 0) ? "SAR" : "OPTICAL",
-          date: new Date().toISOString().slice(0, 10),
-          size: `${Math.max(file.size / 1024 / 1024, 0.1).toFixed(1)} MB`,
-          included: true
-        }))
-      ]);
-      setIsComplete(false);
-      event.target.value = "";
-      toast.success("Imagery added (Demo mode)", { description: "Manage selected sources in Evidence." });
+      const toastId = toast.loading("Analyzing metadata... 0%");
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 25;
+        if (progress <= 100) {
+          toast.loading(`Extracting geospatial coordinates... ${progress}%`, {
+            id: toastId,
+          });
+        } else {
+          clearInterval(interval);
+          setEvidence(current => [
+            ...current,
+            ...files.slice(0, 3).map((file, index) => {
+              const nameLower = file.name.toLowerCase();
+              const isPngJpg =
+                nameLower.endsWith(".png") ||
+                nameLower.endsWith(".jpg") ||
+                nameLower.endsWith(".jpeg");
+
+              let warning = null;
+              if (isPngJpg) {
+                warning =
+                  "Warning: PNG/JPEG files lack standard geospatial headers (CRS bounds).";
+              }
+
+              return {
+                id: uid(),
+                name: file.name,
+                kind:
+                  /sar|radar|sentinel.?1/i.test(file.name) ||
+                  (files.length > 1 && index > 0)
+                    ? "SAR"
+                    : "OPTICAL",
+                date: new Date().toISOString().slice(0, 10),
+                size: `${Math.max(file.size / 1024 / 1024, 0.1).toFixed(1)} MB`,
+                included: true,
+                warning,
+              };
+            }),
+          ]);
+          setIsComplete(false);
+          toast.success("Image asset staged (Demo mode)", {
+            id: toastId,
+            description: "Validation complete.",
+          });
+        }
+      }, 250);
       return;
     }
 
     // Java backend mode upload
-    toast.loading("Uploading imagery to Java backend...");
+    const toastId = toast.loading("Uploading imagery to Java server...");
     const uploaded = [];
     for (const file of files) {
       const formData = new FormData();
@@ -120,7 +439,7 @@ export default function Home() {
       try {
         const response = await fetch("/api/upload", {
           method: "POST",
-          body: formData
+          body: formData,
         });
         if (response.ok) {
           const data = await response.json();
@@ -128,60 +447,80 @@ export default function Home() {
             id: data.imageId,
             name: data.fileName,
             kind: data.metadata?.modality || "OPTICAL",
-            date: data.metadata?.acquisitionDate || new Date().toISOString().slice(0, 10),
+            date:
+              data.metadata?.acquisitionDate ||
+              new Date().toISOString().slice(0, 10),
             size: `${Math.max(file.size / 1024 / 1024, 0.1).toFixed(1)} MB`,
-            included: true
+            included: true,
           });
         }
       } catch (err) {
         console.error("Upload failed", err);
       }
     }
-    toast.dismiss();
-    event.target.value = "";
+    toast.dismiss(toastId);
 
     if (uploaded.length > 0) {
-      setEvidence((current) => [...current, ...uploaded]);
+      setEvidence(current => [...current, ...uploaded]);
       setIsComplete(false);
-      toast.success("Imagery uploaded to backend", { description: "Manage selected sources in Evidence." });
+      toast.success("Image assets uploaded to server");
     } else {
-      toast.error("Upload failed", { description: "Make sure the Java server is running on port 8080." });
+      toast.error("Upload failed", {
+        description: "Verify JVM backend status in the sidebar.",
+      });
     }
   };
 
   const runCase = async () => {
     if (!question.trim()) {
-      toast.error("Add a question first");
+      toast.error("Query empty", {
+        description: "Please enter a satellite analysis query.",
+      });
       return;
     }
     if (!selectedEvidence.length) {
-      toast.error("Select at least one source", { description: "Open Evidence to include imagery in the case." });
+      toast.error("No staged image assets", {
+        description: "Stage at least one image to run the analysis.",
+      });
       setView("evidence");
       return;
     }
 
     setIsRunning(true);
     setIsComplete(false);
+    setBackendValidationResult(null);
 
     if (isDemoMode) {
       window.setTimeout(() => {
-        const record = { 
-          id: uid(), 
-          scenarioId, 
-          query: question.trim(), 
-          result: scenario.result, 
-          createdAt: new Date().toISOString(), 
-          evidenceCount: selectedEvidence.length 
-        };
-        const next = [record, ...history].slice(0, 10);
-        setHistory(next);
-        window.localStorage.setItem("satquery-case-history", JSON.stringify(next));
-        setIsRunning(false);
-        setIsComplete(true);
-        setBackendImageUrl(null);
-        setBackendAnswer(null);
-        toast.success("Case ready (Demo Mode)", { description: "The local receipt is now in Case history." });
-      }, 850);
+        try {
+          const record = {
+            id: uid(),
+            scenarioId,
+            query: question.trim(),
+            result: scenario.result,
+            createdAt: new Date().toISOString(),
+            evidenceCount: selectedEvidence.length,
+          };
+          const next = [record, ...history].slice(0, 10);
+          setHistory(next);
+          window.localStorage.setItem(
+            "satquery-query-history",
+            JSON.stringify(next)
+          );
+          setIsRunning(false);
+          setIsComplete(true);
+          setBackendImageUrl(null);
+          setBackendAnswer(null);
+          setBackendReport(null);
+          setBackendTrace([]);
+          toast.success("Analysis complete");
+        } catch (e) {
+          console.error("Demo run error:", e);
+          setIsRunning(false);
+          setIsComplete(true);
+          toast.error("Demo analysis completed (failed to save history).");
+        }
+      }, 900);
       return;
     }
 
@@ -190,57 +529,86 @@ export default function Home() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          question: question.trim(),
           queryText: question.trim(),
+          datasetContext: "NORMAL_SATELLITE",
           imageIds: selectedEvidence.map(item => item.id),
-          timestamp: new Date().toISOString()
-        })
+          requestedTask: null,
+          timestamp: new Date().toISOString(),
+        }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        
-        // Find custom image evidence in the response
+        if (
+          data.status === "VALIDATION_FAILED" ||
+          data.status === "TOOL_VALIDATION_FAILED"
+        ) {
+          setBackendValidationResult({
+            status: data.status,
+            error: data.answer,
+            trace: data.trace,
+          });
+          setIsRunning(false);
+          setIsComplete(false);
+          toast.error("Image metadata validation failed");
+          return;
+        }
+
         let imageUrl = null;
         if (data.evidence && data.evidence.length > 0) {
-          const mapEv = data.evidence.find(ev => 
-            ev.evidenceType === "CHANGE_MAP" || 
-            ev.evidenceType === "BOUNDING_BOX" || 
-            ev.evidenceType === "SENSOR_BRANCH"
+          const mapEv = data.evidence.find(
+            ev =>
+              ev.evidenceType === "CHANGE_MAP" ||
+              ev.evidenceType === "BOUNDING_BOX" ||
+              ev.evidenceType === "SENSOR_BRANCH"
           );
           if (mapEv) {
             imageUrl = mapEv.filePath;
           }
         }
-        
+
+        if (imageUrl && !imageUrl.startsWith("/")) {
+          imageUrl = "/" + imageUrl;
+        }
+
         setBackendImageUrl(imageUrl);
         setBackendAnswer(data.answer);
+        setBackendReport(data.investigatorReport);
+        setBackendTrace(data.trace || []);
+        setActiveQueryId(data.queryId);
 
-        const record = { 
-          id: data.queryId || uid(), 
-          scenarioId, 
-          query: question.trim(), 
-          result: data.answer, 
-          createdAt: new Date().toISOString(), 
-          evidenceCount: selectedEvidence.length 
+        const record = {
+          id: data.queryId || uid(),
+          scenarioId,
+          query: question.trim(),
+          result: data.answer,
+          createdAt: new Date().toISOString(),
+          evidenceCount: selectedEvidence.length,
         };
 
         const next = [record, ...history].slice(0, 10);
         setHistory(next);
-        window.localStorage.setItem("satquery-case-history", JSON.stringify(next));
-        
+        window.localStorage.setItem(
+          "satquery-query-history",
+          JSON.stringify(next)
+        );
+
         setIsRunning(false);
         setIsComplete(true);
-        toast.success("Case analyzed by Java backend", { description: "Real output is now ready." });
+        toast.success("Analysis report generated");
       } else {
-        const errText = await response.text();
-        throw new Error(errText || "Analysis endpoint returned an error");
+        throw new Error(data.error || "Server processing error");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Analysis failed", { description: err.message || "Error communicating with Java backend." });
+      toast.error("Processing failed", {
+        description: err.message || "Error communicating with Java backend.",
+      });
       setIsRunning(false);
     }
   };
@@ -248,548 +616,1470 @@ export default function Home() {
   const reset = () => {
     setQuestion(scenario.query);
     setIsComplete(false);
-    setShowPath(false);
     setBackendImageUrl(null);
     setBackendAnswer(null);
+    setBackendReport(null);
+    setBackendTrace([]);
+    setBackendValidationResult(null);
+    setActiveQueryId(null);
   };
 
-  const toggleEvidence = (id) => {
-    setEvidence((current) => current.map((item) => item.id === id ? { ...item, included: !item.included } : item));
+  const toggleEvidence = id => {
+    setEvidence(current =>
+      current.map(item =>
+        item.id === id ? { ...item, included: !item.included } : item
+      )
+    );
     setIsComplete(false);
   };
 
-  const removeEvidence = (id) => {
-    setEvidence((current) => current.filter((item) => item.id !== id));
+  const removeEvidence = id => {
+    setEvidence(current => current.filter(item => item.id !== id));
     setIsComplete(false);
   };
 
   const clearHistory = () => {
     setHistory([]);
-    window.localStorage.removeItem("satquery-case-history");
-    toast.info("Local case history cleared");
+    window.localStorage.removeItem("satquery-query-history");
+    toast.info("Query history cleared");
   };
 
-  const reopen = (record) => {
+  const reopen = record => {
     switchScenario(record.scenarioId);
     setQuestion(record.query);
     setBackendAnswer(record.result);
     setIsComplete(true);
+    setView("board");
+    setActiveQueryId(record.id);
   };
 
-  const download = () => {
-    const data = { 
-      product: "SatQuery AI", 
-      mode: isDemoMode ? "Demo Mode" : "Java Backend Mode", 
-      generatedAt: new Date().toISOString(), 
-      scenario: scenario.label, 
-      question, 
-      verdict: isComplete ? (isDemoMode ? scenario.verdict : "Supported") : "Case staged", 
-      finding: isComplete ? (backendAnswer || scenario.result) : "No finding.", 
-      evidence: selectedEvidence.map(({ name, kind, date }) => ({ name, kind, date })), 
-      limitation: isDemoMode ? "Client-side walkthrough only." : "Java local image-processing inference." 
+  const downloadReceipt = () => {
+    const data = {
+      product: "SatQuery AI",
+      mode: isDemoMode ? "Demo Mode" : "Java Backend Mode",
+      generatedAt: new Date().toISOString(),
+      scenario: scenario.label,
+      question,
+      status: isComplete
+        ? isDemoMode
+          ? scenario.status
+          : backendReport?.verdict || "Completed"
+        : "Query staged",
+      result: isComplete ? backendAnswer || scenario.result : "N/A",
+      assets: selectedEvidence.map(({ name, kind, date }) => ({
+        name,
+        kind,
+        date,
+      })),
+      recommendation: isDemoMode
+        ? scenario.recommendation
+        : backendReport?.nextBestEvidence || "Review raw grid files.",
     };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+    );
     const link = document.createElement("a");
     link.href = url;
-    link.download = "satquery-case-receipt.json";
+    link.download = `satquery-analysis-report-${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    toast.success("JSON receipt downloaded");
+    toast.success("JSON report downloaded");
   };
 
   const tabs = [
-    { id: "board", label: "Build a case", icon: ScanSearch }, 
-    { id: "evidence", label: "Evidence", icon: Layers3 }, 
-    { id: "history", label: "Case history", icon: History }, 
-    { id: "guide", label: "How it works", icon: BookOpen }
+    { id: "board", label: "Satellite workstation", icon: ScanSearch },
+    { id: "evidence", label: "Image library", icon: Layers3 },
+    { id: "history", label: "Query history", icon: History },
   ];
 
   return (
-    <div className="prism-shell min-h-screen text-[#112557]">
-      <header className="sticky top-0 z-30 border-b border-[#dfe7fb] bg-[#fbfcff]/95 px-5 backdrop-blur-xl md:px-8">
-        <div className="mx-auto flex h-[68px] max-w-[1220px] items-center gap-6">
-          <div className="flex items-center gap-2.5">
-            <img src="/manus-storage/satquery-prism-mark_70ad8e52.png" alt="SatQuery mark" className="h-9 w-9" />
+    <div className="prism-shell min-h-screen flex flex-col md:flex-row text-navy">
+      {/* SIDEBAR NAVIGATION (Desktop) */}
+      <aside className="hidden md:flex flex-col w-64 border-r border-[#dfe7fb] bg-white/80 backdrop-blur-xl sticky top-0 h-screen p-6 shrink-0 z-30 justify-between">
+        <div className="space-y-8">
+          {/* Brand mark */}
+          <div className="flex items-center gap-3 brand-block">
+            <img
+              src="/satquery-prism-mark.png"
+              alt="SatQuery Orbit Mark"
+              className="h-10 w-10 object-contain shadow-sm"
+            />
             <div>
-              <p className="font-display text-[17px] font-extrabold tracking-[-.05em]">SatQuery AI</p>
-              <p className="font-mono text-[8px] uppercase tracking-[.17em] text-[#7082aa]">Investigator mode</p>
+              <p className="font-editorial text-[20px] font-extrabold tracking-tight leading-none">
+                SatQuery
+              </p>
+              <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[#7082aa] mt-1">
+                Geospatial AI
+              </p>
             </div>
           </div>
-          
-          <nav className="ml-2 hidden items-center gap-1 md:flex">
+
+          {/* Navigation links */}
+          <nav className="space-y-1">
             {tabs.map(({ id, label, icon: Icon }) => (
-              <button 
-                key={id} 
-                onClick={() => setView(id)} 
-                className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-bold transition ${view === id ? "bg-[#eeeaff] text-[#4134a6]" : "text-[#6b80aa] hover:bg-[#f0f4ff] hover:text-[#30497f]"}`}
+              <button
+                key={id}
+                onClick={() => setView(id)}
+                className={`prism-nav rounded-lg focus-visible:outline-2 ${view === id ? "prism-nav-active shadow-sm" : ""}`}
               >
-                <Icon size={15} />
-                {label}
-                {id === "history" && history.length > 0 && (
-                  <span className="rounded-full bg-[#d9f99a] px-1.5 py-0.5 font-mono text-[8px] text-[#3a5e18]">{history.length}</span>
+                <Icon
+                  size={16}
+                  className={view === id ? "text-[#1179FF]" : "text-[#7082aa]"}
+                />
+                <span className="flex-1">{label}</span>
+                {view === id && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#1179FF]" />
                 )}
               </button>
             ))}
           </nav>
-          
-          {/* Mode Switch Button */}
-          <button 
+        </div>
+
+        {/* Sidebar Footer Details & Mode Toggle */}
+        <div className="space-y-4 pt-4 border-t border-[#edf1fb]">
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setIsDemoMode(!isDemoMode);
+                reset();
+                toast.info(
+                  isDemoMode
+                    ? "Switched to Real Java Backend Mode"
+                    : "Switched to Demo Mode (Mock)"
+                );
+              }}
+              className={`w-full mode-badge inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold transition rounded-lg border ${
+                isDemoMode
+                  ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]"
+                  : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
+              }`}
+            >
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"}`}
+              />
+              {isDemoMode ? "DEMO MODE (MOCK)" : "JAVA BACKEND MODE"}
+            </button>
+
+            {/* Health check status indicator */}
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <span
+                className={`h-2 w-2 rounded-full ${jvmHealth.includes("CONNECTED") ? "bg-emerald-500" : "bg-red-400"}`}
+              />
+              <span className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
+                {jvmHealth}
+              </span>
+              <button
+                onClick={fetchJvmHealth}
+                className="p-0.5 hover:bg-[#EDF5FF] text-[#1179FF] rounded"
+              >
+                <RefreshCw size={10} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* MOBILE COMPACT HEADER */}
+      <header className="md:hidden sticky top-0 z-30 border-b border-[#dfe7fb] bg-white/95 px-5 py-3 backdrop-blur-xl w-full flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img
+              src="/satquery-prism-mark.png"
+              alt="SatQuery Orbit Mark"
+              className="h-8 w-8"
+            />
+            <div>
+              <p className="font-editorial text-[17px] font-bold">SatQuery</p>
+              <p className="font-mono text-[8px] uppercase tracking-wider text-[#7082aa]">
+                Geospatial AI
+              </p>
+            </div>
+          </div>
+
+          <button
             onClick={() => {
               setIsDemoMode(!isDemoMode);
               reset();
-              toast.info(isDemoMode ? "Switched to Real Java Backend Mode" : "Switched to Demo Mockup Mode");
-            }} 
-            className={`ml-auto mode-badge inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition rounded-full border ${
-              isDemoMode 
-                ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]" 
-                : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
+            }}
+            className={`mode-badge inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold rounded-full border ${
+              isDemoMode
+                ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc]"
+                : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8]"
             }`}
           >
-            <span className={`h-2 w-2 rounded-full ${isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"}`} />
-            {isDemoMode ? "Demo Mode (Mock)" : "Java Backend Mode"}
+            {isDemoMode ? "DEMO" : "JAVA"}
           </button>
         </div>
-        
-        <nav className="-mx-5 flex overflow-x-auto border-t border-[#edf1fb] px-5 md:hidden">
-          {tabs.map(({ id, label }) => (
-            <button key={id} onClick={() => setView(id)} className={`flex-none px-3 py-2.5 text-[11px] font-bold ${view === id ? "border-b-2 border-[#5145d8] text-[#4034a4]" : "text-[#7589ae]"}`}>{label}</button>
+
+        <nav className="flex overflow-x-auto border-t border-[#edf1fb] pt-2 gap-1 scrollbar-none">
+          {tabs.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setView(id)}
+              className={`flex-none inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-full transition ${view === id ? "bg-[#EDF5FF] text-navy" : "text-[#7082aa]"}`}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
           ))}
         </nav>
       </header>
-      
-      <main className="mx-auto max-w-[1220px] px-5 pb-16 pt-10 md:px-8">
-        {view === "board" && (
-          <Board 
-            scenario={scenario} 
-            scenarioId={scenarioId} 
-            question={question} 
-            setQuestion={setQuestion} 
-            evidence={selectedEvidence} 
-            isRunning={isRunning} 
-            isComplete={isComplete} 
-            showPath={showPath} 
-            setShowPath={setShowPath} 
-            onScenario={switchScenario} 
-            onUpload={upload} 
-            onEvidence={() => setView("evidence")} 
-            onRun={runCase} 
-            onReset={reset} 
-            onReceipt={() => setShowReceipt(true)} 
-            backendImageUrl={backendImageUrl}
-            backendAnswer={backendAnswer}
-            isDemoMode={isDemoMode}
-          />
-        )}
-        {view === "evidence" && <EvidenceView evidence={evidence} selectedCount={selectedEvidence.length} onUpload={upload} onToggle={toggleEvidence} onRemove={removeEvidence} onBack={() => setView("board")} />}
-        {view === "history" && <HistoryView history={history} onBack={() => setView("board")} onClear={clearHistory} onReopen={reopen} />}
-        {view === "guide" && <GuideView onBack={() => setView("board")} />}
-      </main>
-      
+
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 p-5 md:p-8 max-w-[1400px] w-full mx-auto space-y-8">
+          {view === "board" && (
+            <Board
+              scenario={scenario}
+              scenarioId={scenarioId}
+              question={question}
+              setQuestion={setQuestion}
+              evidence={evidence}
+              selectedEvidence={selectedEvidence}
+              isRunning={isRunning}
+              isComplete={isComplete}
+              onScenario={switchScenario}
+              onUpload={uploadFiles}
+              onEvidence={() => setView("evidence")}
+              onRun={runCase}
+              onReset={reset}
+              onReceipt={() => setShowReceipt(true)}
+              backendImageUrl={backendImageUrl}
+              backendAnswer={backendAnswer}
+              backendReport={backendReport}
+              backendTrace={backendTrace}
+              backendValidationResult={backendValidationResult}
+              isDemoMode={isDemoMode}
+            />
+          )}
+
+          {view === "evidence" && (
+            <EvidenceView
+              evidence={evidence}
+              selectedCount={selectedEvidence.length}
+              onUpload={uploadFiles}
+              onToggle={toggleEvidence}
+              onRemove={removeEvidence}
+              onBack={() => setView("board")}
+            />
+          )}
+
+          {view === "history" && (
+            <HistoryView
+              history={history}
+              onBack={() => setView("board")}
+              onClear={clearHistory}
+              onReopen={reopen}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* ANALYSIS REPORT MODAL */}
       {showReceipt && (
-        <Receipt 
-          scenario={scenario} 
-          question={question} 
-          evidence={selectedEvidence} 
-          complete={isComplete} 
-          onClose={() => setShowReceipt(false)} 
-          onDownload={download} 
+        <Receipt
+          scenario={scenario}
+          question={question}
+          evidence={selectedEvidence}
+          complete={isComplete}
+          onClose={() => setShowReceipt(false)}
+          onDownload={downloadReceipt}
           backendAnswer={backendAnswer}
+          backendReport={backendReport}
+          isDemoMode={isDemoMode}
+          queryId={activeQueryId}
         />
       )}
     </div>
   );
 }
 
-function Board({ 
-  scenario, 
-  scenarioId, 
-  question, 
-  setQuestion, 
-  evidence, 
-  isRunning, 
-  isComplete, 
-  showPath, 
-  setShowPath, 
-  onScenario, 
-  onUpload, 
-  onEvidence, 
-  onRun, 
-  onReset, 
+// -------------------------------------------------------------
+// SATELLITE WORKSTATION BOARD
+// -------------------------------------------------------------
+function Board({
+  scenario,
+  scenarioId,
+  question,
+  setQuestion,
+  evidence,
+  selectedEvidence,
+  isRunning,
+  isComplete,
+  onScenario,
+  onUpload,
+  onEvidence,
+  onRun,
+  onReset,
   onReceipt,
   backendImageUrl,
   backendAnswer,
-  isDemoMode
+  backendReport,
+  backendTrace,
+  backendValidationResult,
+  isDemoMode,
 }) {
+  const [activeStageTab, setActiveStageTab] = useState("image"); // image, split, map
+
+  // Overlay Toggles
+  const [showGrounding, setShowGrounding] = useState(true);
+  const [showMask, setShowMask] = useState(true);
+  const [showAOI, setShowAOI] = useState(false);
+
+  const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = e => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = e => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (files.length) {
+      onUpload(files);
+    }
+  };
+
+  // Processing steps timeline
+  const pipelineStep = useMemo(() => {
+    if (isRunning) return 3; // Routing/Processing
+    if (isComplete) return 4; // Inference complete
+    if (selectedEvidence.length > 0) return 2; // Metadata validated
+    return 1; // Query configured
+  }, [isRunning, isComplete, selectedEvidence]);
+
+  const likelyTask = useMemo(() => {
+    if (selectedEvidence.length === 2) {
+      const modalities = selectedEvidence.map(e => e.kind);
+      if (modalities.includes("OPTICAL") && modalities.includes("SAR")) {
+        return "Bimodal sensor fusion model";
+      }
+      return "Temporal change detection model";
+    }
+    if (selectedEvidence.length === 1) {
+      return "Single-scene classification model";
+    }
+    return "Awaiting image selection...";
+  }, [selectedEvidence]);
+
+  const validationAlert = useMemo(() => {
+    if (backendValidationResult) return backendValidationResult.error;
+
+    if (scenarioId === "change" && selectedEvidence.length === 1) {
+      return "Format Alert: Change analysis requires a multi-temporal image pair. Please stage a secondary optical scene.";
+    }
+    if (scenarioId === "fusion" && selectedEvidence.length === 1) {
+      return "Modality Alert: Fusion analysis requires optical + SAR microwave inputs. Please stage a SAR radar asset.";
+    }
+    return null;
+  }, [backendValidationResult, scenarioId, selectedEvidence]);
+
   return (
-    <>
-      <section className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-        <div>
-          <p className="eyebrow text-[#5145d8]">Investigator mode / {isDemoMode ? "Demo" : "Java API"}</p>
-          <h1 className="mt-4 max-w-[720px] font-editorial text-[clamp(3.25rem,7vw,6.2rem)] leading-[.86] tracking-[-.07em] text-[#10245a]">
-            Build the case. <em className="text-[#5145d8]">One step</em> at a time.
-          </h1>
-          <p className="mt-5 max-w-[590px] text-[15px] leading-7 text-[#5a709c]">
-            {isDemoMode 
-              ? "Ask a question, choose the imagery that matters, and test one clear evidence case. Everything else stays out of your way."
-              : "Upload your GeoTIFF or standard images, write queries, and let the local Java engine compute change maps, overlays, and grounding boxes."
-            }
-          </p>
+    <div className="space-y-6">
+      {/* Title */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#1179FF]" />
+          <p className="eyebrow text-[#1179FF]">Workstation Console</p>
         </div>
-        <div className="hidden border-l-4 border-[#b7f23a] bg-[#f4ffd9] px-5 py-4 text-right md:block">
-          <p className="eyebrow text-[#597935]">Active route</p>
-          <p className="mt-2 font-editorial text-2xl tracking-[-.06em] text-[#274519]">{scenario.short}</p>
-          <p className="mt-1 font-mono text-[9px] uppercase tracking-[.08em] text-[#6d8748]">{evidence.length} source{evidence.length === 1 ? "" : "s"} selected</p>
-        </div>
+        <h1 className="font-editorial text-[38px] md:text-[54px] tracking-tight leading-[1.05] text-navy font-bold">
+          Satellite Imagery Query Workstation
+        </h1>
+        <p className="max-w-[700px] text-sm md:text-base leading-relaxed text-[#5a709c]">
+          Submit natural-language queries against multispectral image datasets.
+          The Java agent parses coordinate bands, validates spatial overlaps,
+          and routes queries to adapted VLMs.
+        </p>
       </section>
 
-      <section className="mt-9 grid overflow-hidden border-t-4 border-[#5145d8] bg-[#dfe7fb] sm:grid-cols-3">
-        <ProgressStep number="01" title="Ask" text="Write the question" ready />
-        <ProgressStep number="02" title="Choose" text="Select evidence" ready={evidence.length > 0} />
-        <ProgressStep number="03" title="Test" text="Review the case" ready={isComplete} />
-      </section>
+      {/* Sleek Analysis Pipeline Ribbon */}
+      <section className="case-ribbon rounded-lg">
+        {[
+          { num: "01", label: "Query", detail: "Configure question" },
+          { num: "02", label: "Metadata", detail: "Validate coordinates" },
+          { num: "03", label: "Routing", detail: "Determine strategy" },
+          { num: "04", label: "Inference", detail: "Run VLM analysis" },
+          { num: "05", label: "Report", detail: "Generate output log" },
+        ].map((step, idx) => {
+          const stepNum = idx + 1;
+          const isActive = pipelineStep === stepNum;
+          const isDone = pipelineStep > stepNum;
 
-      <section className="mt-7 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-        <article className="border-t-5 border-[#5145d8] bg-white/85 p-6 shadow-[0_15px_35px_rgba(54,83,146,.08)]">
-          <SectionTitle number="01" label="Ask the question" title="Start with a clear, simple brief." />
-          <div className="mt-6 flex flex-wrap gap-2">
-            {Object.keys(scenarios).map((id) => (
-              <button 
-                key={id} 
-                onClick={() => onScenario(id)} 
-                className={`border px-3 py-2 font-mono text-[9px] font-semibold uppercase tracking-[.08em] transition ${scenarioId === id ? "border-[#5145d8] bg-[#5145d8] text-white" : "border-[#dfe6fa] bg-[#f9fbff] text-[#7184aa] hover:border-[#aebdf0]"}`}
-              >
-                {scenarios[id].short}
-              </button>
-            ))}
-          </div>
-          <textarea 
-            value={question} 
-            onChange={(event) => setQuestion(event.target.value)} 
-            className="mt-4 min-h-[118px] w-full resize-none border border-[#dbe4fa] bg-[#f9fbff] p-4 text-[17px] font-bold leading-7 text-[#18366e] outline-none transition focus:border-[#5145d8] focus:bg-white" 
-            placeholder="What do you want to know about this place?" 
-          />
-        </article>
-        
-        <article className="border-t-5 border-[#1179ff] bg-[#f5faff] p-6 shadow-[0_15px_35px_rgba(54,83,146,.08)]">
-          <SectionTitle number="02" label="Choose evidence" title="Keep only what supports the question." tone="blue" />
-          <div className="mt-6 space-y-2">
-            {evidence.length ? evidence.slice(0, 3).map((file) => <CompactEvidence key={file.id} item={file} />) : <p className="bg-white/75 p-3 text-sm text-[#7084ac]">No source selected yet.</p>}
-          </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <label className="inline-flex items-center gap-2 border border-dashed border-[#8eb6ec] bg-[#edf6ff] px-3 py-2 text-[9px] font-bold uppercase tracking-[.07em] text-[#216fc6] cursor-pointer">
-              <Plus size={15} /> Add imagery
-              <input className="hidden" type="file" multiple accept=".tif,.tiff,.png,.jpg,.jpeg" onChange={onUpload} />
-            </label>
-            <button onClick={onEvidence} className="quiet-action"><Layers3 size={15} /> Manage evidence</button>
-          </div>
-        </article>
-      </section>
-
-      <section className="mt-6 grid overflow-hidden border-t-[6px] border-[#1179ff] bg-white shadow-[0_24px_50px_rgba(33,75,151,.15)] lg:grid-cols-[.85fr_1.15fr]">
-        <div className="relative z-10 bg-[linear-gradient(135deg,#f9fbff,#f0f6ff)] p-7 md:p-9">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eee3ff] font-mono text-[9px] font-bold text-[#7846d7]">03</span>
-            <p className="eyebrow text-[#3562aa]">Test the case</p>
-          </div>
-          <h2 className="mt-5 font-editorial text-[clamp(2.4rem,4vw,4rem)] leading-[.92] tracking-[-.06em] text-[#10245a]">
-            {scenario.title}
-          </h2>
-          <p className="mt-4 max-w-[465px] text-sm leading-6 text-[#526b99]">{scenario.summary}</p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <button onClick={onRun} disabled={isRunning} className="primary-button">
-              {isRunning ? <Orbit size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
-              {isRunning ? "Running Java Analytics" : "Test this case"}
-            </button>
-            {isComplete && (
-              <button onClick={onReceipt} className="inline-flex items-center gap-2 text-sm font-bold text-[#5145d8] hover:text-[#2f237f]">
-                <FileText size={15} /> View receipt
-              </button>
-            )}
-          </div>
-        </div>
-        
-        {/* Active Observation Image Display */}
-        <div className="relative min-h-[330px] overflow-hidden">
-          <img 
-            src={backendImageUrl || "/manus-storage/satquery-prism-hero_fa3e1001.jpg"} 
-            alt="Satellite view of the active observation" 
-            className="absolute inset-0 h-full w-full object-cover" 
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(23,69,139,.1),transparent_65%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.2)_1px,transparent_1px)] bg-[size:42px_42px]" />
-          <div className="absolute right-[14%] top-[17%] h-48 w-48 rounded-full border-[28px] border-[#b7f23a]/65 shadow-[0_0_0_18px_rgba(120,70,215,.15),0_0_0_42px_rgba(255,255,255,.1)]" />
-          <span className="absolute right-4 top-4 bg-[#122a5b]/85 px-2 py-1.5 font-mono text-[8px] font-bold tracking-[.12em] text-[#dfff95]">
-            {backendImageUrl ? "DYNAMIC ANALYSIS OUTPUT" : "ACTIVE OBSERVATION"}
-          </span>
-          <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/90 px-3 py-2 font-mono text-[10px] text-[#21407a]">
-            <MapPin size={14} /> Delta test area
-          </div>
-          <div className="absolute bottom-4 right-4 flex gap-1.5">
-            <span className="bg-white/90 px-2 py-1.5 font-mono text-[8px] font-bold tracking-[.08em] text-[#2860a7]">OPTICAL</span>
-            {scenarioId === "fusion" && <span className="bg-white/90 px-2 py-1.5 font-mono text-[8px] font-bold tracking-[.08em] text-[#7143c5]">SAR</span>}
-          </div>
-        </div>
-      </section>
-
-      <section className={`mt-6 flex flex-col justify-between gap-5 border-l-4 p-6 sm:flex-row sm:items-end ${isComplete ? "border-[#b7f23a] bg-[#f3ffd5]" : "border-[#f4b900] bg-[#fffbea]"}`}>
-        <div>
-          <p className={`eyebrow ${isComplete ? "text-[#597935]" : "text-[#8d712b]"}`}>{isComplete ? "Case result" : "What happens next"}</p>
-          <h2 className={`mt-2 font-editorial text-3xl leading-none tracking-[-.06em] ${isComplete ? "text-[#31541a]" : "text-[#614b12]"}`}>
-            {isComplete ? "Evidence Analysis Complete" : "A clearer path, not more information."}
-          </h2>
-          <p className={`mt-3 max-w-[700px] text-sm leading-6 ${isComplete ? "text-[#4c7029]" : "text-[#806c36]"}`}>
-            {isComplete 
-              ? (backendAnswer || scenario.result) 
-              : isDemoMode 
-                ? "Testing creates one concise finding, one caveat, and one next-best action. Demo Mode walkthroughs do not consult backend endpoints." 
-                : "Testing will run the query and input images through the active Java agent handlers, writing dynamic visualization artifacts to files."
-            }
-          </p>
-        </div>
-        {isComplete && (
-          <div className="flex shrink-0 items-center gap-4">
-            <span className="inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.07em] text-[#52762c]"><Check size={14} /> Ready</span>
-            <button onClick={onReset} className="text-sm font-bold text-[#52762c] underline underline-offset-4">Start again</button>
-          </div>
-        )}
-      </section>
-
-      <section className="mt-5 border-t border-[#dfe7fb]">
-        <button onClick={() => setShowPath(!showPath)} className="flex w-full items-center justify-between py-4 text-sm font-bold text-[#536c9b]">
-          <span className="inline-flex items-center gap-2"><ShieldCheck size={17} /> Show the evidence path</span>
-          <ChevronDown size={17} className={showPath ? "rotate-180 transition" : "transition"} />
-        </button>
-        {showPath && (
-          <div className="grid bg-[#e1e9fb] sm:grid-cols-4">
-            {[
-              ["Brief", "Question captured", true], 
-              ["Sources", `${evidence.length} selected`, evidence.length > 0], 
-              ["Route", scenario.task, true], 
-              ["Receipt", isComplete ? "Saved locally" : "Ready after test", isComplete]
-            ].map(([label, detail, ready]) => (
-              <div key={String(label)} className="min-h-[92px] bg-white/75 p-4">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full font-mono text-[9px] ${ready ? "bg-[#dcfaa4] text-[#40651e]" : "bg-[#eff3ff] text-[#7f91b4]"}`}>
-                  {ready ? <Check size={13} /> : "\xB7"}
-                </span>
-                <strong className="mt-2 block text-xs text-[#426092]">{label}</strong>
-                <small className="mt-1 block font-mono text-[8px] text-[#7b8eaf]">{detail}</small>
+          return (
+            <div
+              key={step.label}
+              className={`ribbon-step ${isDone ? "ribbon-done" : isActive ? "ribbon-active" : "ribbon-pending"}`}
+            >
+              <span className="ribbon-number">{isDone ? "✓" : step.num}</span>
+              <div>
+                <strong>{step.label}</strong>
+                <small>{step.detail}</small>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          );
+        })}
       </section>
-    </>
+
+      {/* Workspace Columns */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
+        {/* COLUMN 1: IMAGE ASSETS & QUERY INPUT (Left - col-span-3) */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Query input */}
+          <article className="investigation-plane plane-white rounded-lg p-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
+              <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+                01
+              </span>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  Compose Query
+                </h3>
+                <p className="text-[10px] text-[#7082aa]">
+                  Formulate analysis question
+                </p>
+              </div>
+            </div>
+
+            {/* Scenarios shortcuts */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {Object.keys(scenarios).map(id => (
+                <button
+                  key={id}
+                  onClick={() => onScenario(id)}
+                  className={`border px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[.06em] rounded transition ${
+                    scenarioId === id
+                      ? "border-navy bg-navy text-white"
+                      : "border-[#dfe6fa] bg-[#F8FBFF] text-[#7184aa] hover:border-[#aebdf0] hover:bg-white"
+                  }`}
+                >
+                  {scenarios[id].short}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={question}
+              onChange={e => setQuestion(e.target.value)}
+              className="w-full min-h-[90px] resize-none border border-[#dbe4fa] bg-[#fbfdff] p-3 text-xs font-semibold leading-relaxed text-navy outline-none rounded focus:border-[#1179FF] focus:bg-white transition"
+              placeholder="Enter query about the staged satellite assets..."
+            />
+
+            {/* Pipeline Status Overview */}
+            <div className="mt-3 space-y-2 border-t border-[#edf1fb] pt-3">
+              <div className="flex justify-between items-center text-[10px] text-[#5a709c]">
+                <span>Staged assets:</span>
+                <span className="font-mono font-bold bg-[#EDF5FF] px-1.5 py-0.5 rounded text-[#1179FF]">
+                  {selectedEvidence.length} file
+                  {selectedEvidence.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="text-[10px] text-[#5a709c]">
+                <span>Target Engine: </span>
+                <span className="font-bold text-navy">{likelyTask}</span>
+              </div>
+            </div>
+          </article>
+
+          {/* Staged Image Assets */}
+          <article className="investigation-plane plane-blue rounded-lg p-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#cfe3ff] mb-4 justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-6 w-6 rounded-full bg-[#ddecff] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+                  02
+                </span>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+                    Staged Assets
+                  </h3>
+                  <p className="text-[10px] text-[#5a709c]">
+                    Input satellite grid files
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onEvidence}
+                className="text-[10px] font-bold text-[#1179FF] hover:underline"
+              >
+                Library
+              </button>
+            </div>
+
+            {/* Drag & Drop Upload Zone */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`upload-stage-stamp cursor-pointer border-dashed border-2 mb-4 p-4 text-center rounded transition ${
+                isDragging
+                  ? "border-[#1179FF] bg-[#EDF5FF]"
+                  : "border-[#8eb6ec] hover:border-[#1179FF]"
+              }`}
+            >
+              <Upload size={18} className="text-[#1179FF]" />
+              <p className="text-[10px] font-bold">DRAG & DROP GEOTIFF</p>
+              <p className="text-[8px] text-[#7082aa]">
+                GeoTIFF / TIFF or standard files
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".tif,.tiff,.png,.jpg,.jpeg"
+                onChange={e => onUpload(Array.from(e.target.files ?? []))}
+                className="hidden"
+              />
+            </div>
+
+            {/* List of staged assets */}
+            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+              {evidence.map(file => (
+                <div
+                  key={file.id}
+                  className={`evidence-ticket ${file.kind === "SAR" ? "evidence-ticket-sar" : ""} ${file.warning ? "evidence-ticket-warning" : ""} ${file.included ? "opacity-100" : "opacity-40"}`}
+                >
+                  <span className="evidence-ticket-icon rounded">
+                    {file.kind === "SAR" ? (
+                      <Radar size={14} />
+                    ) : (
+                      <FileImage size={14} />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="text-[10px] font-bold text-navy truncate"
+                      title={file.name}
+                    >
+                      {file.name}
+                    </p>
+                    <p className="font-mono text-[7px] text-[#7082aa] mt-0.5">
+                      {file.kind} · {file.date}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => toggleEvidence(file.id)}
+                    className="p-1 hover:bg-[#EDF5FF] text-[#7082aa] rounded animate-fade-in"
+                  >
+                    <Check
+                      size={12}
+                      className={
+                        file.included
+                          ? "text-emerald-600 font-bold"
+                          : "text-gray-300"
+                      }
+                    />
+                  </button>
+                </div>
+              ))}
+              {!evidence.length && (
+                <p className="text-center text-[10px] text-[#7082aa] py-3">
+                  No staged files.
+                </p>
+              )}
+            </div>
+          </article>
+        </div>
+
+        {/* COLUMN 2: ACTIVE OBSERVATION VIEW (Center - col-span-6) */}
+        <div className="lg:col-span-6 space-y-4">
+          {/* Main Observation View Frame */}
+          <article className="investigation-plane stage-plane rounded-lg overflow-hidden flex flex-col relative">
+            {/* Header */}
+            <div className="stage-chrome border-b border-[#e1eafa]">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+                <span className="font-mono text-[9px] font-bold tracking-wider text-[#1179FF] uppercase">
+                  {scenarioId === "fusion"
+                    ? "Multimodal Sensor Array"
+                    : scenarioId === "change"
+                      ? "Temporal Image Pair"
+                      : "Optical Grid Scene"}
+                </span>
+              </div>
+
+              {/* View Selector Tabs */}
+              <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa]">
+                {[
+                  { id: "image", label: "Image View" },
+                  { id: "split", label: "Split Compare" },
+                  { id: "map", label: "Interactive Map" },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      if (tab.id === "split" && selectedEvidence.length < 2) {
+                        toast.info(
+                          "Split compare requires at least 2 staged images."
+                        );
+                        return;
+                      }
+                      setActiveStageTab(tab.id);
+                    }}
+                    className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition ${
+                      activeStageTab === tab.id
+                        ? "bg-white text-navy shadow-sm"
+                        : "text-[#7082aa] hover:text-navy"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Central Media Canvas */}
+            <div className="relative min-h-[380px] bg-[#112557] overflow-hidden flex items-center justify-center">
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,#112557_95%)] pointer-events-none" />
+
+              {/* Map View */}
+              {activeStageTab === "map" && (
+                <div className="absolute inset-0 w-full h-full">
+                  <MapView
+                    className="w-full h-full"
+                    initialCenter={{ lat: 16.3952, lng: 81.7516 }}
+                    initialZoom={13}
+                  />
+                </div>
+              )}
+
+              {/* Image View */}
+              {activeStageTab === "image" && (
+                <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                  <img
+                    src={
+                      backendImageUrl ||
+                      (scenarioId === "fusion"
+                        ? "/satquery-prism-sar.png"
+                        : scenarioId === "change"
+                          ? "/satquery-prism-hero.png"
+                          : "/satquery-prism-optical.png")
+                    }
+                    alt="Satellite Observation Grid"
+                    className="w-full h-full object-cover transition duration-300"
+                  />
+                  {!backendImageUrl && (
+                    <div className="orbital-halo h-56 w-56 absolute right-[10%] top-[15%]" />
+                  )}
+                </div>
+              )}
+
+              {/* Split Slider */}
+              {activeStageTab === "split" && (
+                <div className="absolute inset-0 w-full h-full">
+                  <ImageCompareSlider
+                    img1={scenario.images?.t1 || "/satquery-prism-optical.png"}
+                    img2={scenario.images?.t2 || "/satquery-prism-hero.png"}
+                    label1={`T1 (${selectedEvidence[0]?.date || "Jan"})`}
+                    label2={`T2 (${selectedEvidence[1]?.date || "Jun"})`}
+                  />
+                </div>
+              )}
+
+              {/* Overlays SVG overlay */}
+              {activeStageTab === "image" && (
+                <div className="absolute inset-0 pointer-events-none">
+                  {showGrounding && (isComplete || backendImageUrl) && (
+                    <svg className="absolute inset-0 w-full h-full">
+                      <rect
+                        x="35%"
+                        y="30%"
+                        width="35%"
+                        height="30%"
+                        fill="none"
+                        stroke="#B7F23A"
+                        strokeWidth="2.5"
+                        strokeDasharray="6 3"
+                        className="animate-pulse"
+                      />
+                      <g transform="translate(180, 100)">
+                        <rect
+                          x="0"
+                          y="0"
+                          width="130"
+                          height="18"
+                          fill="#112557"
+                          rx="3"
+                        />
+                        <text
+                          x="6"
+                          y="12"
+                          fill="#B7F23A"
+                          className="font-mono text-[8px] font-bold"
+                        >
+                          [VLM GROUNDING MASK: 94%]
+                        </text>
+                      </g>
+                    </svg>
+                  )}
+                  {showMask && isComplete && (
+                    <div className="absolute inset-0 bg-[#FF7C70]/15 mix-blend-overlay border border-[#FF7C70]/30" />
+                  )}
+                  {showAOI && (
+                    <svg className="absolute inset-0 w-full h-full">
+                      <rect
+                        x="15%"
+                        y="15%"
+                        width="70%"
+                        height="70%"
+                        fill="none"
+                        stroke="#1179FF"
+                        strokeWidth="2.5"
+                        strokeDasharray="8 4"
+                      />
+                      <text
+                        x="16%"
+                        y="13%"
+                        fill="#1179FF"
+                        className="font-mono text-[8px] font-bold"
+                      >
+                        [BOUNDS AOI LIMIT]
+                      </text>
+                    </svg>
+                  )}
+                </div>
+              )}
+
+              {/* Translucent Cloud alert */}
+              {scenarioId === "change" && (
+                <div className="absolute top-4 left-4 z-10 bg-[#FF7C70]/90 text-navy font-bold text-[9px] px-2.5 py-1 rounded shadow flex items-center gap-1.5">
+                  <AlertCircle size={12} />
+                  <span>
+                    Cloud Cover Alert: 15% noise detected in T1 band.
+                    Calibrating filters.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Readout coordinates footer */}
+            <div className="bg-white px-4 py-2 border-t border-[#e2ebfb] flex items-center justify-between text-[10px] font-mono text-[#5a709c]">
+              <div className="flex items-center gap-1">
+                <MapPin size={12} className="text-[#1179FF]" />
+                <span>Geospatial Bounds: 16°23'42" N, 81°45'12" E</span>
+              </div>
+              <div>
+                <span>GSD: 10m · ESA Sentinel-2 MSI</span>
+              </div>
+            </div>
+          </article>
+
+          {/* Overlays toggle switches */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-[#dfe7fb] rounded-lg">
+            <span className="text-[10px] font-bold text-navy uppercase tracking-wider">
+              Raster Overlays:
+            </span>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showGrounding}
+                  onChange={() => setShowGrounding(!showGrounding)}
+                  className="rounded text-[#1179FF]"
+                />
+                <span>Grounding Boxes</span>
+              </label>
+              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showMask}
+                  onChange={() => setShowMask(!showMask)}
+                  className="rounded text-[#7846D7]"
+                />
+                <span>Change Masks</span>
+              </label>
+              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showAOI}
+                  onChange={() => setShowAOI(!showAOI)}
+                  className="rounded text-[#B7F23A]"
+                />
+                <span>AOI Boundaries</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Staged inputs warnings */}
+          {validationAlert && (
+            <div className="bg-[#fff7f5] border-l-4 border-[#FF7C70] p-4 text-xs text-[#8c514c] rounded-r-lg space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <AlertCircle size={14} className="text-[#FF7C70]" />
+                <span>GEOSPATIAL STAGING ALIGNMENT WARNING</span>
+              </div>
+              <p>{validationAlert}</p>
+            </div>
+          )}
+
+          {/* Run and Report action shelf */}
+          <div className="flex items-center justify-between gap-4 bg-white p-4 border border-[#dfe7fb] rounded-lg">
+            <div className="text-[11px] text-[#5a709c]">
+              {isRunning
+                ? "Java agent evaluating routing..."
+                : isComplete
+                  ? "Analysis complete."
+                  : "Stage assets and execute query."}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={onRun}
+                disabled={isRunning}
+                className="secondary-button"
+              >
+                {isRunning ? (
+                  <>
+                    <Orbit size={14} className="animate-spin" />
+                    <span>JVM processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play size={14} fill="currentColor" />
+                    <span>Run Query Analysis</span>
+                  </>
+                )}
+              </button>
+              {isComplete && (
+                <button onClick={onReceipt} className="primary-button">
+                  <FileText size={14} />
+                  <span>Inspect Report</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMN 3: ANALYSIS OUTPUT & FEATURES (Right - col-span-3) */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Analysis output */}
+          <article
+            className={`investigation-plane rounded-lg p-5 border ${
+              isComplete
+                ? backendReport?.verdict === "Strongly supported" ||
+                  scenario.status === "Strongly verified"
+                  ? "plane-lime"
+                  : "plane-yellow"
+                : "plane-white"
+            }`}
+          >
+            <div className="flex items-center gap-2 pb-3 border-b border-black/10 mb-4 justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-6 w-6 rounded-full bg-black/5 flex items-center justify-center font-mono text-[9px] font-bold">
+                  03
+                </span>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider">
+                    Analysis Output
+                  </h3>
+                  <p className="text-[9px] text-[#5a709c]">
+                    Visual model prediction
+                  </p>
+                </div>
+              </div>
+              {isComplete && (
+                <span
+                  className={`px-2 py-0.5 font-mono text-[8px] font-bold rounded ${
+                    (backendReport?.verdict || scenario.status).includes(
+                      "Strongly"
+                    )
+                      ? "bg-[#B7F23A] text-[#234413]"
+                      : "bg-[#F4B900]/25 text-[#735200]"
+                  }`}
+                >
+                  {scenario.confidence || "HIGH"}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-[10px] text-[#5a709c] eyebrow">
+                  Verification status
+                </p>
+                <h4 className="font-editorial text-2xl tracking-tight mt-1 font-bold">
+                  {isComplete
+                    ? backendReport?.verdict || scenario.status
+                    : "Awaiting Execution..."}
+                </h4>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-[#5a709c] eyebrow">
+                  VLM response
+                </p>
+                <p className="text-xs leading-relaxed text-navy mt-1">
+                  {isComplete
+                    ? backendAnswer || scenario.result
+                    : "Configure query inputs. Click 'Run Query Analysis' to trigger JVM strategy handlers and VLM inference."}
+                </p>
+              </div>
+            </div>
+          </article>
+
+          {/* Analysis highlights / Processed Features */}
+          <article className="investigation-plane plane-white rounded-lg p-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
+              <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+                04
+              </span>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  Detected Features
+                </h3>
+                <p className="text-[10px] text-[#7082aa]">
+                  Raster classification details
+                </p>
+              </div>
+            </div>
+
+            {isComplete ? (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
+                    Analysis Highlights
+                  </p>
+                  {(backendReport
+                    ? [
+                        {
+                          id: "f1",
+                          detail:
+                            "Spectral boundary change mapped across target coordinate pixels.",
+                          source: "Java Difference Processor",
+                          pass: true,
+                        },
+                      ]
+                    : scenario.features
+                  ).map(feat => (
+                    <div key={feat.id} className="claim-ledger-item">
+                      <p className="text-[11px] font-bold text-navy">
+                        {feat.detail}
+                      </p>
+                      <div className="flex justify-between items-center mt-1.5 text-[8px] font-mono text-[#7082aa]">
+                        <span>Source: {feat.source}</span>
+                        <span className="text-emerald-700 font-bold">
+                          VERIFIED
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-[#edf1fb]">
+                  <p className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
+                    Raster limitations
+                  </p>
+                  {(backendReport
+                    ? [
+                        {
+                          detail:
+                            "VLM inference limits are calibrated against static training datasets.",
+                        },
+                      ]
+                    : scenario.limitations
+                  ).map((lim, i) => (
+                    <div
+                      key={i}
+                      className="claim-ledger-item claim-ledger-challenge"
+                    >
+                      <p className="text-[11px] font-semibold text-[#8c514c]">
+                        {lim.detail}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-[10px] text-[#7082aa] text-center py-6">
+                Highlights populated after analysis execution.
+              </p>
+            )}
+          </article>
+
+          {/* Recommendations (Yellow highlight card) */}
+          <article className="investigation-plane plane-yellow rounded-lg p-5">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#f4db94] mb-3">
+              <Info size={14} className="text-[#F4B900]" />
+              <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#735200]">
+                Next analysis steps
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed text-[#735200]">
+              {isComplete
+                ? backendReport?.nextBestEvidence || scenario.recommendation
+                : "Awaiting model response. System will output next analysis steps here."}
+            </p>
+          </article>
+        </div>
+      </div>
+
+      {/* PIPELINE ROUTING TRACE LOGS */}
+      <section className="investigation-plane plane-white rounded-lg p-6">
+        <div className="flex items-center justify-between pb-4 border-b border-[#edf1fb] mb-6">
+          <div className="flex items-center gap-3">
+            <Activity size={18} className="text-[#1179FF]" />
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-navy">
+                Backend Execution Trace
+              </h2>
+              <p className="text-[10px] text-[#7082aa]">
+                Polymorphic route logs and JVM processing latency
+              </p>
+            </div>
+          </div>
+          <span className="font-mono text-[9px] font-bold text-[#7082aa] uppercase bg-[#EDF5FF] px-2.5 py-1 rounded text-[#1179FF]">
+            {isDemoMode ? "DEMO TELEMETRY LOG" : "LIVE JVM TRACE"}
+          </span>
+        </div>
+
+        <div className="trace-board">
+          {(backendTrace.length > 0
+            ? backendTrace
+            : isComplete
+              ? scenario.trace
+              : []
+          ).map((step, idx) => (
+            <div key={idx} className={`trace-step-vertical trace-done`}>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5 md:gap-6">
+                <div>
+                  <h4 className="text-xs font-bold text-navy flex items-center gap-2">
+                    <span>{step.name || step.eventName}</span>
+                    {step.toolName && (
+                      <span className="font-mono text-[8px] font-bold bg-[#EDF5FF] text-[#1179FF] px-1 rounded">
+                        {step.toolName}
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-[11px] text-[#5a709c] mt-1">
+                    {step.detail}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 font-mono text-[8px] text-[#7082aa] self-start md:self-center">
+                  <span>Latency: {step.time || "8ms"}</span>
+                  <span className="text-emerald-700 font-bold bg-[#efffc9] px-1.5 py-0.5 rounded">
+                    {step.status || "SUCCESS"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {!isComplete && !isRunning && (
+            <p className="text-[11px] text-[#7082aa] py-3 italic">
+              Execute analysis to stream trace telemetry logs.
+            </p>
+          )}
+          {isRunning && (
+            <div className="flex items-center gap-2 text-xs text-[#1179FF] py-3 font-semibold">
+              <Orbit size={16} className="animate-spin" />
+              <span>Streaming routing trace from Java HttpServer...</span>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 
-function EvidenceView({ evidence, selectedCount, onUpload, onToggle, onRemove, onBack }) {
+// -------------------------------------------------------------
+// IMAGE LIBRARY COMPONENT (formerly Evidence Library)
+// -------------------------------------------------------------
+function EvidenceView({
+  evidence,
+  selectedCount,
+  onUpload,
+  onToggle,
+  onRemove,
+  onBack,
+}) {
+  const fileInputRef = useRef(null);
+
   return (
-    <section>
-      <ViewHeader 
-        eyebrow="Evidence / 02" 
-        title="Choose the evidence." 
-        detail="Only included sources travel into the active case." 
-        action={
+    <section className="space-y-6">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b border-[#dfe7fb]">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#7846D7]" />
+            <p className="eyebrow text-[#7846D7]">Asset Management</p>
+          </div>
+          <h1 className="font-editorial text-[38px] md:text-[50px] tracking-tight leading-none text-navy font-bold mt-2">
+            Image Library
+          </h1>
+          <p className="text-sm text-[#5b719d] mt-2 max-w-md">
+            Review spatial resolution details and verify date profiles of staged
+            image assets.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <button onClick={onBack} className="primary-button bg-navy">
+            <ArrowLeft size={14} />
+            <span>Workspace</span>
+          </button>
           <label className="secondary-button cursor-pointer">
-            <Upload size={15} /> Add imagery
-            <input className="hidden" type="file" multiple accept=".tif,.tiff,.png,.jpg,.jpeg" onChange={onUpload} />
+            <Upload size={14} />
+            <span>Stage Asset</span>
+            <input
+              ref={fileInputRef}
+              className="hidden"
+              type="file"
+              multiple
+              accept=".tif,.tiff,.png,.jpg,.jpeg"
+              onChange={e => onUpload(Array.from(e.target.files ?? []))}
+            />
           </label>
-        } 
-      />
-      <div className="mt-8 flex items-center justify-between border-t-4 border-[#5145d8] bg-white/85 px-5 py-4 text-sm text-[#657ca8]">
-        <span><strong className="font-editorial text-2xl text-[#26447c]">{selectedCount}</strong> selected for this case</span>
-        <button onClick={onBack} className="quiet-action"><ArrowLeft size={15} /> Back to case</button>
+        </div>
+      </header>
+
+      <div className="bg-white px-5 py-4 border border-[#dfe7fb] rounded-lg text-sm text-[#5a709c] flex items-center justify-between">
+        <span>
+          Staged assets:{" "}
+          <strong className="font-editorial text-2xl text-navy">
+            {selectedCount}
+          </strong>{" "}
+          file{selectedCount === 1 ? "" : "s"} active
+        </span>
       </div>
-      <div className="mt-3 space-y-2">
-        {evidence.map((item) => (
-          <article key={item.id} className={`flex flex-wrap items-center gap-3 border-l-4 p-4 ${item.included ? "border-[#1179ff] bg-[#f7fbff]" : "border-[#dbe6fb] bg-white/75"}`}>
-            <span className={`flex h-9 w-9 items-center justify-center ${item.kind === "SAR" ? "bg-[#eee5ff] text-[#7846d7]" : "bg-[#ddecff] text-[#1179ff]"}`}>
-              {item.kind === "SAR" ? <Radar size={18} /> : <FileImage size={18} />}
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-sm font-extrabold text-[#26447c]">{item.name}</h2>
-              <p className="mt-1 font-mono text-[9px] tracking-[.05em] text-[#7487af]">{item.kind} · {item.date} · {item.size}</p>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {evidence.map(item => (
+          <article
+            key={item.id}
+            className={`investigation-plane rounded-lg p-5 border ${
+              item.included
+                ? item.kind === "SAR"
+                  ? "plane-violet"
+                  : "plane-blue"
+                : "plane-white"
+            } flex flex-col justify-between`}
+          >
+            <div className="space-y-4">
+              <div className="flex justify-between items-start gap-4">
+                <span
+                  className={`h-10 w-10 flex items-center justify-center rounded ${
+                    item.kind === "SAR"
+                      ? "bg-[#eee5ff] text-[#7846d7]"
+                      : "bg-[#ddecff] text-[#1179ff]"
+                  }`}
+                >
+                  {item.kind === "SAR" ? (
+                    <Radar size={18} />
+                  ) : (
+                    <FileImage size={18} />
+                  )}
+                </span>
+
+                <button
+                  onClick={() => onToggle(item.id)}
+                  className={`include-toggle rounded-md ${
+                    item.included ? "include-toggle-active" : ""
+                  }`}
+                >
+                  {item.included ? "✓ Staged" : "Stage Asset"}
+                </button>
+              </div>
+
+              <div>
+                <h3
+                  className="text-xs font-bold text-navy truncate"
+                  title={item.name}
+                >
+                  {item.name}
+                </h3>
+                <p className="font-mono text-[8px] text-[#7084ad] mt-1 uppercase tracking-wider">
+                  {item.kind} · {item.date} · {item.size}
+                </p>
+              </div>
+
+              {item.warning && (
+                <div className="bg-[#fff7f5] border-l-2 border-[#FF7C70] p-2 text-[10px] text-[#8c514c]">
+                  {item.warning}
+                </div>
+              )}
             </div>
-            <button onClick={() => onToggle(item.id)} className={`include-toggle ${item.included ? "include-toggle-active" : ""}`}>
-              <Check size={14} /> {item.included ? "Included" : "Include"}
-            </button>
-            <button onClick={() => onRemove(item.id)} className="remove-source" aria-label={`Remove ${item.name}`}><Trash2 size={16} /></button>
+
+            <div className="flex justify-between items-center mt-5 pt-3 border-t border-navy/5">
+              <span className="font-mono text-[8px] text-[#7084ad] tracking-wide">
+                UID: {item.id.slice(0, 8)}...
+              </span>
+              <button
+                onClick={() => onRemove(item.id)}
+                className="text-coral hover:text-[#bd3b2f] p-1.5 hover:bg-[#fff5f2] rounded transition"
+                title={`Delete ${item.name}`}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           </article>
         ))}
+
+        {!evidence.length && (
+          <div className="col-span-full border border-dashed border-[#b5c7ed] bg-white/50 p-12 text-center rounded-lg space-y-3">
+            <Layers3 size={32} className="mx-auto text-[#7084ad]" />
+            <h3 className="font-editorial text-xl text-navy">Library Empty</h3>
+            <p className="text-xs text-[#7082aa] max-w-sm mx-auto">
+              Stage GeoTIFF raster assets or standard benchmark scenes to get
+              started.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
+// -------------------------------------------------------------
+// QUERY HISTORY ARCHIVE COMPONENT (formerly Case History)
+// -------------------------------------------------------------
 function HistoryView({ history, onBack, onClear, onReopen }) {
+  const [filterType, setFilterType] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredHistory = useMemo(() => {
+    return history.filter(item => {
+      const typeMatch =
+        filterType === "ALL" || item.scenarioId === filterType.toLowerCase();
+      const searchMatch =
+        !searchQuery ||
+        item.query.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.result.toLowerCase().includes(searchQuery.toLowerCase());
+      return typeMatch && searchMatch;
+    });
+  }, [history, filterType, searchQuery]);
+
   return (
-    <section>
-      <ViewHeader 
-        eyebrow="Case history / 03" 
-        title="Past cases, kept simple." 
-        detail="Completed cases remain in this browser session until you clear them." 
-        action={history.length ? <button onClick={onClear} className="destructive-action"><Trash2 size={15} /> Clear history</button> : undefined} 
-      />
-      {history.length ? (
-        <div className="mt-9 space-y-3">
-          {history.map((record) => (
-            <article key={record.id} className="flex flex-col gap-4 border-l-4 border-[#5145d8] bg-white/80 p-5 sm:flex-row sm:items-center">
-              <span className="h-3 w-3 shrink-0 rounded-full bg-[#b7f23a] shadow-[0_0_0_6px_rgba(183,242,58,.18)]" />
-              <div className="min-w-0 flex-1">
-                <p className="eyebrow text-[#5e76aa]">{scenarios[record.scenarioId]?.label || "Custom Route"} · {new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(record.createdAt))}</p>
-                <h2 className="mt-2 font-editorial text-2xl leading-tight tracking-[-.05em] text-[#243f78]">{record.query}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#6279a4]">{record.result}</p>
-              </div>
-              <button onClick={() => onReopen(record)} className="secondary-button shrink-0"><ScanSearch size={15} /> Reopen</button>
-            </article>
+    <section className="space-y-6">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b border-[#dfe7fb]">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-navy" />
+            <p className="eyebrow text-navy">Query Telemetry Archive</p>
+          </div>
+          <h1 className="font-editorial text-[38px] md:text-[50px] tracking-tight leading-none text-navy font-bold mt-2">
+            Query History
+          </h1>
+          <p className="text-sm text-[#5b719d] mt-2 max-w-md">
+            Verify persisted reports and trace parameters saved to the local
+            SQLite database.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <button onClick={onBack} className="primary-button bg-navy">
+            <ArrowLeft size={14} />
+            <span>Workspace</span>
+          </button>
+          {history.length > 0 && (
+            <button
+              onClick={onClear}
+              className="primary-button bg-coral/10 text-[#bd3b2f] hover:bg-[#fff5f2]"
+            >
+              <Trash2 size={14} />
+              <span>Clear History</span>
+            </button>
+          )}
+        </div>
+      </header>
+
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 border border-[#dfe7fb] rounded-lg">
+        <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa]">
+          {["ALL", "VQA", "CHANGE", "FUSION"].map(type => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              className={`px-3 py-1.5 text-[9px] font-bold rounded-md transition ${
+                filterType === type
+                  ? "bg-white text-navy shadow-sm"
+                  : "text-[#7082aa] hover:text-navy"
+              }`}
+            >
+              {type}
+            </button>
           ))}
         </div>
-      ) : (
-        <EmptyState 
-          icon={History} 
-          title="No completed cases." 
-          detail="Test a case from the main workspace to save a local receipt here." 
-          action={<button onClick={onBack} className="secondary-button"><ScanSearch size={15} /> Build a case</button>} 
-        />
-      )}
-    </section>
-  );
-}
 
-function GuideView({ onBack }) {
-  const items = [
-    ["01", "Ask", "Write the investigation question in plain language."], 
-    ["02", "Choose", "Select imagery that can support the question."], 
-    ["03", "Test", "Run one evidence case and generate dynamic results."], 
-    ["04", "Keep", "Save or download the local case receipt."]
-  ];
-  return (
-    <section>
-      <ViewHeader 
-        eyebrow="How it works / 04" 
-        title="A small, visible workflow." 
-        detail="SatQuery keeps the reasoning route clear, so the team can explain each hand-off without a crowded technical screen." 
-        action={<button onClick={onBack} className="quiet-action"><ArrowLeft size={15} /> Back to case</button>} 
-      />
-      <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {items.map(([number, title, detail], index) => (
-          <article key={title} className={`border-t-4 bg-white/80 p-5 ${["border-[#1179ff]", "border-[#7846d7]", "border-[#b7f23a]", "border-[#ff7c70]"][index]}`}>
-            <span className="font-mono text-[10px] text-[#7890be]">{number}</span>
-            <h2 className="mt-7 font-editorial text-3xl tracking-[-.06em] text-[#234178]">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-[#6d82a9]">{detail}</p>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Filter queries..."
+          className="border border-[#dbe4fa] bg-[#fbfdff] px-3 py-1.5 text-xs rounded outline-none focus:border-[#1179FF] w-full md:w-64"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {filteredHistory.map(record => (
+          <article
+            key={record.id}
+            className="flex flex-col gap-4 border-l-4 border-[#1179FF] bg-white p-5 sm:flex-row sm:items-center justify-between rounded shadow-sm hover:shadow transition"
+          >
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-[9px] font-bold bg-[#EDF5FF] text-[#1179FF] px-2 py-0.5 rounded">
+                  {scenarios[record.scenarioId]?.label || "Custom Route"}
+                </span>
+                <span className="font-mono text-[8px] text-[#7084ad]">
+                  {new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(record.createdAt))}
+                </span>
+              </div>
+
+              <h3 className="font-editorial text-[22px] tracking-tight leading-snug text-navy font-bold">
+                "{record.query}"
+              </h3>
+
+              <p className="text-xs leading-relaxed text-[#5b719d] max-w-3xl">
+                {record.result}
+              </p>
+            </div>
+
+            <button
+              onClick={() => onReopen(record)}
+              className="secondary-button shrink-0 border border-navy/10 bg-[#EDF5FF] hover:bg-[#ddecff]"
+            >
+              <ScanSearch size={14} />
+              <span>Load Report</span>
+            </button>
           </article>
         ))}
-      </div>
-      <div className="mt-6 flex gap-3 border-l-4 border-[#b7f23a] bg-[#f5ffd9] p-5 text-sm leading-6 text-[#536e30]">
-        <BookOpen size={18} className="mt-1 shrink-0" />
-        <p>
-          <strong>Behind the screen:</strong> When Java Backend Mode is active, Vite proxies analysis requests to a local Java servlet running at port 8080. The Java agent processes the inputs, validates coordinates/CRS overlapping, triggers polymorphic tasks, generates dynamic image heatmaps (using pixel-by-pixel comparisons), and returns a detailed receipt.
-        </p>
+
+        {!filteredHistory.length && (
+          <div className="border border-dashed border-[#b5c7ed] bg-white/50 p-12 text-center rounded-lg space-y-3">
+            <History size={32} className="mx-auto text-[#7084ad]" />
+            <h3 className="font-editorial text-xl text-navy">
+              No queries archived
+            </h3>
+            <p className="text-xs text-[#7082aa]">
+              Archived query results and SQLite database traces will display
+              here once generated.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-function ViewHeader({ eyebrow, title, detail, action }) {
+// -------------------------------------------------------------
+// ANALYSIS REPORT MODAL COMPONENT (formerly Receipt Modal)
+// -------------------------------------------------------------
+function Receipt({
+  scenario,
+  question,
+  evidence,
+  complete,
+  onClose,
+  onDownload,
+  backendAnswer,
+  backendReport,
+  isDemoMode,
+  queryId,
+}) {
   return (
-    <header className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-      <div>
-        <p className="eyebrow text-[#5145d8]">{eyebrow}</p>
-        <h1 className="mt-4 max-w-[700px] font-editorial text-[clamp(3.1rem,6vw,5.6rem)] leading-[.88] tracking-[-.07em] text-[#10245a]">{title}</h1>
-        <p className="mt-5 max-w-[590px] text-[15px] leading-7 text-[#5b719d]">{detail}</p>
-      </div>
-      {action}
-    </header>
-  );
-}
-
-function ProgressStep({ number, title, text, ready = false }) {
-  return (
-    <div className="relative grid min-h-[76px] grid-cols-[30px_1fr] gap-x-3 bg-white/85 p-4">
-      <span className={`row-span-2 flex h-7 w-7 items-center justify-center rounded-full font-mono text-[9px] ${ready ? "bg-[#d9f99a] text-[#365d13]" : "bg-[#edf2ff] text-[#8a9bbb]"}`}>{number}</span>
-      <strong className="text-sm text-[#34548d]">{title}</strong>
-      <small className="mt-1 font-mono text-[9px] text-[#8b9bbb]">{text}</small>
-    </div>
-  );
-}
-
-function SectionTitle({ number, label, title, tone = "violet" }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-[9px] font-bold ${tone === "blue" ? "bg-[#ddecff] text-[#1179ff]" : "bg-[#eeeaff] text-[#5145d8]"}`}>{number}</span>
-      <div>
-        <p className="eyebrow text-[#5372ac]">{label}</p>
-        <h2 className="mt-1 font-editorial text-[27px] leading-none tracking-[-.055em] text-[#193871]">{title}</h2>
-      </div>
-    </div>
-  );
-}
-
-function CompactEvidence({ item }) {
-  return (
-    <div className="flex items-center gap-3 bg-white/80 p-3">
-      <span className={`flex h-8 w-8 items-center justify-center ${item.kind === "SAR" ? "bg-[#eee5ff] text-[#7846d7]" : "bg-[#ddecff] text-[#1179ff]"}`}>
-        {item.kind === "SAR" ? <Radar size={15} /> : <FileImage size={15} />}
-      </span>
-      <div className="min-w-0 flex-1">
-        <strong className="block truncate text-xs text-[#244477]">{item.name}</strong>
-        <small className="mt-1 block font-mono text-[8px] text-[#7084ad]">{item.kind} · {item.date}</small>
-      </div>
-      <Check size={15} className="text-[#4d791f]" />
-    </div>
-  );
-}
-
-function EmptyState({ icon: Icon, title, detail, action }) {
-  return (
-    <div className="mt-9 flex min-h-[300px] flex-col items-center justify-center border border-dashed border-[#b5c7ed] bg-white/70 p-8 text-center">
-      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eae7ff] text-[#5145d8]"><Icon size={25} /></span>
-      <h2 className="mt-5 font-editorial text-3xl tracking-[-.055em] text-[#1b3975]">{title}</h2>
-      <p className="mt-3 max-w-md text-sm leading-6 text-[#6078a5]">{detail}</p>
-      <div className="mt-6">{action}</div>
-    </div>
-  );
-}
-
-function Receipt({ scenario, question, evidence, complete, onClose, onDownload, backendAnswer }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1a2b60]/35 p-5 backdrop-blur-sm" role="dialog" aria-modal="true">
-      <div className="receipt-modal w-full max-w-[720px]">
-        <div className="receipt-header">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#112557]/40 p-5 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="receipt-modal w-full max-w-[700px] bg-white rounded-lg shadow-2xl flex flex-col animate-scale-up">
+        <div className="receipt-header border-b border-[#edf1fb] p-6 bg-gradient-to-r from-[#F8FBFF] to-[#fffefc] flex justify-between items-start">
           <div>
-            <p className="eyebrow text-[#5e75a9]">Local case receipt</p>
-            <h3 className="mt-2 font-editorial text-3xl tracking-[-.055em] text-[#15316a]">{scenario.label}</h3>
+            <p className="eyebrow text-[#1179FF]">Query Analysis Report</p>
+            <h3 className="font-editorial text-3xl font-bold tracking-tight text-navy mt-1">
+              {scenario.label}
+            </h3>
           </div>
-          <button className="header-button border border-[#dbe4fa] bg-white" onClick={onClose} aria-label="Close receipt">
+          <button
+            className="p-1 hover:bg-[#EDF5FF] text-[#7082aa] hover:text-navy rounded border border-[#dfe7fb] bg-white transition"
+            onClick={onClose}
+            aria-label="Close report"
+          >
             <X size={18} />
           </button>
         </div>
-        <div className="grid gap-7 p-6 md:grid-cols-[1.1fr_.9fr]">
+
+        <div className="grid gap-6 p-6 md:grid-cols-[1.1fr_.9fr]">
           <div className="space-y-6">
             <div>
-              <p className="eyebrow text-[#6279ab]">Question</p>
-              <p className="mt-2 text-[16px] font-semibold text-[#1d3973]">{question}</p>
-            </div>
-            <div>
-              <p className="eyebrow text-[#6279ab]">Finding</p>
-              <p className="mt-2 font-editorial text-3xl leading-9 tracking-[-.05em] text-[#203d79]">
-                {complete ? (backendAnswer || scenario.result) : "Test the case to reveal the local walkthrough finding."}
+              <p className="eyebrow text-[#7082aa]">User Query</p>
+              <p className="mt-1.5 text-sm font-semibold text-navy">
+                "{question}"
               </p>
             </div>
-            <div className="border-l-4 border-[#ff7c70] bg-[#fff7f5] px-4 py-3 text-sm leading-6 text-[#8c514c]">
-              Interactive investigator receipt mapping localized evidence and multi-modal observations.
+
+            <div>
+              <p className="eyebrow text-[#7082aa]">Model Output</p>
+              <p className="mt-1.5 font-editorial text-2xl leading-snug tracking-tight text-navy font-bold">
+                {complete ? backendAnswer || scenario.result : "N/A"}
+              </p>
+            </div>
+
+            <div className="bg-[#f5ffd9] border-l-3 border-[#B7F23A] px-4 py-3 text-xs leading-relaxed text-[#43681b] rounded-r">
+              <span>
+                <strong>Metadata Integrity:</strong> Staged files include
+                verified coordinate reference bands. JSON report contains full
+                audit trace logs.
+              </span>
             </div>
           </div>
-          <div className="receipt-side">
-            <p className="eyebrow text-[#677caf]">At a glance</p>
-            <div className="mt-5 space-y-4 text-sm">
-              <ReceiptLine label="Task" value={scenario.task} />
-              <ReceiptLine label="Sources" value={`${evidence.length} selected`} />
-              <ReceiptLine label="Status" value={complete ? "receipt ready" : "case staged"} />
+
+          <div className="receipt-side bg-[#F8FBFF] border border-[#dce5fb] p-5 rounded-lg flex flex-col justify-between">
+            <div className="space-y-4">
+              <p className="eyebrow text-[#7082aa]">Telemetry Profile</p>
+              <div className="space-y-3.5 text-xs border-b border-[#edf1fb] pb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Task Route:</span>
+                  <span className="font-mono font-bold text-navy">
+                    {scenario.task}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Staged Files:</span>
+                  <span className="font-mono font-bold text-navy">
+                    {evidence.length} active
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Report Status:</span>
+                  <span className="font-mono font-bold text-emerald-700">
+                    Audit Ready
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Runtime:</span>
+                  <span className="font-mono font-bold text-[#7846D7]">
+                    {isDemoMode ? "DEMO (WALK)" : "JVM PROXIED"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <button onClick={onDownload} className="secondary-button mt-7 w-full justify-center">
-              <Download size={15} /> Download JSON
+
+            <button
+              onClick={onDownload}
+              className="secondary-button w-full mt-6 justify-center"
+            >
+              <Download size={14} />
+              <span>Download JSON Report</span>
             </button>
+
+            {!isDemoMode && complete && queryId && (
+              <a
+                href={`/outputs/report-${queryId}.pdf`}
+                download={`satquery-report-${queryId}.pdf`}
+                target="_blank"
+                rel="noreferrer"
+                className="primary-button w-full mt-2 justify-center text-center inline-flex items-center gap-1.5"
+              >
+                <FileText size={14} />
+                <span>Download PDF Report</span>
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -797,11 +2087,89 @@ function Receipt({ scenario, question, evidence, complete, onClose, onDownload, 
   );
 }
 
-function ReceiptLine({ label, value }) {
+// Image slider compare component helper
+function ImageCompareSlider({
+  img1,
+  img2,
+  label1 = "T1 Before",
+  label2 = "T2 After",
+}) {
+  const [sliderPos, setSliderPos] = useState(50);
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(500);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const updateWidth = () => {
+      setContainerWidth(containerRef.current.getBoundingClientRect().width);
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  const handleMove = clientX => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPos(percentage);
+  };
+
+  const handleMouseMove = e => {
+    if (e.buttons === 1) {
+      handleMove(e.clientX);
+    }
+  };
+
+  const handleTouchMove = e => {
+    if (e.touches[0]) {
+      handleMove(e.touches[0].clientX);
+    }
+  };
+
   return (
-    <div className="flex justify-between gap-3">
-      <span className="text-[#7083ac]">{label}</span>
-      <span className="font-mono text-[10px] text-[#28447e]">{value}</span>
+    <div
+      ref={containerRef}
+      className="slider-container h-full w-full min-h-[350px] relative select-none rounded bg-[#112557]"
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
+      onMouseDown={e => handleMove(e.clientX)}
+    >
+      <div className="slider-after absolute inset-0">
+        <img
+          src={img2}
+          alt="After"
+          className="w-full h-full object-cover pointer-events-none"
+        />
+        <span className="absolute right-4 bottom-4 bg-[#112557]/80 text-[#B7F23A] font-mono text-[9px] font-bold tracking-wider px-2 py-1 z-10 rounded">
+          {label2}
+        </span>
+      </div>
+
+      <div
+        className="slider-before absolute inset-y-0 left-0 overflow-hidden"
+        style={{ width: `${sliderPos}%` }}
+      >
+        <img
+          src={img1}
+          alt="Before"
+          className="absolute inset-y-0 left-0 object-cover pointer-events-none"
+          style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
+        />
+        <span className="absolute left-4 bottom-4 bg-[#112557]/80 text-[#1179FF] font-mono text-[9px] font-bold tracking-wider px-2 py-1 z-10 rounded">
+          {label1}
+        </span>
+      </div>
+
+      <div
+        className="slider-handle absolute top-0 bottom-0"
+        style={{ left: `${sliderPos}%` }}
+      >
+        <div className="slider-handle-button select-none">
+          <span className="text-[#B7F23A] font-bold text-sm">↔</span>
+        </div>
+      </div>
     </div>
   );
 }

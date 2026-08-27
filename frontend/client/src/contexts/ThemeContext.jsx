@@ -3,7 +3,7 @@ const ThemeContext = createContext(void 0);
 export function ThemeProvider({
   children,
   defaultTheme = "light",
-  switchable = false
+  switchable = false,
 }) {
   const [theme, setTheme] = useState(() => {
     if (switchable) {
@@ -23,12 +23,16 @@ export function ThemeProvider({
       localStorage.setItem("theme", theme);
     }
   }, [theme, switchable]);
-  const toggleTheme = switchable ? () => {
-    setTheme((prev) => prev === "light" ? "dark" : "light");
-  } : void 0;
-  return <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+  const toggleTheme = switchable
+    ? () => {
+        setTheme(prev => (prev === "light" ? "dark" : "light"));
+      }
+    : void 0;
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
       {children}
-    </ThemeContext.Provider>;
+    </ThemeContext.Provider>
+  );
 }
 export function useTheme() {
   const context = useContext(ThemeContext);

@@ -63,6 +63,9 @@ public class AgentController {
             failedResult.setQueryId(request.getQueryId());
             failedResult.setTaskType(taskType);
             failedResult.setStatus("VALIDATION_FAILED");
+            failedResult.setMode("REAL_MODE");
+            failedResult.setReportUrl("/api/report/" + failedResult.getQueryId());
+            failedResult.setEvidenceSummary("No dynamic features extracted.");
             
             String answerText = "Validation Error: " + errorMsg;
             if (validationResult.getRepairGuidance() != null) {
@@ -124,6 +127,9 @@ public class AgentController {
             failedResult.setQueryId(request.getQueryId());
             failedResult.setTaskType(taskType);
             failedResult.setStatus("TOOL_VALIDATION_FAILED");
+            failedResult.setMode("REAL_MODE");
+            failedResult.setReportUrl("/api/report/" + failedResult.getQueryId());
+            failedResult.setEvidenceSummary("No dynamic features extracted.");
             failedResult.setAnswer("Tool Validation Error: " + errorMsg);
             failedResult.setTrace(TraceLogger.getThreadTrace());
             failedResult.setTraceRecord(audit);
@@ -185,6 +191,14 @@ public class AgentController {
 
             InvestigatorReport report = new InvestigatorReport(hypothesis, plan, challenge, verdict, nextEvidence);
             result.setInvestigatorReport(report);
+        }
+
+        result.setMode("REAL_MODE");
+        result.setReportUrl("/api/report/" + result.getQueryId());
+        if (result.getEvidence() != null && !result.getEvidence().isEmpty()) {
+            result.setEvidenceSummary(result.getEvidence().get(0).getDescription());
+        } else {
+            result.setEvidenceSummary("No dynamic features extracted.");
         }
 
         return result;

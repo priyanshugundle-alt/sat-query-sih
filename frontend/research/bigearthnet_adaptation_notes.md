@@ -7,5 +7,6 @@
 - The final Java system should treat the trained component as a local model service behind `HttpModelClient`; Java remains responsible for routing, validation, trace, and reports.
 
 Sources:
+
 - https://bigearth.net/
 - https://huggingface.co/BIFOLD-BigEarthNetv2-0

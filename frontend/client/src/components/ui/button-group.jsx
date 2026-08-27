@@ -7,60 +7,60 @@ const buttonGroupVariants = cva(
   {
     variants: {
       orientation: {
-        horizontal: "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
-        vertical: "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none"
-      }
+        horizontal:
+          "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
+        vertical:
+          "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none",
+      },
     },
     defaultVariants: {
-      orientation: "horizontal"
-    }
+      orientation: "horizontal",
+    },
   }
 );
-function ButtonGroup({
-  className,
-  orientation,
-  ...props
-}) {
-  return <div
-    role="group"
-    data-slot="button-group"
-    data-orientation={orientation}
-    className={cn(buttonGroupVariants({ orientation }), className)}
-    {...props}
-  />;
+function ButtonGroup({ className, orientation, ...props }) {
+  return (
+    <div
+      role="group"
+      data-slot="button-group"
+      data-orientation={orientation}
+      className={cn(buttonGroupVariants({ orientation }), className)}
+      {...props}
+    />
+  );
 }
-function ButtonGroupText({
-  className,
-  asChild = false,
-  ...props
-}) {
+function ButtonGroupText({ className, asChild = false, ...props }) {
   const Comp = asChild ? Slot : "div";
-  return <Comp
-    className={cn(
-      "bg-muted flex items-center gap-2 rounded-md border px-4 text-sm font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-      className
-    )}
-    {...props}
-  />;
+  return (
+    <Comp
+      className={cn(
+        "bg-muted flex items-center gap-2 rounded-md border px-4 text-sm font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+        className
+      )}
+      {...props}
+    />
+  );
 }
 function ButtonGroupSeparator({
   className,
   orientation = "vertical",
   ...props
 }) {
-  return <Separator
-    data-slot="button-group-separator"
-    orientation={orientation}
-    className={cn(
-      "bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
-      className
-    )}
-    {...props}
-  />;
+  return (
+    <Separator
+      data-slot="button-group-separator"
+      orientation={orientation}
+      className={cn(
+        "bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
+        className
+      )}
+      {...props}
+    />
+  );
 }
 export {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
-  buttonGroupVariants
+  buttonGroupVariants,
 };

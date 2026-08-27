@@ -15,6 +15,9 @@ public class TaskResult {
     private List<TraceEvent> trace;
     private TraceRecord traceRecord;
     private InvestigatorReport investigatorReport;
+    private String mode;
+    private String evidenceSummary;
+    private String reportUrl;
 
     public TaskResult() {}
 
@@ -84,5 +87,14 @@ public class TaskResult {
 
     public InvestigatorReport getInvestigatorReport() { return investigatorReport; }
     public void setInvestigatorReport(InvestigatorReport investigatorReport) { this.investigatorReport = investigatorReport; }
+
+    public String getMode() { return mode; }
+    public void setMode(String mode) { this.mode = mode; }
+
+    public String getEvidenceSummary() { return evidenceSummary; }
+    public void setEvidenceSummary(String evidenceSummary) { this.evidenceSummary = evidenceSummary; }
+
+    public String getReportUrl() { return reportUrl; }
+    public void setReportUrl(String reportUrl) { this.reportUrl = reportUrl; }
 }
 

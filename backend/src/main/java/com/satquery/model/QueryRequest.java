@@ -26,6 +26,10 @@ public class QueryRequest {
     public String getQueryText() { return queryText; }
     public void setQueryText(String queryText) { this.queryText = queryText; }
 
+    // Support 'question' alias from React frontend
+    public String getQuestion() { return queryText; }
+    public void setQuestion(String question) { this.queryText = question; }
+
     public List<String> getImageIds() { return imageIds; }
     public void setImageIds(List<String> imageIds) { this.imageIds = imageIds; }
 
@@ -33,7 +37,20 @@ public class QueryRequest {
     public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
 
     public com.satquery.benchmark.DatasetContext getDatasetContext() { return datasetContext; }
-    public void setDatasetContext(com.satquery.benchmark.DatasetContext datasetContext) { this.datasetContext = datasetContext; }
+    
+    public void setDatasetContext(com.satquery.benchmark.DatasetContext datasetContext) { 
+        this.datasetContext = datasetContext; 
+    }
+
+    // Support string-based datasetContext from React frontend
+    public void setDatasetContext(String datasetStr) {
+        try {
+            com.satquery.benchmark.BenchmarkDataset db = com.satquery.benchmark.BenchmarkDataset.valueOf(datasetStr.toUpperCase());
+            this.datasetContext = new com.satquery.benchmark.DatasetContext(db, false);
+        } catch (Exception e) {
+            this.datasetContext = new com.satquery.benchmark.DatasetContext(com.satquery.benchmark.BenchmarkDataset.NORMAL_SATELLITE, false);
+        }
+    }
 
     public Map<String, Object> getParameters() { return parameters; }
     public void setParameters(Map<String, Object> parameters) { this.parameters = parameters; }
