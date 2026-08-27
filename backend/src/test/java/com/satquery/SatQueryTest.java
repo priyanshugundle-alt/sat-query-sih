@@ -3,7 +3,6 @@ package com.satquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.satquery.client.HttpModelClient;
 import com.satquery.client.MockModelClient;
-import com.satquery.client.ModelResponse;
 import com.satquery.controller.AgentController;
 import com.satquery.handler.HandlerFactory;
 import com.satquery.handler.SatelliteTask;

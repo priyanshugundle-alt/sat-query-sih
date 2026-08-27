@@ -3,7 +3,6 @@ package com.satquery.observer;
 import com.satquery.model.TraceEvent;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class TraceLogger {

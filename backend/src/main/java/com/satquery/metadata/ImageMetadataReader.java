@@ -72,7 +72,6 @@ public class ImageMetadataReader {
 
                     int tag = buf.getShort(0) & 0xFFFF;
                     int type = buf.getShort(2) & 0xFFFF;
-                    long count = buf.getInt(4) & 0xFFFFFFFFL;
                     long valOffset = buf.getInt(8) & 0xFFFFFFFFL;
 
                     // Tag 256: ImageWidth

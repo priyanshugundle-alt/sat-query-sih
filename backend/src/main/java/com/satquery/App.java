@@ -325,7 +325,7 @@ public class App {
             try {
                 InputStream is = exchange.getRequestBody();
                 String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                Map<String, Object> req = objectMapper.readValue(body, Map.class);
+                Map<String, Object> req = objectMapper.readValue(body, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
 
                 String datasetStr = req.get("dataset") != null ? req.get("dataset").toString().toUpperCase() : "VRSBENCH";
                 boolean evalMode = req.get("evaluationMode") != null && (boolean) req.get("evaluationMode");

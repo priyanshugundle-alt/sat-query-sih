@@ -1,8 +1,6 @@
 package com.satquery.handler;
 
-import com.satquery.model.Evidence;
 import com.satquery.model.TaskResult;
-import com.satquery.model.TraceEvent;
 import java.io.File;
 import java.io.FileWriter;
 

@@ -16,7 +16,7 @@ public class FusionStrategy implements TaskStrategy {
         TraceLogger.logEvent("STRATEGY_START", "Executing Optical-SAR Sensor Fusion Strategy", "FusionStrategy", "IN_PROGRESS");
         try {
             TraceLogger.logEvent("MODEL_CALL", "Calling remote-sensing engine for Optical-SAR Fusion", "ModelClient", "IN_PROGRESS");
-            ModelResponse response = modelClient.run(TaskType.FUSION_ANALYSIS, request, images);
+            modelClient.run(TaskType.FUSION_ANALYSIS, request, images);
             TraceLogger.logEvent("MODEL_RESPONSE", "Received Sensor Fusion response", "ModelClient", "SUCCESS");
 
             // Simulate dual-branch inputs to feed into the EvidenceCombiner

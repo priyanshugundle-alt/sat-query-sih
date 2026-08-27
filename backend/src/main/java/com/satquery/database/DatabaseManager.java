@@ -1,24 +1,18 @@
 package com.satquery.database;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.satquery.model.*;
 import com.satquery.persistence.*;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:satquery.db";
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     public static synchronized void initialize() {
         try {

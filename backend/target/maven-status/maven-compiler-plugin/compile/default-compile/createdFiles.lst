@@ -34,6 +34,7 @@ com\satquery\observer\TraceLogger.class
 com\satquery\validation\QueryRepairPlanner.class
 com\satquery\client\MockModelClient$1.class
 com\satquery\strategy\TaskStrategy.class
+com\satquery\App$EvaluateHandler$1.class
 com\satquery\client\MockModelClient.class
 com\satquery\App$UploadHandler.class
 com\satquery\evidence\EvidencePlanner.class
