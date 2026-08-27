@@ -1,0 +1,26 @@
+# Build output
+backend/target/
+frontend/dist/
+dist/
+
+# Local databases and SQLite runtime
+backend/*.db
+backend/*.db-journal
+
+# File uploads and reports generated during runtime
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/outputs/*
+!backend/outputs/.gitkeep
+
+# IDE files
+.vscode/
+.manus-logs/
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# OS specific files
+.DS_Store
+Thumbs.db

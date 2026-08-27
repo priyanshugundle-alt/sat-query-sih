@@ -438,10 +438,19 @@ public class App {
                 path = "/index.html";
             }
 
-            // Serve files from the "sat-query-backend/web" or "web" folder in the project root
-            File file = new File("web" + path);
-            if (!file.exists() || file.isDirectory()) {
-                file = new File("backend/web" + path);
+            File file;
+            if (path.startsWith("/outputs/") || path.startsWith("/uploads/")) {
+                String relativePath = path.substring(1);
+                file = new File(relativePath);
+                if (!file.exists()) {
+                    file = new File("backend/" + relativePath);
+                }
+            } else {
+                // Serve files from the "sat-query-backend/web" or "web" folder in the project root
+                file = new File("web" + path);
+                if (!file.exists() || file.isDirectory()) {
+                    file = new File("backend/web" + path);
+                }
             }
 
             if (!file.exists() || file.isDirectory()) {

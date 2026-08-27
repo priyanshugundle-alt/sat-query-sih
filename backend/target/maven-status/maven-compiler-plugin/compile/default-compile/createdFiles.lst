@@ -44,6 +44,7 @@ com\satquery\validation\OpticalSarPairValidator.class
 com\satquery\App$1.class
 com\satquery\evidence\VerdictEngine.class
 com\satquery\App$HistoryHandler.class
+com\satquery\handler\ImageProcessor.class
 com\satquery\persistence\AnalysisRequestRepository.class
 com\satquery\validation\ChangePairValidator.class
 com\satquery\model\TraceRecord.class
