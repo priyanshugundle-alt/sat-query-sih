@@ -79,9 +79,11 @@ public class ToolRegistry {
                                     "', which is not accepted by " + toolName + ".");
                 }
 
-                String format = img.getMetadata().getFormat();
-                if (!tool.getAcceptedFormats().contains(format.toUpperCase())) {
-                    result.addError("Image " + img.getFileName() + " has format '" + format + 
+                String format = img.getMetadata().getFormat().toUpperCase();
+                if ("JPG".equals(format)) format = "JPEG";
+                if ("TIF".equals(format)) format = "TIFF";
+                if (!tool.getAcceptedFormats().contains(format)) {
+                    result.addError("Image " + img.getFileName() + " has format '" + img.getMetadata().getFormat() + 
                                     "', which is not accepted by " + toolName + ". Expected formats: " + 
                                     tool.getAcceptedFormats());
                 }

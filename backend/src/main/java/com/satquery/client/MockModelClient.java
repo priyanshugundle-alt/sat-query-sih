@@ -87,7 +87,9 @@ public class MockModelClient implements ModelClient {
                     evidence.add(new Evidence("SENSOR_BRANCH", "/" + fusedPath, "Fused Optical-SAR Composition", "Alpha-blended composite overlaying SAR structural backscatter onto optical colors."));
                 } else {
                     evidence.add(new Evidence("SENSOR_BRANCH", images.get(0).getFilePath(), "Optical Reference Image", "Active optical observation."));
-                    evidence.add(new Evidence("SENSOR_BRANCH", images.get(1).getFilePath(), "SAR Reference Image", "Active SAR observation."));
+                    if (images.size() >= 2) {
+                        evidence.add(new Evidence("SENSOR_BRANCH", images.get(1).getFilePath(), "SAR Reference Image", "Active SAR observation."));
+                    }
                 }
                 
                 answer = "Cross-modal sensor fusion completed. Optical imagery successfully identified high-density road structures, while SAR backscatter resolved building geometries, penetrating cloud cover on the southern edge.";

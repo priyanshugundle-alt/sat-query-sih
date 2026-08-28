@@ -106,3 +106,37 @@ ON evidence_items(query_id);
 
 CREATE INDEX IF NOT EXISTS idx_reports_query_id
 ON reports(query_id);
+
+-- 7. Model Registry Table
+CREATE TABLE IF NOT EXISTS model_registry (
+    model_name TEXT PRIMARY KEY,
+    version TEXT NOT NULL,
+    endpoint TEXT,
+    supported_tasks TEXT,
+    availability TEXT NOT NULL
+);
+
+-- 8. Adaptation Runs Table
+CREATE TABLE IF NOT EXISTS adaptation_runs (
+    adaptation_run_id TEXT PRIMARY KEY,
+    dataset_name TEXT NOT NULL,
+    split_name TEXT NOT NULL,
+    baseline_metric REAL,
+    adapted_metric REAL,
+    configuration TEXT,
+    created_at TEXT NOT NULL
+);
+
+-- 9. Database views for PDF-alignment
+CREATE VIEW IF NOT EXISTS analysis_runs AS SELECT 
+    query_id, query_text, dataset_context, selected_task, selected_handler, selected_model, status, answer_text, confidence_state, limitations_json, investigator_json, created_at, completed_at
+    FROM analysis_requests;
+
+CREATE VIEW IF NOT EXISTS input_assets AS SELECT 
+    image_id, query_id, file_name, file_path, file_format, file_size_bytes, width, height, band_count, modality, acquisition_date, crs, bounding_box, georeferenced, created_at
+    FROM image_assets;
+
+CREATE VIEW IF NOT EXISTS evidence_artifacts AS SELECT 
+    evidence_id, query_id, evidence_type, file_path, label, description, source_modality, created_at
+    FROM evidence_items;
+

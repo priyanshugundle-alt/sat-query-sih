@@ -3,6 +3,7 @@ package com.satquery.model;
 import java.util.List;
 import java.util.Map;
 
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryRequest {
     private String queryId;
     private String queryText;
@@ -10,6 +11,7 @@ public class QueryRequest {
     private String timestamp;
     private com.satquery.benchmark.DatasetContext datasetContext;
     private Map<String, Object> parameters;
+    private String requestedTask;
 
     public QueryRequest() {}
 
@@ -54,4 +56,7 @@ public class QueryRequest {
 
     public Map<String, Object> getParameters() { return parameters; }
     public void setParameters(Map<String, Object> parameters) { this.parameters = parameters; }
+
+    public String getRequestedTask() { return requestedTask; }
+    public void setRequestedTask(String requestedTask) { this.requestedTask = requestedTask; }
 }

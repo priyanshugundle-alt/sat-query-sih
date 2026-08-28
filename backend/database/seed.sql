@@ -7,6 +7,23 @@ DELETE FROM evidence_items;
 DELETE FROM trace_events;
 DELETE FROM image_assets;
 DELETE FROM analysis_requests;
+DELETE FROM model_registry;
+DELETE FROM adaptation_runs;
+
+-- Seed Model Registry
+INSERT INTO model_registry (model_name, version, endpoint, supported_tasks, availability)
+VALUES ('UniRSAdapter', 'v1', 'http://localhost:5000/analyze', 'VQA,GROUNDING,CHANGE_ANALYSIS', 'DEMO');
+
+INSERT INTO model_registry (model_name, version, endpoint, supported_tasks, availability)
+VALUES ('EarthGptAdapter', 'v1', 'http://localhost:5000/analyze', 'FUSION_ANALYSIS', 'DEMO');
+
+INSERT INTO model_registry (model_name, version, endpoint, supported_tasks, availability)
+VALUES ('ChangeQaAdapter', 'v1', 'http://localhost:5000/analyze', 'CHANGE_ANALYSIS', 'DEMO');
+
+-- Seed Adaptation Runs (BigEarthNet)
+INSERT INTO adaptation_runs (adaptation_run_id, dataset_name, split_name, baseline_metric, adapted_metric, configuration, created_at)
+VALUES ('adapt-run-01', 'BigEarthNet v2.0 S2', 'held-out-test', 0.74, 0.88, '{"epochs":10, "lr":0.0001, "backbone":"resnet18", "batch_size":64}', '2026-08-28T18:00:00Z');
+
 
 -- 1. Insert Local Test Analysis Request
 INSERT INTO analysis_requests (

@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.satquery.client.HttpModelClient;
 import com.satquery.client.MockModelClient;
 import com.satquery.client.ModelClient;
+import com.satquery.client.JavaLocalModelClient;
 import com.satquery.controller.AgentController;
 import com.satquery.metadata.ImageMetadataReader;
 import com.satquery.model.*;
@@ -32,14 +33,21 @@ public class App {
     private static final ModelClient modelClient = new ModelClient() {
         private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
         private final MockModelClient mockClient = new MockModelClient();
+        private final JavaLocalModelClient localJavaClient = new JavaLocalModelClient();
 
         @Override
         public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
             try {
-                return httpClient.run(taskType, request, images);
+                // Execute natively on the local Java deep learning runtime
+                return localJavaClient.run(taskType, request, images);
             } catch (Exception e) {
-                System.err.println("[SatQuery Backend] Remote VLM server is offline or returned an error (" + e.getMessage() + "). Falling back to MockModelClient.");
-                return mockClient.run(taskType, request, images);
+                System.err.println("[SatQuery Backend] Local JVM inference returned an error (" + e.getMessage() + "). Trying remote VLM HTTP endpoint.");
+                try {
+                    return httpClient.run(taskType, request, images);
+                } catch (Exception ex) {
+                    System.err.println("[SatQuery Backend] Remote server is offline. Falling back to MockModelClient.");
+                    return mockClient.run(taskType, request, images);
+                }
             }
         }
     };
@@ -52,12 +60,21 @@ public class App {
 
         // Initialize SQLite DB
         com.satquery.database.DatabaseManager.initialize();
+        // Register EvidenceObserver
+        com.satquery.observer.TraceLogger.addObserver(new com.satquery.observer.EvidenceObserver());
 
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/api/health", new HealthHandler());
         server.createContext("/api/upload", new UploadHandler());
         server.createContext("/api/analyze", new AnalyzeHandler());
         server.createContext("/api/analyse", new AnalyzeHandler());
+        server.createContext("/api/analysis/validate", new AnalysisValidateHandler());
+        server.createContext("/api/analysis/plan", new AnalysisPlanHandler());
+        server.createContext("/api/analysis/run", new AnalysisRunHandler());
+        server.createContext("/api/analysis/", new AnalysisGetHandler());
+        server.createContext("/api/runs/", new RunsGetHandler());
+        server.createContext("/api/models", new ModelsHandler());
+        server.createContext("/api/benchmarks", new BenchmarksHandler());
 
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
@@ -496,6 +513,278 @@ public class App {
             } catch (Exception e) {
                 sendJsonResponse(exchange, 500, Map.of("error", "Failed to fetch history: " + e.getMessage()));
             }
+        }
+    }
+
+    static class AnalysisValidateHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            try {
+                InputStream is = exchange.getRequestBody();
+                QueryRequest request = objectMapper.readValue(is.readAllBytes(), QueryRequest.class);
+                
+                List<ImageAsset> images = new ArrayList<>();
+                if (request.getImageIds() != null) {
+                    for (String id : request.getImageIds()) {
+                        ImageAsset asset = imageRegistry.get(id);
+                        if (asset == null) {
+                            asset = com.satquery.database.DatabaseManager.getImageAsset(id);
+                        }
+                        if (asset != null) images.add(asset);
+                    }
+                }
+                
+                TaskType taskType = agentController.classifyTask(request, images);
+                com.satquery.validation.InputValidator validator = new com.satquery.validation.InputValidator();
+                ValidationResult validation = validator.validate(request, images, taskType);
+                
+                String toolName = switch (taskType) {
+                    case VQA -> "VQA_TOOL";
+                    case GROUNDING -> "GROUNDING_TOOL";
+                    case CHANGE_ANALYSIS -> "CHANGE_TOOL";
+                    case FUSION_ANALYSIS -> "FUSION_TOOL";
+                };
+                
+                com.satquery.registry.ToolValidationResult toolValidation = com.satquery.registry.ToolRegistry.validate(
+                        toolName, images, request.getParameters()
+                );
+                
+                boolean isValid = validation.isValid() && toolValidation.isValid();
+                List<String> errors = new ArrayList<>(validation.getErrors());
+                errors.addAll(toolValidation.getErrors());
+                List<String> warnings = new ArrayList<>(validation.getWarnings());
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("valid", isValid);
+                response.put("task", taskType.name());
+                response.put("errors", errors);
+                response.put("warnings", warnings);
+                response.put("repairGuidance", validation.getRepairGuidance());
+                
+                sendJsonResponse(exchange, 200, response);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Validation failed: " + e.getMessage()));
+            }
+        }
+    }
+
+    static class AnalysisPlanHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            try {
+                InputStream is = exchange.getRequestBody();
+                QueryRequest request = objectMapper.readValue(is.readAllBytes(), QueryRequest.class);
+                
+                List<ImageAsset> images = new ArrayList<>();
+                if (request.getImageIds() != null) {
+                    for (String id : request.getImageIds()) {
+                        ImageAsset asset = imageRegistry.get(id);
+                        if (asset == null) {
+                            asset = com.satquery.database.DatabaseManager.getImageAsset(id);
+                        }
+                        if (asset != null) images.add(asset);
+                    }
+                }
+                
+                TaskType taskType = agentController.classifyTask(request, images);
+                
+                List<String> modalities = new ArrayList<>();
+                boolean requiresTemporal = (taskType == TaskType.CHANGE_ANALYSIS);
+                for (ImageAsset img : images) {
+                    modalities.add(img.getMetadata().getModality());
+                }
+                if (modalities.isEmpty()) {
+                    if (taskType == TaskType.FUSION_ANALYSIS) {
+                        modalities.addAll(List.of("OPTICAL", "SAR"));
+                    } else {
+                        modalities.add("OPTICAL");
+                    }
+                }
+                
+                com.satquery.routing.WorkflowPlan plan = new com.satquery.routing.WorkflowPlan(
+                        taskType.name(),
+                        modalities,
+                        requiresTemporal,
+                        "OPTIONAL",
+                        request.getParameters() != null ? request.getParameters() : new HashMap<>()
+                );
+                
+                sendJsonResponse(exchange, 200, plan);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Planning failed: " + e.getMessage()));
+            }
+        }
+    }
+
+    static class AnalysisRunHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            new AnalyzeHandler().handle(exchange);
+        }
+    }
+
+    static class AnalysisGetHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            
+            String path = exchange.getRequestURI().getPath();
+            String[] parts = path.split("/");
+            if (parts.length < 4) {
+                sendJsonResponse(exchange, 400, Map.of("error", "analysisId is required. Pattern: /api/analysis/{id}"));
+                return;
+            }
+            
+            String queryId = parts[3];
+            TaskResult result = reportRegistry.get(queryId);
+            if (result == null) {
+                result = com.satquery.database.DatabaseManager.getTaskResult(queryId);
+            }
+            
+            if (result == null) {
+                sendJsonResponse(exchange, 404, Map.of("error", "Analysis request not found for ID: " + queryId));
+            } else {
+                sendJsonResponse(exchange, 200, result);
+            }
+        }
+    }
+
+    static class RunsGetHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            
+            String path = exchange.getRequestURI().getPath();
+            String[] parts = path.split("/");
+            if (parts.length < 5) {
+                sendJsonResponse(exchange, 400, Map.of("error", "Run ID and action are required. Pattern: /api/runs/{id}/{trace|report}"));
+                return;
+            }
+            
+            String runId = parts[3];
+            String action = parts[4].toLowerCase();
+            
+            TaskResult result = reportRegistry.get(runId);
+            if (result == null) {
+                result = com.satquery.database.DatabaseManager.getTaskResult(runId);
+            }
+            
+            if (result == null) {
+                sendJsonResponse(exchange, 404, Map.of("error", "Run not found for ID: " + runId));
+                return;
+            }
+            
+            if ("trace".equals(action)) {
+                sendJsonResponse(exchange, 200, result.getTrace() != null ? result.getTrace() : List.of());
+            } else if ("report".equals(action)) {
+                Map<String, Object> reportMeta = new HashMap<>();
+                reportMeta.put("reportId", "rep-" + runId);
+                reportMeta.put("queryId", runId);
+                reportMeta.put("reportType", "PDF");
+                reportMeta.put("filePath", "outputs/report-" + runId + ".pdf");
+                reportMeta.put("reportUrl", "/outputs/report-" + runId + ".pdf");
+                sendJsonResponse(exchange, 200, reportMeta);
+            } else {
+                sendJsonResponse(exchange, 400, Map.of("error", "Unsupported action: " + action));
+            }
+        }
+    }
+
+    static class ModelsHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            
+            List<Map<String, Object>> models = List.of(
+                Map.of(
+                    "modelName", "UniRSAdapter",
+                    "version", "v1",
+                    "supportedTasks", List.of("VQA", "GROUNDING", "CHANGE_ANALYSIS"),
+                    "availability", "DEMO"
+                ),
+                Map.of(
+                    "modelName", "EarthGptAdapter",
+                    "version", "v1",
+                    "supportedTasks", List.of("FUSION_ANALYSIS"),
+                    "availability", "DEMO"
+                ),
+                Map.of(
+                    "modelName", "ChangeQaAdapter",
+                    "version", "v1",
+                    "supportedTasks", List.of("CHANGE_ANALYSIS"),
+                    "availability", "DEMO"
+                )
+            );
+            
+            sendJsonResponse(exchange, 200, models);
+        }
+    }
+
+    static class BenchmarksHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            
+            Map<String, Object> benchmarks = Map.of(
+                "VRSBENCH", Map.of(
+                    "description", "Visual Question Answering and Grounding Benchmark for Remote Sensing",
+                    "samplesCount", 2
+                ),
+                "RSVQA", Map.of(
+                    "description", "Remote Sensing Visual Question Answering Dataset",
+                    "samplesCount", 1
+                ),
+                "CDVQA", Map.of(
+                    "description", "Change Detection Visual Question Answering Dataset",
+                    "samplesCount", 1
+                )
+            );
+            
+            sendJsonResponse(exchange, 200, benchmarks);
         }
     }
 }

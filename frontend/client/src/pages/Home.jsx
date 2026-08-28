@@ -1029,64 +1029,8 @@ function Board({
 
       {/* Workspace Columns */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
-        {/* COLUMN 1: IMAGE ASSETS & QUERY INPUT (Left - col-span-3) */}
+        {/* COLUMN 1: IMAGE ASSETS (Left - col-span-3) */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Query input */}
-          <article className="investigation-plane plane-white rounded-lg p-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
-              <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
-                01
-              </span>
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
-                  Compose Query
-                </h3>
-                <p className="text-[10px] text-[#7082aa]">
-                  Formulate analysis question
-                </p>
-              </div>
-            </div>
-
-            {/* Scenarios shortcuts */}
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {Object.keys(scenarios).map(id => (
-                <button
-                  key={id}
-                  onClick={() => onScenario(id)}
-                  className={`border px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[.06em] rounded transition ${
-                    scenarioId === id
-                      ? "border-navy bg-navy text-white"
-                      : "border-[#dfe6fa] bg-[#F8FBFF] text-[#7184aa] hover:border-[#aebdf0] hover:bg-white"
-                  }`}
-                >
-                  {scenarios[id].short}
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              className="w-full min-h-[90px] resize-none border border-[#dbe4fa] bg-[#fbfdff] p-3 text-xs font-semibold leading-relaxed text-navy outline-none rounded focus:border-[#1179FF] focus:bg-white transition"
-              placeholder="Enter query about the staged satellite assets..."
-            />
-
-            {/* Pipeline Status Overview */}
-            <div className="mt-3 space-y-2 border-t border-[#edf1fb] pt-3">
-              <div className="flex justify-between items-center text-[10px] text-[#5a709c]">
-                <span>Staged assets:</span>
-                <span className="font-mono font-bold bg-[#EDF5FF] px-1.5 py-0.5 rounded text-[#1179FF]">
-                  {selectedEvidence.length} file
-                  {selectedEvidence.length === 1 ? "" : "s"}
-                </span>
-              </div>
-              <div className="text-[10px] text-[#5a709c]">
-                <span>Target Engine: </span>
-                <span className="font-bold text-navy">{likelyTask}</span>
-              </div>
-            </div>
-          </article>
-
           {/* Staged Image Assets */}
           <article className="investigation-plane plane-blue rounded-lg p-5">
             <div className="flex items-center gap-2.5 pb-3 border-b border-[#cfe3ff] mb-4 justify-between">
@@ -1185,10 +1129,126 @@ function Board({
               )}
             </div>
           </article>
+
+          {/* PIPELINE ROUTING TRACE LOGS */}
+          <article className="investigation-plane plane-white rounded-lg p-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-4">
+              <div className="flex items-center gap-2.5">
+                <Activity size={16} className="text-[#1179FF]" />
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+                    Execution Trace
+                  </h3>
+                  <p className="text-[10px] text-[#7082aa]">
+                    Polymorphic route logs
+                  </p>
+                </div>
+              </div>
+              <span className="font-mono text-[8px] font-bold text-[#1179FF] uppercase bg-[#EDF5FF] px-1.5 py-0.5 rounded">
+                {isDemoMode ? "DEMO" : "JVM"}
+              </span>
+            </div>
+
+            <div className="trace-board space-y-3 max-h-[340px] overflow-y-auto pr-1">
+              {(backendTrace.length > 0
+                ? backendTrace
+                : isComplete
+                  ? scenario.trace
+                  : []
+              ).map((step, idx) => (
+                <div key={idx} className="border-l-2 border-[#1179FF]/30 pl-3 py-1 hover:border-[#1179FF] transition">
+                  <h4 className="text-[10px] font-bold text-navy flex items-center gap-1.5 flex-wrap">
+                    <span>{step.name || step.eventName}</span>
+                    {step.toolName && (
+                      <span className="font-mono text-[7px] font-bold bg-[#EDF5FF] text-[#1179FF] px-1 rounded">
+                        {step.toolName}
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-[9px] text-[#5a709c] mt-0.5 leading-relaxed">
+                    {step.detail}
+                  </p>
+                  <div className="flex items-center gap-2 font-mono text-[7px] text-[#7082aa] mt-1.5">
+                    <span>Latency: {step.time || "8ms"}</span>
+                    <span className="text-emerald-700 font-bold bg-[#efffc9] px-1 py-0.2 rounded text-[7px]">
+                      {step.status || "SUCCESS"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {!isComplete && !isRunning && (
+                <p className="text-[10px] text-[#7082aa] py-3 italic text-center">
+                  Execute query to stream trace logs.
+                </p>
+              )}
+              {isRunning && (
+                <div className="flex items-center gap-2 text-[10px] text-[#1179FF] py-3 font-semibold justify-center">
+                  <Orbit size={14} className="animate-spin" />
+                  <span>Streaming route trace...</span>
+                </div>
+              )}
+            </div>
+          </article>
         </div>
 
         {/* COLUMN 2: ACTIVE OBSERVATION VIEW (Center - col-span-6) */}
         <div className="lg:col-span-6 space-y-4">
+          {/* Query input */}
+          <article className="investigation-plane plane-white rounded-lg p-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
+              <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+                01
+              </span>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  Compose Query
+                </h3>
+                <p className="text-[10px] text-[#7082aa]">
+                  Formulate analysis question
+                </p>
+              </div>
+            </div>
+
+            {/* Scenarios shortcuts */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {Object.keys(scenarios).map(id => (
+                <button
+                  key={id}
+                  onClick={() => onScenario(id)}
+                  className={`border px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[.06em] rounded transition ${
+                    scenarioId === id
+                      ? "border-navy bg-navy text-white"
+                      : "border-[#dfe6fa] bg-[#F8FBFF] text-[#7184aa] hover:border-[#aebdf0] hover:bg-white"
+                  }`}
+                >
+                  {scenarios[id].short}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={question}
+              onChange={e => setQuestion(e.target.value)}
+              className="w-full min-h-[90px] resize-none border border-[#dbe4fa] bg-[#fbfdff] p-3 text-xs font-semibold leading-relaxed text-navy outline-none rounded focus:border-[#1179FF] focus:bg-white transition"
+              placeholder="Enter query about the staged satellite assets..."
+            />
+
+            {/* Pipeline Status Overview */}
+            <div className="mt-3 space-y-2 border-t border-[#edf1fb] pt-3">
+              <div className="flex justify-between items-center text-[10px] text-[#5a709c]">
+                <span>Staged assets:</span>
+                <span className="font-mono font-bold bg-[#EDF5FF] px-1.5 py-0.5 rounded text-[#1179FF]">
+                  {selectedEvidence.length} file
+                  {selectedEvidence.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="text-[10px] text-[#5a709c]">
+                <span>Target Engine: </span>
+                <span className="font-bold text-navy">{likelyTask}</span>
+              </div>
+            </div>
+          </article>
+
           {/* Main Observation View Frame */}
           <article className="investigation-plane stage-plane rounded-lg overflow-hidden flex flex-col relative">
             {/* Header */}
@@ -1502,9 +1562,9 @@ function Board({
                 <p className="text-[10px] text-[#5a709c] eyebrow">
                   Verification status
                 </p>
-                <h4 className="font-editorial text-2xl tracking-tight mt-1 font-bold">
+                <h4 className="font-editorial text-xl md:text-2xl tracking-tight mt-1 font-bold break-words uppercase">
                   {isComplete
-                    ? backendReport?.verdict || scenario.status
+                    ? (backendReport?.verdict || scenario.status || "").replace(/_/g, " ")
                     : "Awaiting Execution..."}
                 </h4>
               </div>
@@ -1618,69 +1678,7 @@ function Board({
         </div>
       </div>
 
-      {/* PIPELINE ROUTING TRACE LOGS */}
-      <section className="investigation-plane plane-white rounded-lg p-6">
-        <div className="flex items-center justify-between pb-4 border-b border-[#edf1fb] mb-6">
-          <div className="flex items-center gap-3">
-            <Activity size={18} className="text-[#1179FF]" />
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-navy">
-                Backend Execution Trace
-              </h2>
-              <p className="text-[10px] text-[#7082aa]">
-                Polymorphic route logs and JVM processing latency
-              </p>
-            </div>
-          </div>
-          <span className="font-mono text-[9px] font-bold text-[#7082aa] uppercase bg-[#EDF5FF] px-2.5 py-1 rounded text-[#1179FF]">
-            {isDemoMode ? "DEMO TELEMETRY LOG" : "LIVE JVM TRACE"}
-          </span>
-        </div>
 
-        <div className="trace-board">
-          {(backendTrace.length > 0
-            ? backendTrace
-            : isComplete
-              ? scenario.trace
-              : []
-          ).map((step, idx) => (
-            <div key={idx} className={`trace-step-vertical trace-done`}>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5 md:gap-6">
-                <div>
-                  <h4 className="text-xs font-bold text-navy flex items-center gap-2">
-                    <span>{step.name || step.eventName}</span>
-                    {step.toolName && (
-                      <span className="font-mono text-[8px] font-bold bg-[#EDF5FF] text-[#1179FF] px-1 rounded">
-                        {step.toolName}
-                      </span>
-                    )}
-                  </h4>
-                  <p className="text-[11px] text-[#5a709c] mt-1">
-                    {step.detail}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 font-mono text-[8px] text-[#7082aa] self-start md:self-center">
-                  <span>Latency: {step.time || "8ms"}</span>
-                  <span className="text-emerald-700 font-bold bg-[#efffc9] px-1.5 py-0.5 rounded">
-                    {step.status || "SUCCESS"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-          {!isComplete && !isRunning && (
-            <p className="text-[11px] text-[#7082aa] py-3 italic">
-              Execute analysis to stream trace telemetry logs.
-            </p>
-          )}
-          {isRunning && (
-            <div className="flex items-center gap-2 text-xs text-[#1179FF] py-3 font-semibold">
-              <Orbit size={16} className="animate-spin" />
-              <span>Streaming routing trace from Java HttpServer...</span>
-            </div>
-          )}
-        </div>
-      </section>
     </div>
   );
 }

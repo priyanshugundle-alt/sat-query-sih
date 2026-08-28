@@ -274,5 +274,64 @@ public class SatQueryTest {
         assertEquals("STRONGLY_SUPPORTED", result.getInvestigatorReport().getVerdict());
         assertTrue(result.getInvestigatorReport().getHypothesis().contains("flood"));
     }
+
+    @Test
+    public void testQueryClassifier() {
+        com.satquery.routing.QueryClassifier classifier = new com.satquery.routing.QueryClassifier();
+        QueryRequest req = new QueryRequest("q-test", "Where is the river?", List.of(), "2026");
+        
+        ImageMetadata meta = new ImageMetadata("GeoTIFF", 512, 512, 3, "OPTICAL", "2026-01-01", null, null, false);
+        ImageAsset img = new ImageAsset("img-1", "optical.tif", "/uploads/optical.tif", meta);
+        
+        TaskType taskType = classifier.classify(req, List.of(img));
+        assertEquals(TaskType.GROUNDING, taskType);
+    }
+
+    @Test
+    public void testWorkflowPlanModel() {
+        com.satquery.routing.WorkflowPlan plan = new com.satquery.routing.WorkflowPlan(
+                "FUSION_ANALYSIS",
+                List.of("OPTICAL", "SAR"),
+                true,
+                "OPTIONAL",
+                new java.util.HashMap<>()
+        );
+        assertEquals("FUSION_ANALYSIS", plan.getIntent());
+        assertTrue(plan.isRequiresTemporalPair());
+        assertEquals("OPTIONAL", plan.getRequestedEvidence());
+    }
+
+    @Test
+    public void testModelAdaptersDelegation() {
+        com.satquery.client.UniRSAdapter uniRSAdapter = new com.satquery.client.UniRSAdapter(mockClient);
+        com.satquery.client.EarthGptAdapter earthGptAdapter = new com.satquery.client.EarthGptAdapter(mockClient);
+        com.satquery.client.ChangeQaAdapter changeQaAdapter = new com.satquery.client.ChangeQaAdapter(mockClient);
+
+        QueryRequest req = new QueryRequest("q-test", "Describe image", List.of("img-1", "img-2"), "2026");
+        ImageMetadata meta1 = new ImageMetadata("GeoTIFF", 512, 512, 3, "OPTICAL", "2026-01-01", null, null, false);
+        ImageMetadata meta2 = new ImageMetadata("GeoTIFF", 512, 512, 1, "SAR", "2026-01-03", null, null, false);
+        ImageAsset img1 = new ImageAsset("img-1", "optical.tif", "/uploads/optical.tif", meta1);
+        ImageAsset img2 = new ImageAsset("img-2", "sar.tif", "/uploads/sar.tif", meta2);
+
+        assertNotNull(uniRSAdapter.run(TaskType.VQA, req, List.of(img1)));
+        assertNotNull(earthGptAdapter.run(TaskType.FUSION_ANALYSIS, req, List.of(img1, img2)));
+        assertNotNull(changeQaAdapter.run(TaskType.CHANGE_ANALYSIS, req, List.of(img1, img2)));
+    }
+
+    @Test
+    public void testTracePublisher() {
+        com.satquery.observer.TracePublisher publisher = new com.satquery.observer.ObserverTracePublisher();
+        TraceEvent event = new TraceEvent("TEST_PUBLISH", "Checking publish stream", "JUnit", "2026-08-28T18:00:00Z", "SUCCESS");
+        
+        final List<String> received = new ArrayList<>();
+        TraceObserver observer = ev -> received.add(ev.getEventName());
+        TraceLogger.addObserver(observer);
+        
+        publisher.publish(event);
+        assertTrue(received.contains("TEST_PUBLISH"));
+        
+        TraceLogger.removeObserver(observer);
+    }
 }
+
 

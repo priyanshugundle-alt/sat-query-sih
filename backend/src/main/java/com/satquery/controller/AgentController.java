@@ -14,11 +14,13 @@ public class AgentController {
     private final InputValidator validator;
     private final HandlerFactory factory;
     private final ModelClient modelClient;
+    private final com.satquery.routing.QueryClassifier classifier;
 
     public AgentController(ModelClient modelClient) {
         this.validator = new InputValidator();
         this.factory = new HandlerFactory();
         this.modelClient = modelClient;
+        this.classifier = new com.satquery.routing.QueryClassifier();
     }
 
     public TaskResult processQuery(QueryRequest request, List<ImageAsset> images) {
@@ -27,7 +29,7 @@ public class AgentController {
         TraceLogger.logEvent("REQUEST_RECEIVED", "Query ID: " + request.getQueryId() + " received.", "AgentController", "SUCCESS");
 
         // 1. Task classification
-        TaskType taskType = classifyTask(request, images);
+        TaskType taskType = classifier.classify(request, images);
         TraceLogger.logEvent("TASK_CLASSIFIED", "Task classified as: " + taskType, "AgentController", "SUCCESS");
 
         // 2. Input validation
@@ -140,7 +142,12 @@ public class AgentController {
         // 4. Execution
         TaskResult result;
         try {
-            result = taskHandler.execute(request, images, modelClient);
+            ModelClient adaptedClient = switch (taskType) {
+                case VQA, GROUNDING -> new com.satquery.client.UniRSAdapter(modelClient);
+                case CHANGE_ANALYSIS -> new com.satquery.client.ChangeQaAdapter(modelClient);
+                case FUSION_ANALYSIS -> new com.satquery.client.EarthGptAdapter(modelClient);
+            };
+            result = taskHandler.execute(request, images, adaptedClient);
         } catch (Exception e) {
             TraceLogger.logEvent("EXECUTION_FAILED", e.getMessage(), taskHandler.getClass().getSimpleName(), "FAILED");
             result = new TaskResult();
@@ -206,27 +213,6 @@ public class AgentController {
     }
 
     public TaskType classifyTask(QueryRequest request, List<ImageAsset> images) {
-        String text = request.getQueryText() != null ? request.getQueryText().toLowerCase() : "";
-
-        if (images.size() == 2) {
-            boolean hasOptical = false;
-            boolean hasSar = false;
-            for (ImageAsset img : images) {
-                String mod = img.getMetadata().getModality();
-                if ("OPTICAL".equalsIgnoreCase(mod)) hasOptical = true;
-                if ("SAR".equalsIgnoreCase(mod)) hasSar = true;
-            }
-            
-            if (hasOptical && hasSar && (text.contains("both") || text.contains("sar") || text.contains("together") || text.contains("fusion"))) {
-                return TaskType.FUSION_ANALYSIS;
-            }
-            return TaskType.CHANGE_ANALYSIS;
-        }
-
-        if (text.contains("where") || text.contains("highlight") || text.contains("locate")) {
-            return TaskType.GROUNDING;
-        }
-
-        return TaskType.VQA;
+        return classifier.classify(request, images);
     }
 }
