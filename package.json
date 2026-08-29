@@ -1,0 +1,10 @@
+{
+  "name": "sat-query-sih",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "start start.bat",
+    "start:ps": "powershell -ExecutionPolicy Bypass -File ./start.ps1",
+    "dev": "concurrently \"npm --prefix backend run exec\" \"npm --prefix frontend run dev\""
+  }
+}

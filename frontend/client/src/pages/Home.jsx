@@ -46,14 +46,7 @@ const scenarios = {
     confidence: "HIGH (94%)",
     recommendation:
       "Run a temporal query using a secondary cloud-free scene to evaluate change dynamics.",
-    assets: [
-      {
-        name: "delta_optical_scene.tif",
-        kind: "OPTICAL",
-        date: "2024-01-12",
-        size: "18.4 MB",
-      },
-    ],
+    assets: [],
     features: [
       {
         id: "f1",
@@ -108,10 +101,6 @@ const scenarios = {
         time: "450ms",
       },
     ],
-    images: {
-      t1: "/satquery-prism-optical.png",
-      t2: "/satquery-prism-optical.png",
-    },
   },
   change: {
     label: "Change detection",
@@ -127,20 +116,7 @@ const scenarios = {
     confidence: "MEDIUM (78%)",
     recommendation:
       "Incorporate a radar SAR scene from June to evaluate surface roughness and soil moisture levels.",
-    assets: [
-      {
-        name: "delta_optical_t1.tif",
-        kind: "OPTICAL",
-        date: "2024-01-12",
-        size: "18.4 MB",
-      },
-      {
-        name: "delta_optical_t2.tif",
-        kind: "OPTICAL",
-        date: "2024-06-15",
-        size: "19.2 MB",
-      },
-    ],
+    assets: [],
     features: [
       {
         id: "f1",
@@ -201,10 +177,6 @@ const scenarios = {
         time: "430ms",
       },
     ],
-    images: {
-      t1: "/satquery-prism-optical.png",
-      t2: "/satquery-prism-hero.png",
-    },
   },
   fusion: {
     label: "Optical–SAR fusion",
@@ -220,20 +192,7 @@ const scenarios = {
     confidence: "HIGH (91%)",
     recommendation:
       "Query a subsequent SAR acquisition (T2) to calculate water surface recession speed.",
-    assets: [
-      {
-        name: "delta_optical_t1.tif",
-        kind: "OPTICAL",
-        date: "2024-01-12",
-        size: "18.4 MB",
-      },
-      {
-        name: "delta_sar_t1.tif",
-        kind: "SAR",
-        date: "2024-01-14",
-        size: "24.1 MB",
-      },
-    ],
+    assets: [],
     features: [
       {
         id: "f1",
@@ -293,10 +252,6 @@ const scenarios = {
         time: "570ms",
       },
     ],
-    images: {
-      t1: "/satquery-prism-optical.png",
-      t2: "/satquery-prism-sar.png",
-    },
   },
 };
 
@@ -319,9 +274,7 @@ export default function Home() {
   const [view, setView] = useState("board");
   const [scenarioId, setScenarioId] = useState("fusion");
   const [question, setQuestion] = useState(scenarios.fusion.query);
-  const [evidence, setEvidence] = useState(() =>
-    stage(scenarios.fusion.assets)
-  );
+  const [evidence, setEvidence] = useState([]);
 
   // Real / Demo states
   const [isDemoMode, setIsDemoMode] = useState(true);
@@ -350,6 +303,7 @@ export default function Home() {
       const response = await fetch("/api/health");
       if (response.ok) {
         setJvmHealth("JVM CONNECTED");
+        setIsDemoMode(false);
       } else {
         setJvmHealth("JVM OFFLINE");
       }
@@ -365,7 +319,7 @@ export default function Home() {
   const switchScenario = id => {
     setScenarioId(id);
     setQuestion(scenarios[id].query);
-    setEvidence(stage(scenarios[id].assets));
+    setEvidence([]);
     setIsComplete(false);
     setView("board");
     setBackendImageUrl(null);
@@ -405,9 +359,18 @@ export default function Home() {
                   "Warning: PNG/JPEG files lack standard geospatial headers (CRS bounds).";
               }
 
+              const fileUrl =
+                file.type?.startsWith("image/") ||
+                nameLower.endsWith(".png") ||
+                nameLower.endsWith(".jpg") ||
+                nameLower.endsWith(".jpeg")
+                  ? URL.createObjectURL(file)
+                  : null;
+
               return {
                 id: uid(),
                 name: file.name,
+                url: fileUrl,
                 kind:
                   /sar|radar|sentinel.?1/i.test(file.name) ||
                   (files.length > 1 && index > 0)
@@ -443,9 +406,17 @@ export default function Home() {
         });
         if (response.ok) {
           const data = await response.json();
+          const fileUrl = data.filePath
+            ? data.filePath.startsWith("/") || data.filePath.startsWith("http")
+              ? data.filePath
+              : `/uploads/${data.fileName}`
+            : file.type?.startsWith("image/") || file.name.match(/\.(png|jpg|jpeg)$/i)
+              ? URL.createObjectURL(file)
+              : null;
           uploaded.push({
             id: data.imageId,
             name: data.fileName,
+            url: fileUrl,
             kind: data.metadata?.modality || "OPTICAL",
             date:
               data.metadata?.acquisitionDate ||
@@ -699,11 +670,9 @@ export default function Home() {
         <div className="space-y-8">
           {/* Brand mark */}
           <div className="flex items-center gap-3 brand-block">
-            <img
-              src="/satquery-prism-mark.png"
-              alt="SatQuery Orbit Mark"
-              className="h-10 w-10 object-contain shadow-sm"
-            />
+            <div className="h-10 w-10 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc] shadow-sm">
+              <Orbit size={22} />
+            </div>
             <div>
               <p className="font-editorial text-[20px] font-extrabold tracking-tight leading-none">
                 SatQuery
@@ -783,11 +752,9 @@ export default function Home() {
       <header className="md:hidden sticky top-0 z-30 border-b border-[#dfe7fb] bg-white/95 px-5 py-3 backdrop-blur-xl w-full flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img
-              src="/satquery-prism-mark.png"
-              alt="SatQuery Orbit Mark"
-              className="h-8 w-8"
-            />
+            <div className="h-8 w-8 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc]">
+              <Orbit size={18} />
+            </div>
             <div>
               <p className="font-editorial text-[17px] font-bold">SatQuery</p>
               <p className="font-mono text-[8px] uppercase tracking-wider text-[#7082aa]">
@@ -922,8 +889,8 @@ function Board({
   const [activeStageTab, setActiveStageTab] = useState("image"); // image, split, map
 
   // Overlay Toggles
-  const [showGrounding, setShowGrounding] = useState(true);
-  const [showMask, setShowMask] = useState(true);
+  const [showGrounding, setShowGrounding] = useState(false);
+  const [showMask, setShowMask] = useState(false);
   const [showAOI, setShowAOI] = useState(false);
 
   const fileInputRef = useRef(null);
@@ -1313,20 +1280,32 @@ function Board({
               {/* Image View */}
               {activeStageTab === "image" && (
                 <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-                  <img
-                    src={
-                      backendImageUrl ||
-                      (scenarioId === "fusion"
-                        ? "/satquery-prism-sar.png"
-                        : scenarioId === "change"
-                          ? "/satquery-prism-hero.png"
-                          : "/satquery-prism-optical.png")
-                    }
-                    alt="Satellite Observation Grid"
-                    className="w-full h-full object-cover transition duration-300"
-                  />
-                  {!backendImageUrl && (
-                    <div className="orbital-halo h-56 w-56 absolute right-[10%] top-[15%]" />
+                  {backendImageUrl || selectedEvidence[0]?.url ? (
+                    <img
+                      src={backendImageUrl || selectedEvidence[0]?.url}
+                      alt="Satellite Observation Grid"
+                      className="w-full h-full object-cover transition duration-300"
+                    />
+                  ) : selectedEvidence.length > 0 ? (
+                    <div className="flex flex-col items-center justify-center text-center p-6 text-[#7082aa]">
+                      <div className="h-16 w-16 rounded-full bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] mb-3 border border-[#d2e3fc]">
+                        <FileImage size={32} />
+                      </div>
+                      <p className="text-sm font-bold text-navy">Staged Asset: {selectedEvidence[0]?.name}</p>
+                      <p className="text-xs text-[#7082aa] mt-1 max-w-xs leading-relaxed">
+                        GeoTIFF raster dataset staged. Click "Run Query Analysis" to process.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center p-6 text-[#7082aa]">
+                      <div className="h-16 w-16 rounded-full bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] mb-3 border border-[#d2e3fc]">
+                        <ScanSearch size={32} />
+                      </div>
+                      <p className="text-sm font-bold text-navy">No Image Displayed</p>
+                      <p className="text-xs text-[#7082aa] mt-1 max-w-xs leading-relaxed">
+                        Upload GeoTIFF/image assets or run backend analysis to display imagery output.
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
@@ -1335,10 +1314,10 @@ function Board({
               {activeStageTab === "split" && (
                 <div className="absolute inset-0 w-full h-full">
                   <ImageCompareSlider
-                    img1={scenario.images?.t1 || "/satquery-prism-optical.png"}
-                    img2={scenario.images?.t2 || "/satquery-prism-hero.png"}
-                    label1={`T1 (${selectedEvidence[0]?.date || "Jan"})`}
-                    label2={`T2 (${selectedEvidence[1]?.date || "Jun"})`}
+                    img1={selectedEvidence[0]?.url || selectedEvidence[0]?.path || null}
+                    img2={selectedEvidence[1]?.url || selectedEvidence[1]?.path || null}
+                    label1={`T1 (${selectedEvidence[0]?.name || "Asset 1"})`}
+                    label2={`T2 (${selectedEvidence[1]?.name || "Asset 2"})`}
                   />
                 </div>
               )}
@@ -1423,10 +1402,10 @@ function Board({
             <div className="bg-white px-4 py-2 border-t border-[#e2ebfb] flex items-center justify-between text-[10px] font-mono text-[#5a709c]">
               <div className="flex items-center gap-1">
                 <MapPin size={12} className="text-[#1179FF]" />
-                <span>Geospatial Bounds: 16°23'42" N, 81°45'12" E</span>
+                <span>Dataset File: {selectedEvidence[0] ? selectedEvidence[0].name : "No Active Staged Asset"}</span>
               </div>
               <div>
-                <span>GSD: 10m · ESA Sentinel-2 MSI</span>
+                <span>{selectedEvidence[0] ? `Size: ${selectedEvidence[0].size} · Mode: ${selectedEvidence[0].kind}` : "Raster Metadata Awaiting Staging"}</span>
               </div>
             </div>
           </article>
@@ -2135,26 +2114,43 @@ function ImageCompareSlider({
       onMouseDown={e => handleMove(e.clientX)}
     >
       <div className="slider-after absolute inset-0">
-        <img
-          src={img2}
-          alt="After"
-          className="w-full h-full object-cover pointer-events-none"
-        />
+        {img2 ? (
+          <img
+            src={img2}
+            alt="After"
+            className="w-full h-full object-cover pointer-events-none"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[#0b1739] text-[#7082aa]">
+            <FileImage size={32} className="mb-2 text-[#1179FF] opacity-40" />
+            <span className="text-xs font-mono">{label2} (No Image Staged)</span>
+          </div>
+        )}
         <span className="absolute right-4 bottom-4 bg-[#112557]/80 text-[#B7F23A] font-mono text-[9px] font-bold tracking-wider px-2 py-1 z-10 rounded">
           {label2}
         </span>
       </div>
 
       <div
-        className="slider-before absolute inset-y-0 left-0 overflow-hidden"
+        className="slider-before absolute inset-y-0 left-0 overflow-hidden border-r border-[#1179FF]/40"
         style={{ width: `${sliderPos}%` }}
       >
-        <img
-          src={img1}
-          alt="Before"
-          className="absolute inset-y-0 left-0 object-cover pointer-events-none"
-          style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
-        />
+        {img1 ? (
+          <img
+            src={img1}
+            alt="Before"
+            className="absolute inset-y-0 left-0 object-cover pointer-events-none"
+            style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
+          />
+        ) : (
+          <div
+            className="absolute inset-y-0 left-0 flex flex-col items-center justify-center bg-[#0d1d45] text-[#7082aa]"
+            style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
+          >
+            <FileImage size={32} className="mb-2 text-[#1179FF] opacity-40" />
+            <span className="text-xs font-mono">{label1} (No Image Staged)</span>
+          </div>
+        )}
         <span className="absolute left-4 bottom-4 bg-[#112557]/80 text-[#1179FF] font-mono text-[9px] font-bold tracking-wider px-2 py-1 z-10 rounded">
           {label1}
         </span>
