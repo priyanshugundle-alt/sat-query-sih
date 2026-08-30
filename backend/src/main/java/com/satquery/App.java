@@ -68,6 +68,7 @@ public class App {
         server.createContext("/api/upload", new UploadHandler());
         server.createContext("/api/analyze", new AnalyzeHandler());
         server.createContext("/api/analyse", new AnalyzeHandler());
+        server.createContext("/api/query", new AnalyzeHandler());
         server.createContext("/api/analysis/validate", new AnalysisValidateHandler());
         server.createContext("/api/analysis/plan", new AnalysisPlanHandler());
         server.createContext("/api/analysis/run", new AnalysisRunHandler());

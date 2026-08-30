@@ -9,6 +9,7 @@ import {
   History,
   Layers3,
   MapPin,
+  Menu,
   Orbit,
   Play,
   Plus,
@@ -26,817 +27,932 @@ import {
   Info,
   RefreshCw,
   ExternalLink,
+  Sparkles,
+  CheckCircle2,
+  SlidersHorizontal,
+  Compass,
 } from "lucide-react";
 import { toast } from "sonner";
-import { MapView } from "@/components/Map";
+import { InteractiveMap } from "@/components/InteractiveMap";
+import {
+  checkJvmHealth,
+  uploadAsset,
+  runQuery,
+  downloadReportPdf,
+  fetchQueryHistory,
+  validateAnalysis,
+  toWebUrl,
+} from "@/api/client";
+import { parseGeoTiffFile } from "@/lib/geotiff";
 
-// Structured satellite query scenario benchmarks
-const scenarios = {
-  vqa: {
-    label: "Single-image VQA",
-    short: "VQA",
-    task: "VQA",
-    query: "What land cover is visible in this image?",
-    title: "Optical scene land classification",
-    summary:
-      "Analyze a single optical band image to perform multi-class land cover classification.",
-    result:
-      "Built-up areas, water channels, and mixed vegetation are visible in the scene.",
-    status: "Strongly verified", // Strongly verified, Partially verified, Inconclusive, Discrepancies found
-    confidence: "HIGH (94%)",
-    recommendation:
-      "Run a temporal query using a secondary cloud-free scene to evaluate change dynamics.",
-    assets: [],
-    features: [
-      {
-        id: "f1",
-        detail:
-          "Urban built-up area boundary identified in center-left quadrant.",
-        source: "Spectral Bands (B4,B3,B2)",
-        pass: true,
-      },
-      {
-        id: "f2",
-        detail: "Open surface water body mapped in southern channel.",
-        source: "MNDWI index calculation",
-        pass: true,
-      },
-    ],
-    limitations: [
-      {
-        detail:
-          "12% cloud shadow in northeastern quadrant masks underlying forest canopy.",
-      },
-    ],
-    trace: [
-      {
-        name: "Query Received",
-        detail: "Satellite image query parsed and tokenized.",
-        status: "SUCCESS",
-        time: "0ms",
-      },
-      {
-        name: "Metadata Extract",
-        detail:
-          "Projection EPSG:32644 (UTM 44N) and resolution (10m) verified.",
-        status: "SUCCESS",
-        time: "12ms",
-      },
-      {
-        name: "Model Routing",
-        detail: "Dispatched query to Single-Scene VQA handler.",
-        status: "SUCCESS",
-        time: "24ms",
-      },
-      {
-        name: "Model Run",
-        detail: "Polymorphic visual transformer execution completed.",
-        status: "SUCCESS",
-        time: "420ms",
-      },
-      {
-        name: "Report Compiler",
-        detail: "Compiled JSON log output and serialized coordinates.",
-        status: "SUCCESS",
-        time: "450ms",
-      },
-    ],
+// -------------------------------------------------------------
+// TASK TYPES & REPRESENTATIVE QUERIES SPECIFICATION
+// -------------------------------------------------------------
+const TASK_CONFIGS = {
+  VQA: {
+    id: "VQA",
+    tabLabel: "VQA",
+    title: "Visual Question Answering",
+    defaultQuery: "Describe the land-cover and major objects visible in this image",
+    placeholder: "Ask about land-cover, infrastructure, water bodies, or terrain...",
+    targetEngine: "GeoChat-VQA (UniRS Adapter)",
+    minFiles: 1,
+    maxFiles: 1,
+    requiredModalities: ["OPTICAL"],
+    ruleDescription: "Requires 1 optical or multispectral satellite image.",
+    nextStepSuggestion:
+      "Try Grounding analysis to pinpoint specific spatial coordinates or water channels.",
   },
-  change: {
-    label: "Change detection",
-    short: "Change",
-    task: "CHANGE ANALYSIS",
-    query: "Compare changes in agricultural boundaries between T1 and T2.",
-    title: "Multi-temporal change analysis",
-    summary:
-      "Calculate pixel-level differences between optical scenes across distinct acquisition timestamps.",
-    result:
-      "Agricultural boundaries expanded near the eastern shoreline between January and June.",
-    status: "Partially verified",
-    confidence: "MEDIUM (78%)",
-    recommendation:
-      "Incorporate a radar SAR scene from June to evaluate surface roughness and soil moisture levels.",
-    assets: [],
-    features: [
-      {
-        id: "f1",
-        detail: "Vegetation index increase mapped along the eastern riverbank.",
-        source: "NDVI Difference Mask",
-        pass: true,
-      },
-      {
-        id: "f2",
-        detail:
-          "Soil moisture drop identified at coordinate sector [16.395, 81.752].",
-        source: "NDWI Index difference",
-        pass: true,
-      },
-    ],
-    limitations: [
-      {
-        detail:
-          "Extended temporal baseline (154 days) introduces seasonal vegetative cycles.",
-      },
-    ],
-    trace: [
-      {
-        name: "Query Received",
-        detail: "Temporal change query parsed.",
-        status: "SUCCESS",
-        time: "0ms",
-      },
-      {
-        name: "Metadata Extract",
-        detail:
-          "T1: 2024-01-12, T2: 2024-06-15. Baseline: 154 days. Compatible.",
-        status: "SUCCESS",
-        time: "18ms",
-      },
-      {
-        name: "Alignment Check",
-        detail: "Spatial bounds verified. Coordinate overlap is 99.2%.",
-        status: "SUCCESS",
-        time: "44ms",
-      },
-      {
-        name: "Model Routing",
-        detail: "Dispatched query to Multi-Temporal Change handler.",
-        status: "SUCCESS",
-        time: "380ms",
-      },
-      {
-        name: "Model Run",
-        detail: "Pixel-by-pixel difference mapping finished.",
-        status: "SUCCESS",
-        time: "410ms",
-      },
-      {
-        name: "Report Compiler",
-        detail: "Compiled JSON report output.",
-        status: "SUCCESS",
-        time: "430ms",
-      },
-    ],
+  CHANGE: {
+    id: "CHANGE",
+    tabLabel: "CHANGE",
+    title: "Multi-Temporal Change Detection",
+    defaultQuery: "What changed between these two dates, and where did the change occur?",
+    placeholder: "Ask about temporal differences, urban expansion, or deforestation between T1 and T2...",
+    targetEngine: "CDVQA-Siamese (ChangeQA Adapter)",
+    minFiles: 2,
+    maxFiles: 2,
+    requiredModalities: ["OPTICAL"],
+    ruleDescription: "Requires 2 optical images tagged as different timestamps (T1 & T2).",
+    nextStepSuggestion:
+      "Incorporate a radar SAR scene from the second date to evaluate surface roughness and moisture changes.",
   },
-  fusion: {
-    label: "Optical–SAR fusion",
-    short: "Fusion",
-    task: "FUSION ANALYSIS",
-    query: "Use both sensors to assess shoreline flooding evidence.",
-    title: "Multimodal sensor fusion analysis",
-    summary:
-      "Co-register optical bands with microwave backscatter maps to estimate water boundaries in cloudy areas.",
-    result:
-      "Shoreline flood inundation verified, with radar backscatter showing standing water attenuation.",
-    status: "Strongly verified",
-    confidence: "HIGH (91%)",
-    recommendation:
-      "Query a subsequent SAR acquisition (T2) to calculate water surface recession speed.",
-    assets: [],
-    features: [
-      {
-        id: "f1",
-        detail: "Standing surface water mapped under light canopy.",
-        source: "SAR backscatter attenuation (VV/VH)",
-        pass: true,
-      },
-      {
-        id: "f2",
-        detail: "Land-water boundary matches backscatter roughness drops.",
-        source: "Co-registered overlay index",
-        pass: true,
-      },
-    ],
-    limitations: [
-      {
-        detail:
-          "Acquisition delta of 2 days between sensors may introduce minor tidal shifts.",
-      },
-    ],
-    trace: [
-      {
-        name: "Query Received",
-        detail: "Multimodal query submitted.",
-        status: "SUCCESS",
-        time: "0ms",
-      },
-      {
-        name: "Metadata Extract",
-        detail:
-          "Sensor 1: OPTICAL, Sensor 2: SAR. Valid multimodal combination.",
-        status: "SUCCESS",
-        time: "15ms",
-      },
-      {
-        name: "Alignment Check",
-        detail: "Resampled SAR grid (10m) to match optical resolution.",
-        status: "SUCCESS",
-        time: "52ms",
-      },
-      {
-        name: "Model Routing",
-        detail: "Routed to Polymorphic Fusion Strategy.",
-        status: "SUCCESS",
-        time: "510ms",
-      },
-      {
-        name: "Model Run",
-        detail: "Bimodal feature mapping complete.",
-        status: "SUCCESS",
-        time: "540ms",
-      },
-      {
-        name: "Report Compiler",
-        detail: "Compiled output trace logs.",
-        status: "SUCCESS",
-        time: "570ms",
-      },
-    ],
+  FUSION: {
+    id: "FUSION",
+    tabLabel: "FUSION",
+    title: "Multimodal Optical-SAR Fusion",
+    defaultQuery: "Use the optical and SAR images together to identify built-up and water-covered regions",
+    placeholder: "Query cross-modal features combining optical reflectance with radar backscatter...",
+    targetEngine: "OpticalSAR-Fusion (EarthGPT Adapter)",
+    minFiles: 2,
+    maxFiles: 2,
+    requiredModalities: ["OPTICAL", "SAR"],
+    ruleDescription: "Requires at least 1 optical image + 1 SAR microwave radar image.",
+    nextStepSuggestion:
+      "Perform change analysis against historical SAR baselines to detect sub-surface terrain changes.",
+  },
+  GROUNDING: {
+    id: "GROUNDING",
+    tabLabel: "GROUNDING",
+    title: "Spatial Object Grounding",
+    defaultQuery: "Highlight the water body referred to in the query",
+    placeholder: "Enter referring expression to localize target features with bounding boxes...",
+    targetEngine: "GroundingDINO (UniRS Adapter)",
+    minFiles: 1,
+    maxFiles: 1,
+    requiredModalities: ["OPTICAL"],
+    ruleDescription: "Requires 1 satellite scene to extract target bounding boxes.",
+    nextStepSuggestion:
+      "Execute VQA land classification on the cropped bounding box region.",
   },
 };
 
-const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-const stage = items =>
-  items.map(item => ({ ...item, id: uid(), included: true }));
-
-const savedCases = () => {
-  try {
-    const data = JSON.parse(
-      window.localStorage.getItem("satquery-query-history") ?? "[]"
-    );
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
+function formatTraceTimestamp(ts) {
+  if (!ts) return "12ms";
+  if (typeof ts === "string" && ts.includes("T")) {
+    try {
+      const timePart = ts.split("T")[1];
+      return timePart ? timePart.split("Z")[0].slice(0, 8) : ts;
+    } catch {
+      return ts;
+    }
   }
-};
+  return ts;
+}
+
+// Initial benchmark cases for demonstration / fallback history
+const INITIAL_DEMO_CASES = [
+  {
+    id: "demo-q1",
+    scenarioId: "vqa",
+    taskType: "VQA",
+    query: "What land cover is visible in this image?",
+    result: "Built-up residential grid, water channel, and mixed agricultural fields are visible in the scene.",
+    confidence: "HIGH (94%)",
+    confidenceValue: 94,
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    evidenceCount: 1,
+    status: "VERIFIED",
+  },
+  {
+    id: "demo-q2",
+    scenarioId: "change",
+    taskType: "CHANGE",
+    query: "What changed between these two dates, and where did the change occur?",
+    result: "Agricultural expansion and shoreline recession identified along the eastern sector covering ~14.5% of the scene.",
+    confidence: "MEDIUM (78%)",
+    confidenceValue: 78,
+    createdAt: new Date(Date.now() - 7200000).toISOString(),
+    evidenceCount: 2,
+    status: "PARTIALLY VERIFIED",
+  },
+  {
+    id: "demo-q3",
+    scenarioId: "fusion",
+    taskType: "FUSION",
+    query: "Use the optical and SAR images together to identify built-up and water-covered regions",
+    result: "SAR backscatter successfully resolved geometric building clusters while optical channels confirmed coastal boundaries.",
+    confidence: "HIGH (91%)",
+    confidenceValue: 91,
+    createdAt: new Date(Date.now() - 14400000).toISOString(),
+    evidenceCount: 2,
+    status: "VERIFIED",
+  },
+];
 
 export default function Home() {
-  const [view, setView] = useState("board");
-  const [scenarioId, setScenarioId] = useState("fusion");
-  const [question, setQuestion] = useState(scenarios.fusion.query);
-  const [evidence, setEvidence] = useState([]);
+  const [view, setView] = useState("board"); // 'board' | 'evidence' | 'history'
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTaskTab, setActiveTaskTab] = useState("VQA");
+  const [queryText, setQueryText] = useState(TASK_CONFIGS.VQA.defaultQuery);
+  const [stagedAssets, setStagedAssets] = useState([]);
 
-  // Real / Demo states
-  const [isDemoMode, setIsDemoMode] = useState(true);
-  const [backendImageUrl, setBackendImageUrl] = useState(null);
-  const [backendAnswer, setBackendAnswer] = useState(null);
-  const [backendReport, setBackendReport] = useState(null);
-  const [backendTrace, setBackendTrace] = useState([]);
-  const [backendValidationResult, setBackendValidationResult] = useState(null);
+  // Execution & Backend states
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [jvmHealth, setJvmHealth] = useState("TESTING...");
-
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [history, setHistory] = useState(savedCases);
+  const [pipelineStep, setPipelineStep] = useState(1); // 1: Query -> 2: Metadata -> 3: Routing -> 4: Inference -> 5: Report
   const [showReceipt, setShowReceipt] = useState(false);
   const [activeQueryId, setActiveQueryId] = useState(null);
 
-  const scenario = scenarios[scenarioId];
-  const selectedEvidence = useMemo(
-    () => evidence.filter(item => item.included),
-    [evidence]
+  // Analysis Outputs from Backend
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [executionTrace, setExecutionTrace] = useState([]);
+  const [validationError, setValidationError] = useState(null);
+  const [history, setHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem("satquery-query-history");
+      return saved ? JSON.parse(saved) : INITIAL_DEMO_CASES;
+    } catch {
+      return INITIAL_DEMO_CASES;
+    }
+  });
+
+  const currentTask = TASK_CONFIGS[activeTaskTab];
+  const activeStagedAssets = useMemo(
+    () => stagedAssets.filter(item => item.included),
+    [stagedAssets]
   );
 
-  // Query JVM health dynamically
-  const fetchJvmHealth = async () => {
-    try {
-      const response = await fetch("/api/health");
-      if (response.ok) {
-        setJvmHealth("JVM CONNECTED");
-        setIsDemoMode(false);
-      } else {
-        setJvmHealth("JVM OFFLINE");
-      }
-    } catch {
+  // Check JVM backend health on mount and periodically
+  const refreshJvmHealth = async () => {
+    setJvmHealth("TESTING...");
+    const health = await checkJvmHealth();
+    if (health.connected) {
+      setJvmHealth("JVM CONNECTED");
+      setIsDemoMode(false);
+    } else {
       setJvmHealth("JVM OFFLINE");
+      setIsDemoMode(true);
     }
   };
 
   useEffect(() => {
-    fetchJvmHealth();
+    refreshJvmHealth();
+    // Load remote history if available
+    fetchQueryHistory().then(remoteHistory => {
+      if (remoteHistory && remoteHistory.length > 0) {
+        const formatted = remoteHistory.map(item => ({
+          id: item.queryId || `q-${Math.random().toString(36).substr(2, 6)}`,
+          taskType: (item.taskType || "VQA").toUpperCase(),
+          scenarioId: (item.taskType || "vqa").toLowerCase(),
+          query: item.query || item.question || "Satellite query",
+          result: item.answer || "Analysis result generated.",
+          confidence: item.confidenceState || "HIGH (88%)",
+          confidenceValue: item.confidenceState === "HIGH" ? 90 : item.confidenceState === "MEDIUM" ? 70 : 45,
+          createdAt: new Date().toISOString(),
+          evidenceCount: (item.evidence && item.evidence.length) || 1,
+          status: item.status || "VERIFIED",
+        }));
+        setHistory(prev => {
+          const combined = [...formatted, ...prev.filter(p => !formatted.some(f => f.id === p.id))];
+          return combined.slice(0, 20);
+        });
+      }
+    });
   }, []);
 
-  const switchScenario = id => {
-    setScenarioId(id);
-    setQuestion(scenarios[id].query);
-    setEvidence([]);
-    setIsComplete(false);
-    setView("board");
-    setBackendImageUrl(null);
-    setBackendAnswer(null);
-    setBackendReport(null);
-    setBackendTrace([]);
-    setBackendValidationResult(null);
-    setActiveQueryId(null);
-  };
+  // Update pipeline stepper based on assets and run status
+  useEffect(() => {
+    if (isRunning) {
+      // Step transitions during execution
+      setPipelineStep(3); // Routing
+      const timer = setTimeout(() => {
+        setPipelineStep(4); // Inference
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (isComplete) {
+      setPipelineStep(5); // Report ready
+    } else if (activeStagedAssets.length > 0) {
+      setPipelineStep(2); // Metadata validated
+    } else {
+      setPipelineStep(1); // Query
+    }
+  }, [isRunning, isComplete, activeStagedAssets.length]);
 
-  const uploadFiles = async files => {
-    if (!files.length) return;
-
-    if (isDemoMode) {
-      const toastId = toast.loading("Analyzing metadata... 0%");
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 25;
-        if (progress <= 100) {
-          toast.loading(`Extracting geospatial coordinates... ${progress}%`, {
-            id: toastId,
-          });
-        } else {
-          clearInterval(interval);
-          setEvidence(current => [
-            ...current,
-            ...files.slice(0, 3).map((file, index) => {
-              const nameLower = file.name.toLowerCase();
-              const isPngJpg =
-                nameLower.endsWith(".png") ||
-                nameLower.endsWith(".jpg") ||
-                nameLower.endsWith(".jpeg");
-
-              let warning = null;
-              if (isPngJpg) {
-                warning =
-                  "Warning: PNG/JPEG files lack standard geospatial headers (CRS bounds).";
-              }
-
-              const fileUrl =
-                file.type?.startsWith("image/") ||
-                nameLower.endsWith(".png") ||
-                nameLower.endsWith(".jpg") ||
-                nameLower.endsWith(".jpeg")
-                  ? URL.createObjectURL(file)
-                  : null;
-
-              return {
-                id: uid(),
-                name: file.name,
-                url: fileUrl,
-                kind:
-                  /sar|radar|sentinel.?1/i.test(file.name) ||
-                  (files.length > 1 && index > 0)
-                    ? "SAR"
-                    : "OPTICAL",
-                date: new Date().toISOString().slice(0, 10),
-                size: `${Math.max(file.size / 1024 / 1024, 0.1).toFixed(1)} MB`,
-                included: true,
-                warning,
-              };
-            }),
-          ]);
-          setIsComplete(false);
-          toast.success("Image asset staged (Demo mode)", {
-            id: toastId,
-            description: "Validation complete.",
-          });
-        }
-      }, 250);
-      return;
+  // Validation for staged files per task type
+  const stagingValidation = useMemo(() => {
+    const count = activeStagedAssets.length;
+    if (count === 0) {
+      return {
+        isValid: false,
+        message: "No assets staged. Please upload or stage satellite images to begin.",
+        type: "info",
+      };
     }
 
-    // Java backend mode upload
-    const toastId = toast.loading("Uploading imagery to Java server...");
-    const uploaded = [];
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
+    if (activeTaskTab === "VQA" || activeTaskTab === "GROUNDING") {
+      if (count !== 1) {
+        return {
+          isValid: false,
+          message: `${activeTaskTab} task requires exactly 1 staged satellite image. Currently ${count} staged.`,
+          type: "warning",
+        };
+      }
+      return { isValid: true, message: "Valid single-image scene staged.", type: "success" };
+    }
+
+    if (activeTaskTab === "CHANGE") {
+      if (count !== 2) {
+        return {
+          isValid: false,
+          message: `Change detection requires exactly 2 staged images (T1 & T2 temporal pair). Currently ${count} staged.`,
+          type: "warning",
+        };
+      }
+      return { isValid: true, message: "Valid temporal pair staged (T1 & T2).", type: "success" };
+    }
+
+    if (activeTaskTab === "FUSION") {
+      if (count < 2) {
+        return {
+          isValid: false,
+          message: "Fusion analysis requires 2 images: 1 Optical + 1 SAR Microwave Radar asset.",
+          type: "warning",
+        };
+      }
+      const modalities = activeStagedAssets.map(a => a.modality?.toUpperCase());
+      const hasOptical = modalities.includes("OPTICAL") || modalities.includes("MULTISPECTRAL");
+      const hasSar = modalities.includes("SAR") || modalities.includes("RADAR");
+
+      if (!hasOptical || !hasSar) {
+        return {
+          isValid: false,
+          message: "Modality mismatch: Fusion requires 1 Optical scene and 1 SAR radar scene.",
+          type: "warning",
+        };
+      }
+      return { isValid: true, message: "Valid Optical + SAR sensor pair staged.", type: "success" };
+    }
+
+    return { isValid: true, message: "Assets staged.", type: "success" };
+  }, [activeTaskTab, activeStagedAssets]);
+
+  // Task tab switcher
+  const handleTaskTabChange = tabId => {
+    setActiveTaskTab(tabId);
+    setQueryText(TASK_CONFIGS[tabId].defaultQuery);
+    setIsComplete(false);
+    setValidationError(null);
+  };
+
+  // Upload handler with client-side GeoTIFF parser and backend upload
+  const handleUploadFiles = async files => {
+    if (!files || !files.length) return;
+
+    const toastId = toast.loading(`Processing ${files.length} satellite asset(s)...`);
+    const newAssets = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const fileUrl = data.filePath
-            ? data.filePath.startsWith("/") || data.filePath.startsWith("http")
-              ? data.filePath
-              : `/uploads/${data.fileName}`
-            : file.type?.startsWith("image/") || file.name.match(/\.(png|jpg|jpeg)$/i)
-              ? URL.createObjectURL(file)
-              : null;
-          uploaded.push({
-            id: data.imageId,
-            name: data.fileName,
-            url: fileUrl,
-            kind: data.metadata?.modality || "OPTICAL",
-            date:
-              data.metadata?.acquisitionDate ||
-              new Date().toISOString().slice(0, 10),
-            size: `${Math.max(file.size / 1024 / 1024, 0.1).toFixed(1)} MB`,
-            included: true,
-          });
+        // 1. Client-side parse for instant GeoTIFF thumbnail & metadata
+        const parsed = await parseGeoTiffFile(file);
+
+        let modality = "OPTICAL";
+        const nameLower = file.name.toLowerCase();
+        if (/sar|radar|sentinel.?1|asf/i.test(nameLower)) {
+          modality = "SAR";
+        } else if (activeTaskTab === "FUSION" && stagedAssets.length === 1 && stagedAssets[0].modality === "OPTICAL") {
+          modality = "SAR";
         }
+
+        const localBlob = (file.type?.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(file.name))
+          ? URL.createObjectURL(file)
+          : null;
+        const initialPreview = parsed.previewUrl || localBlob || `/uploads/${encodeURIComponent(file.name)}`;
+
+        let assetEntry = {
+          id: `asset-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          name: file.name,
+          previewUrl: initialPreview,
+          modality,
+          kind: modality,
+          date: new Date().toISOString().slice(0, 10),
+          size: `${Math.max(file.size / 1024 / 1024, 0.1).toFixed(1)} MB`,
+          metadata: {
+            format: parsed.format,
+            width: parsed.width,
+            height: parsed.height,
+            bands: parsed.bands || 3,
+            crs: "EPSG:4326 (WGS 84)",
+            resolution: "10m GSD",
+            georeferenced: true,
+          },
+          included: true,
+          file,
+        };
+
+        // 2. Upload to Java Backend if online
+        if (!isDemoMode) {
+          try {
+            const uploaded = await uploadAsset(file);
+            assetEntry.id = uploaded.imageId;
+            assetEntry.filePath = uploaded.filePath;
+            // Always keep localBlob/parsed previewUrl if valid, fallback to clean uploaded.previewUrl
+            if (!assetEntry.previewUrl && uploaded.previewUrl) {
+              assetEntry.previewUrl = uploaded.previewUrl;
+            }
+            if (uploaded.metadata) {
+              assetEntry.metadata = { ...assetEntry.metadata, ...uploaded.metadata };
+              if (uploaded.metadata.modality) {
+                assetEntry.modality = uploaded.metadata.modality.toUpperCase();
+                assetEntry.kind = uploaded.metadata.modality.toUpperCase();
+              }
+            }
+          } catch (uploadErr) {
+            console.warn("Backend upload failed, keeping client staged asset:", uploadErr);
+          }
+        }
+
+        newAssets.push(assetEntry);
       } catch (err) {
-        console.error("Upload failed", err);
+        console.error("Error staging file:", err);
       }
     }
-    toast.dismiss(toastId);
 
-    if (uploaded.length > 0) {
-      setEvidence(current => [...current, ...uploaded]);
+    if (newAssets.length > 0) {
+      setStagedAssets(prev => [...prev, ...newAssets]);
       setIsComplete(false);
-      toast.success("Image assets uploaded to server");
+      toast.success(`Staged ${newAssets.length} asset(s) successfully`, { id: toastId });
     } else {
-      toast.error("Upload failed", {
-        description: "Verify JVM backend status in the sidebar.",
-      });
+      toast.error("Failed to stage assets", { id: toastId });
     }
   };
 
-  const runCase = async () => {
-    if (!question.trim()) {
-      toast.error("Query empty", {
-        description: "Please enter a satellite analysis query.",
-      });
+  // Run Query Analysis Execution
+  const handleRunQuery = async () => {
+    if (!queryText.trim()) {
+      toast.error("Please enter a query prompt.");
       return;
     }
-    if (!selectedEvidence.length) {
-      toast.error("No staged image assets", {
-        description: "Stage at least one image to run the analysis.",
+    if (!stagingValidation.isValid) {
+      toast.error("Staging validation error", {
+        description: stagingValidation.message,
       });
-      setView("evidence");
       return;
     }
 
     setIsRunning(true);
     setIsComplete(false);
-    setBackendValidationResult(null);
+    setValidationError(null);
+
+    const startTime = Date.now();
 
     if (isDemoMode) {
-      window.setTimeout(() => {
-        try {
-          const record = {
-            id: uid(),
-            scenarioId,
-            query: question.trim(),
-            result: scenario.result,
-            createdAt: new Date().toISOString(),
-            evidenceCount: selectedEvidence.length,
-          };
-          const next = [record, ...history].slice(0, 10);
-          setHistory(next);
-          window.localStorage.setItem(
-            "satquery-query-history",
-            JSON.stringify(next)
-          );
-          setIsRunning(false);
-          setIsComplete(true);
-          setBackendImageUrl(null);
-          setBackendAnswer(null);
-          setBackendReport(null);
-          setBackendTrace([]);
-          toast.success("Analysis complete");
-        } catch (e) {
-          console.error("Demo run error:", e);
-          setIsRunning(false);
-          setIsComplete(true);
-          toast.error("Demo analysis completed (failed to save history).");
+      // Demo mock execution
+      setTimeout(() => {
+        const queryId = `q-demo-${Math.random().toString(36).substr(2, 7)}`;
+        const latency = Date.now() - startTime;
+
+        let demoAnswer = "";
+        let demoEvidence = [];
+        let demoFeatures = [];
+        let demoBoxes = [];
+
+        if (activeTaskTab === "VQA") {
+          demoAnswer = "Local JVM VQA analysis indicates high-density urban residential area flanked by a major water reservoir channel and sparse agricultural fields on the periphery.";
+          demoFeatures = [
+            { detail: "Urban built-up area mapped in grid sector", source: "Multispectral B4/B3/B2", pass: true },
+            { detail: "Surface water absorption signature verified", source: "MNDWI Calculation", pass: true },
+          ];
+        } else if (activeTaskTab === "CHANGE") {
+          demoAnswer = "Multi-temporal change analysis detects agricultural expansion and vegetation index increase (+22%) along the eastern riverbank between T1 and T2.";
+          demoFeatures = [
+            { detail: "Vegetation index increase mapped along riverbank", source: "NDVI Difference Mask", pass: true },
+            { detail: "14.5% total scene land-cover shift confirmed", source: "Siamese Pixel Diff", pass: true },
+          ];
+        } else if (activeTaskTab === "FUSION") {
+          demoAnswer = "Cross-modal sensor fusion completed. Optical channels identified high-density road structures, while SAR microwave radar penetrated atmospheric scatter to delineate building footprints.";
+          demoFeatures = [
+            { detail: "SAR backscatter double-bounce resolved building structures", source: "C-Band Co-polarization", pass: true },
+            { detail: "Optical spectral bands mapped vegetative canopy", source: "Sentinel-2 MSI", pass: true },
+          ];
+        } else if (activeTaskTab === "GROUNDING") {
+          demoAnswer = "Spatial feature grounding successful. Bounding box coordinates localized around the target water channel.";
+          demoBoxes = [{ x1: 0.35, y1: 0.28, x2: 0.72, y2: 0.62, label: "Target Water Body (94%)" }];
+          demoFeatures = [
+            { detail: "Target water body localized within bounding coordinates [0.35, 0.28, 0.72, 0.62]", source: "GroundingDINO RS", pass: true },
+          ];
         }
-      }, 900);
+
+        const normalizedResult = {
+          queryId,
+          status: "SUCCESS",
+          isFailed: false,
+          answer: demoAnswer,
+          confidence: activeTaskTab === "CHANGE" ? 78 : 94,
+          confidenceState: activeTaskTab === "CHANGE" ? "MEDIUM" : "HIGH",
+          confidenceLabel: activeTaskTab === "CHANGE" ? "MEDIUM (78%)" : "HIGH (94%)",
+          boundingBoxes: demoBoxes,
+          changeMask: activeTaskTab === "CHANGE" ? (activeStagedAssets[0]?.previewUrl || null) : null,
+          resultImageUrl: activeStagedAssets[0]?.previewUrl || null,
+          evidence: demoEvidence,
+          limitations: [
+            "VLM inference limits are calibrated against benchmark training datasets.",
+            "Sub-pixel classification errors might exist around vegetative boundaries.",
+          ],
+          investigatorReport: {
+            hypothesis: "Spatial query matches multispectral profile.",
+            verdict: "Strongly supported",
+            nextBestEvidence: currentTask.nextStepSuggestion,
+          },
+          reportUrl: `/outputs/report-${queryId}.pdf`,
+          executionTrace: {
+            taskClassified: activeTaskTab,
+            modelUsed: currentTask.targetEngine,
+            params: { threshold: 0.85, modality: activeTaskTab },
+            steps: [
+              { name: "Query Received", detail: `Query "${queryText.substring(0, 40)}..." parsed and tokenized.`, status: "SUCCESS", time: "0ms" },
+              { name: "Metadata Extract", detail: `Projection EPSG:32644 verified for ${activeStagedAssets.length} asset(s).`, status: "SUCCESS", time: "14ms" },
+              { name: "Model Routing", detail: `Dispatched to ${currentTask.targetEngine}.`, status: "SUCCESS", time: "28ms" },
+              { name: "Model Inference", detail: "Polymorphic deep learning vision transformer executed.", status: "SUCCESS", time: `${latency}ms` },
+              { name: "Report Compilation", detail: "Serialized output logs and telemetry receipt.", status: "SUCCESS", time: `${latency + 15}ms` },
+            ],
+            latencyMs: latency,
+          },
+        };
+
+        setAnalysisResult(normalizedResult);
+        setExecutionTrace(normalizedResult.executionTrace.steps);
+        setActiveQueryId(queryId);
+        setIsRunning(false);
+        setIsComplete(true);
+
+        const newRecord = {
+          id: queryId,
+          taskType: activeTaskTab,
+          scenarioId: activeTaskTab.toLowerCase(),
+          query: queryText.trim(),
+          result: demoAnswer,
+          confidence: normalizedResult.confidenceLabel,
+          confidenceValue: normalizedResult.confidence,
+          createdAt: new Date().toISOString(),
+          evidenceCount: activeStagedAssets.length,
+          status: "VERIFIED",
+        };
+        const updatedHistory = [newRecord, ...history].slice(0, 20);
+        setHistory(updatedHistory);
+        try {
+          localStorage.setItem("satquery-query-history", JSON.stringify(updatedHistory));
+        } catch {}
+        toast.success("Analysis complete");
+      }, 700);
       return;
     }
 
-    // Java backend mode analysis
+    // Java Spring Boot Backend Mode Execution
     try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await runQuery({
+        imageIds: activeStagedAssets.map(a => a.id),
+        taskType: activeTaskTab,
+        queryText,
+        parameters: {
+          taskType: activeTaskTab,
+          modalities: activeStagedAssets.map(a => a.modality),
         },
-        body: JSON.stringify({
-          question: question.trim(),
-          queryText: question.trim(),
-          datasetContext: "NORMAL_SATELLITE",
-          imageIds: selectedEvidence.map(item => item.id),
-          requestedTask: null,
-          timestamp: new Date().toISOString(),
-        }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        if (
-          data.status === "VALIDATION_FAILED" ||
-          data.status === "TOOL_VALIDATION_FAILED"
-        ) {
-          setBackendValidationResult({
-            status: data.status,
-            error: data.answer,
-            trace: data.trace,
-          });
-          setIsRunning(false);
-          setIsComplete(false);
-          toast.error("Image metadata validation failed");
-          return;
-        }
-
-        let imageUrl = null;
-        if (data.evidence && data.evidence.length > 0) {
-          const mapEv = data.evidence.find(
-            ev =>
-              ev.evidenceType === "CHANGE_MAP" ||
-              ev.evidenceType === "BOUNDING_BOX" ||
-              ev.evidenceType === "SENSOR_BRANCH"
-          );
-          if (mapEv) {
-            imageUrl = mapEv.filePath;
-          }
-        }
-
-        if (imageUrl && !imageUrl.startsWith("/")) {
-          imageUrl = "/" + imageUrl;
-        }
-
-        setBackendImageUrl(imageUrl);
-        setBackendAnswer(data.answer);
-        setBackendReport(data.investigatorReport);
-        setBackendTrace(data.trace || []);
-        setActiveQueryId(data.queryId);
-
-        const record = {
-          id: data.queryId || uid(),
-          scenarioId,
-          query: question.trim(),
-          result: data.answer,
-          createdAt: new Date().toISOString(),
-          evidenceCount: selectedEvidence.length,
-        };
-
-        const next = [record, ...history].slice(0, 10);
-        setHistory(next);
-        window.localStorage.setItem(
-          "satquery-query-history",
-          JSON.stringify(next)
-        );
-
+      if (response.isFailed) {
+        setValidationError(response.answer);
         setIsRunning(false);
-        setIsComplete(true);
-        toast.success("Analysis report generated");
-      } else {
-        throw new Error(data.error || "Server processing error");
+        setIsComplete(false);
+        toast.error("Analysis validation failed", {
+          description: response.answer,
+        });
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Processing failed", {
-        description: err.message || "Error communicating with Java backend.",
-      });
+
+      setAnalysisResult(response);
+      setExecutionTrace(response.executionTrace?.steps || []);
+      setActiveQueryId(response.queryId);
       setIsRunning(false);
+      setIsComplete(true);
+
+      const newRecord = {
+        id: response.queryId,
+        taskType: activeTaskTab,
+        scenarioId: activeTaskTab.toLowerCase(),
+        query: queryText.trim(),
+        result: response.answer,
+        confidence: response.confidenceLabel,
+        confidenceValue: response.confidence,
+        createdAt: new Date().toISOString(),
+        evidenceCount: activeStagedAssets.length,
+        status: response.status || "VERIFIED",
+      };
+      const updatedHistory = [newRecord, ...history].slice(0, 20);
+      setHistory(updatedHistory);
+      try {
+        localStorage.setItem("satquery-query-history", JSON.stringify(updatedHistory));
+      } catch {}
+      toast.success("Query analysis report generated");
+    } catch (err) {
+      console.error("Backend query error:", err);
+      setIsRunning(false);
+      setValidationError(err.message || "Failed to execute query on Java backend");
+      toast.error("Query Execution Failed", {
+        description: err.message || "Please check JVM connection or switch to Demo Mode.",
+      });
     }
   };
 
-  const reset = () => {
-    setQuestion(scenario.query);
-    setIsComplete(false);
-    setBackendImageUrl(null);
-    setBackendAnswer(null);
-    setBackendReport(null);
-    setBackendTrace([]);
-    setBackendValidationResult(null);
-    setActiveQueryId(null);
-  };
-
-  const toggleEvidence = id => {
-    setEvidence(current =>
-      current.map(item =>
-        item.id === id ? { ...item, included: !item.included } : item
-      )
+  // Asset management actions
+  const handleToggleAsset = id => {
+    setStagedAssets(prev =>
+      prev.map(a => (a.id === id ? { ...a, included: !a.included } : a))
     );
     setIsComplete(false);
   };
 
-  const removeEvidence = id => {
-    setEvidence(current => current.filter(item => item.id !== id));
+  const handleRemoveAsset = id => {
+    setStagedAssets(prev => prev.filter(a => a.id !== id));
     setIsComplete(false);
   };
 
-  const clearHistory = () => {
+  const handleClearHistory = () => {
     setHistory([]);
-    window.localStorage.removeItem("satquery-query-history");
+    try {
+      localStorage.removeItem("satquery-query-history");
+    } catch {}
     toast.info("Query history cleared");
   };
 
-  const reopen = record => {
-    switchScenario(record.scenarioId);
-    setQuestion(record.query);
-    setBackendAnswer(record.result);
+  const handleReloadHistoryItem = item => {
+    const matchedTab = item.taskType || (item.scenarioId ? item.scenarioId.toUpperCase() : "VQA");
+    if (TASK_CONFIGS[matchedTab]) {
+      setActiveTaskTab(matchedTab);
+    }
+    setQueryText(item.query);
+    setAnalysisResult({
+      queryId: item.id,
+      answer: item.result,
+      confidence: item.confidenceValue || 85,
+      confidenceState: (item.confidence || "").includes("HIGH") ? "HIGH" : (item.confidence || "").includes("MEDIUM") ? "MEDIUM" : "LOW",
+      confidenceLabel: item.confidence || "HIGH (88%)",
+      boundingBoxes: [],
+      changeMask: null,
+      resultImageUrl: null,
+      evidence: [],
+      limitations: ["Historical report reloaded from database."],
+      investigatorReport: {
+        hypothesis: "Archived query result.",
+        verdict: item.status || "VERIFIED",
+        nextBestEvidence: "Review active raw grid files.",
+      },
+      reportUrl: `/outputs/report-${item.id}.pdf`,
+      executionTrace: {
+        taskClassified: matchedTab,
+        modelUsed: "UniRS-VLM",
+        params: {},
+        steps: [
+          { name: "Archive Retrieved", detail: `Loaded query "${item.query}" from telemetry store.`, status: "SUCCESS", time: "0ms" },
+        ],
+      },
+    });
+    setExecutionTrace([
+      { name: "Archive Retrieved", detail: `Loaded query "${item.query}" from telemetry store.`, status: "SUCCESS", time: "0ms" },
+    ]);
+    setActiveQueryId(item.id);
     setIsComplete(true);
     setView("board");
-    setActiveQueryId(record.id);
+    toast.success("Loaded query report into workstation");
   };
 
-  const downloadReceipt = () => {
-    const data = {
+  const handleDownloadPdf = async () => {
+    if (!activeQueryId) {
+      toast.error("No active report to download");
+      return;
+    }
+    const toastId = toast.loading("Preparing PDF report...");
+    try {
+      await downloadReportPdf(activeQueryId);
+      toast.success("PDF report downloaded", { id: toastId });
+    } catch {
+      toast.error("Failed to download PDF report", { id: toastId });
+    }
+  };
+
+  const handleDownloadJson = () => {
+    const reportData = {
       product: "SatQuery AI",
-      mode: isDemoMode ? "Demo Mode" : "Java Backend Mode",
+      queryId: activeQueryId || `q-${Date.now()}`,
+      taskType: activeTaskTab,
+      mode: isDemoMode ? "DEMO MODE" : "JAVA BACKEND MODE",
       generatedAt: new Date().toISOString(),
-      scenario: scenario.label,
-      question,
-      status: isComplete
-        ? isDemoMode
-          ? scenario.status
-          : backendReport?.verdict || "Completed"
-        : "Query staged",
-      result: isComplete ? backendAnswer || scenario.result : "N/A",
-      assets: selectedEvidence.map(({ name, kind, date }) => ({
-        name,
-        kind,
-        date,
+      question: queryText,
+      result: analysisResult?.answer || "N/A",
+      confidence: analysisResult?.confidenceLabel || "N/A",
+      stagedAssets: activeStagedAssets.map(a => ({
+        id: a.id,
+        fileName: a.name,
+        modality: a.modality,
+        metadata: a.metadata,
       })),
-      recommendation: isDemoMode
-        ? scenario.recommendation
-        : backendReport?.nextBestEvidence || "Review raw grid files.",
+      executionTrace: executionTrace,
+      limitations: analysisResult?.limitations || [],
     };
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `satquery-analysis-report-${Date.now()}.json`;
-    link.click();
+
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SatQuery-Report-${activeQueryId || Date.now()}.json`;
+    a.click();
     URL.revokeObjectURL(url);
-    toast.success("JSON report downloaded");
+    toast.success("JSON telemetry report downloaded");
   };
 
-  const tabs = [
+  const navTabs = [
     { id: "board", label: "Satellite workstation", icon: ScanSearch },
     { id: "evidence", label: "Image library", icon: Layers3 },
     { id: "history", label: "Query history", icon: History },
   ];
 
   return (
-    <div className="prism-shell min-h-screen flex flex-col md:flex-row text-navy">
-      {/* SIDEBAR NAVIGATION (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-[#dfe7fb] bg-white/80 backdrop-blur-xl sticky top-0 h-screen p-6 shrink-0 z-30 justify-between">
-        <div className="space-y-8">
-          {/* Brand mark */}
-          <div className="flex items-center gap-3 brand-block">
-            <div className="h-10 w-10 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc] shadow-sm">
-              <Orbit size={22} />
-            </div>
-            <div>
-              <p className="font-editorial text-[20px] font-extrabold tracking-tight leading-none">
-                SatQuery
-              </p>
-              <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[#7082aa] mt-1">
-                Geospatial AI
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation links */}
-          <nav className="space-y-1">
-            {tabs.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setView(id)}
-                className={`prism-nav rounded-lg focus-visible:outline-2 ${view === id ? "prism-nav-active shadow-sm" : ""}`}
-              >
-                <Icon
-                  size={16}
-                  className={view === id ? "text-[#1179FF]" : "text-[#7082aa]"}
-                />
-                <span className="flex-1">{label}</span>
-                {view === id && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#1179FF]" />
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Sidebar Footer Details & Mode Toggle */}
-        <div className="space-y-4 pt-4 border-t border-[#edf1fb]">
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => {
-                setIsDemoMode(!isDemoMode);
-                reset();
-                toast.info(
-                  isDemoMode
-                    ? "Switched to Real Java Backend Mode"
-                    : "Switched to Demo Mode (Mock)"
-                );
-              }}
-              className={`w-full mode-badge inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold transition rounded-lg border ${
-                isDemoMode
-                  ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]"
-                  : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
-              }`}
-            >
-              <span
-                className={`h-2.5 w-2.5 rounded-full ${isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"}`}
-              />
-              {isDemoMode ? "DEMO MODE (MOCK)" : "JAVA BACKEND MODE"}
-            </button>
-
-            {/* Health check status indicator */}
-            <div className="flex items-center justify-center gap-2 mt-1">
-              <span
-                className={`h-2 w-2 rounded-full ${jvmHealth.includes("CONNECTED") ? "bg-emerald-500" : "bg-red-400"}`}
-              />
-              <span className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
-                {jvmHealth}
-              </span>
-              <button
-                onClick={fetchJvmHealth}
-                className="p-0.5 hover:bg-[#EDF5FF] text-[#1179FF] rounded"
-              >
-                <RefreshCw size={10} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* MOBILE COMPACT HEADER */}
-      <header className="md:hidden sticky top-0 z-30 border-b border-[#dfe7fb] bg-white/95 px-5 py-3 backdrop-blur-xl w-full flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc]">
-              <Orbit size={18} />
-            </div>
-            <div>
-              <p className="font-editorial text-[17px] font-bold">SatQuery</p>
-              <p className="font-mono text-[8px] uppercase tracking-wider text-[#7082aa]">
-                Geospatial AI
-              </p>
-            </div>
-          </div>
-
+    <div className="prism-shell min-h-screen flex flex-col text-navy">
+      {/* GLOBAL TOP NAVIGATION BAR */}
+      <header className="sticky top-0 z-40 border-b border-[#dfe7fb] bg-white/85 backdrop-blur-xl px-4 md:px-8 py-3 w-full flex items-center justify-between shadow-xs">
+        {/* Left: Menu Button & Brand Mark */}
+        <div className="flex items-center gap-3 md:gap-4">
           <button
-            onClick={() => {
-              setIsDemoMode(!isDemoMode);
-              reset();
-            }}
-            className={`mode-badge inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold rounded-full border ${
-              isDemoMode
-                ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc]"
-                : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8]"
-            }`}
+            onClick={() => setIsMenuOpen(true)}
+            className="p-2 rounded-lg bg-white border border-[#dfe7fb] text-[#112557] hover:bg-[#EDF5FF] hover:border-[#1179FF] transition shadow-2xs flex items-center gap-2 group cursor-pointer"
+            title="Open Navigation Menu"
           >
-            {isDemoMode ? "DEMO" : "JAVA"}
+            <Menu size={18} className="text-[#1179FF] group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline text-xs font-bold text-navy">Menu</span>
           </button>
+
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc] shadow-2xs">
+              <Orbit size={20} />
+            </div>
+            <div>
+              <p className="font-editorial text-[18px] md:text-[20px] font-extrabold tracking-tight leading-none text-navy">
+                SatQuery AI
+              </p>
+              <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[#7082aa] mt-0.5">
+                Remote-Sensing VLM
+              </p>
+            </div>
+          </div>
         </div>
 
-        <nav className="flex overflow-x-auto border-t border-[#edf1fb] pt-2 gap-1 scrollbar-none">
-          {tabs.map(({ id, label, icon: Icon }) => (
+        {/* Center: Quick Navigation Tabs */}
+        <nav className="hidden md:flex items-center bg-[#f2f6fd] p-1 rounded-xl border border-[#e1ebfa]">
+          {navTabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setView(id)}
-              className={`flex-none inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-full transition ${view === id ? "bg-[#EDF5FF] text-navy" : "text-[#7082aa]"}`}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition ${
+                view === id
+                  ? "bg-white text-[#1179FF] shadow-xs"
+                  : "text-[#5a709c] hover:text-[#112557]"
+              }`}
             >
-              <Icon size={13} />
-              {label}
+              <Icon size={14} className={view === id ? "text-[#1179FF]" : "text-[#7082aa]"} />
+              <span>{label}</span>
             </button>
           ))}
         </nav>
+
+        {/* Right: Mode Switcher & JVM Health */}
+        <div className="flex items-center gap-2 md:gap-3">
+          <button
+            onClick={() => {
+              const nextMode = !isDemoMode;
+              setIsDemoMode(nextMode);
+              toast.info(
+                nextMode
+                  ? "Switched to Demo Mode (Mock Client)"
+                  : "Switched to Java Backend Mode"
+              );
+            }}
+            className={`mode-badge inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg border transition ${
+              isDemoMode
+                ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]"
+                : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
+            }`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"
+              }`}
+            />
+            <span className="hidden sm:inline">
+              {isDemoMode ? "DEMO MODE" : "JAVA BACKEND MODE"}
+            </span>
+            <span className="sm:hidden">{isDemoMode ? "DEMO" : "JAVA"}</span>
+          </button>
+
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#f6f9fe] border border-[#e1ebfa] rounded-lg">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                jvmHealth.includes("CONNECTED")
+                  ? "bg-emerald-500 animate-pulse"
+                  : "bg-red-400"
+              }`}
+            />
+            <span className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
+              {jvmHealth}
+            </span>
+            <button
+              onClick={refreshJvmHealth}
+              title="Refresh JVM Health"
+              className="p-0.5 hover:bg-[#EDF5FF] text-[#1179FF] rounded transition ml-1"
+            >
+              <RefreshCw size={10} />
+            </button>
+          </div>
+        </div>
       </header>
+
+      {/* SLIDE-OVER DRAWER MENU */}
+      {isMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsMenuOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 transition-opacity animate-in fade-in duration-200"
+          />
+
+          {/* Drawer Panel */}
+          <aside className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-white/95 backdrop-blur-2xl border-r border-[#dfe7fb] shadow-2xl z-50 p-6 flex flex-col justify-between animate-in slide-in-from-left duration-300">
+            <div className="space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-[#edf1fb]">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-9 w-9 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc] shadow-xs">
+                    <Orbit size={20} />
+                  </div>
+                  <div>
+                    <p className="font-editorial text-[18px] font-extrabold tracking-tight leading-none text-navy">
+                      SatQuery AI
+                    </p>
+                    <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[#7082aa] mt-0.5">
+                      Remote-Sensing VLM
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-1.5 rounded-lg text-[#7082aa] hover:text-[#112557] hover:bg-[#EDF5FF] transition cursor-pointer"
+                  title="Close Menu"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Navigation links */}
+              <nav className="space-y-1.5">
+                <p className="text-[9px] font-mono uppercase tracking-wider text-[#94a3b8] px-3 pb-1">
+                  Navigation
+                </p>
+                {navTabs.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => {
+                      setView(id);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`w-full prism-nav rounded-lg flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold transition cursor-pointer ${
+                      view === id
+                        ? "bg-[#EDF5FF] text-[#1179FF] border border-[#c7d9fc] shadow-xs"
+                        : "text-[#5a709c] hover:bg-gray-50 hover:text-navy"
+                    }`}
+                  >
+                    <Icon
+                      size={16}
+                      className={view === id ? "text-[#1179FF]" : "text-[#7082aa]"}
+                    />
+                    <span className="flex-1 text-left">{label}</span>
+                    {view === id && (
+                      <span className="h-2 w-2 rounded-full bg-[#1179FF]" />
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="space-y-3 pt-4 border-t border-[#edf1fb]">
+              <button
+                onClick={() => {
+                  const nextMode = !isDemoMode;
+                  setIsDemoMode(nextMode);
+                  toast.info(
+                    nextMode
+                      ? "Switched to Demo Mode (Mock Client)"
+                      : "Switched to Java Backend Mode"
+                  );
+                }}
+                className={`w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold transition rounded-lg border cursor-pointer ${
+                  isDemoMode
+                    ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]"
+                    : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
+                }`}
+              >
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${
+                    isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"
+                  }`}
+                />
+                {isDemoMode ? "DEMO MODE (MOCK)" : "JAVA BACKEND MODE"}
+              </button>
+
+              <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#7082aa]">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    jvmHealth.includes("CONNECTED")
+                      ? "bg-emerald-500 animate-pulse"
+                      : "bg-red-400"
+                  }`}
+                />
+                <span className="uppercase tracking-wider">{jvmHealth}</span>
+                <button
+                  onClick={refreshJvmHealth}
+                  title="Refresh JVM Health"
+                  className="p-0.5 hover:bg-[#EDF5FF] text-[#1179FF] rounded transition cursor-pointer"
+                >
+                  <RefreshCw size={11} />
+                </button>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
 
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 p-5 md:p-8 max-w-[1400px] w-full mx-auto space-y-8">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-8">
           {view === "board" && (
-            <Board
-              scenario={scenario}
-              scenarioId={scenarioId}
-              question={question}
-              setQuestion={setQuestion}
-              evidence={evidence}
-              selectedEvidence={selectedEvidence}
+            <WorkstationBoard
+              activeTaskTab={activeTaskTab}
+              onTaskTabChange={handleTaskTabChange}
+              queryText={queryText}
+              setQueryText={setQueryText}
+              stagedAssets={stagedAssets}
+              activeStagedAssets={activeStagedAssets}
+              stagingValidation={stagingValidation}
               isRunning={isRunning}
               isComplete={isComplete}
-              onScenario={switchScenario}
-              onUpload={uploadFiles}
-              onEvidence={() => setView("evidence")}
-              onRun={runCase}
-              onReset={reset}
-              onReceipt={() => setShowReceipt(true)}
-              backendImageUrl={backendImageUrl}
-              backendAnswer={backendAnswer}
-              backendReport={backendReport}
-              backendTrace={backendTrace}
-              backendValidationResult={backendValidationResult}
+              pipelineStep={pipelineStep}
+              onUploadFiles={handleUploadFiles}
+              onToggleAsset={handleToggleAsset}
+              onRemoveAsset={handleRemoveAsset}
+              onRunQuery={handleRunQuery}
+              onOpenLibrary={() => setView("evidence")}
+              onInspectReport={() => setShowReceipt(true)}
+              onDownloadPdf={handleDownloadPdf}
+              analysisResult={analysisResult}
+              executionTrace={executionTrace}
+              validationError={validationError}
               isDemoMode={isDemoMode}
+              currentTask={currentTask}
             />
           )}
 
           {view === "evidence" && (
-            <EvidenceView
-              evidence={evidence}
-              selectedCount={selectedEvidence.length}
-              onUpload={uploadFiles}
-              onToggle={toggleEvidence}
-              onRemove={removeEvidence}
+            <AssetLibraryView
+              stagedAssets={stagedAssets}
+              activeCount={activeStagedAssets.length}
+              onUpload={handleUploadFiles}
+              onToggle={handleToggleAsset}
+              onRemove={handleRemoveAsset}
               onBack={() => setView("board")}
             />
           )}
 
           {view === "history" && (
-            <HistoryView
+            <QueryHistoryView
               history={history}
               onBack={() => setView("board")}
-              onClear={clearHistory}
-              onReopen={reopen}
+              onClear={handleClearHistory}
+              onReload={handleReloadHistoryItem}
             />
           )}
         </main>
@@ -844,15 +960,15 @@ export default function Home() {
 
       {/* ANALYSIS REPORT MODAL */}
       {showReceipt && (
-        <Receipt
-          scenario={scenario}
-          question={question}
-          evidence={selectedEvidence}
-          complete={isComplete}
+        <ReportModal
+          taskConfig={currentTask}
+          queryText={queryText}
+          stagedAssets={activeStagedAssets}
+          isComplete={isComplete}
           onClose={() => setShowReceipt(false)}
-          onDownload={downloadReceipt}
-          backendAnswer={backendAnswer}
-          backendReport={backendReport}
+          onDownloadPdf={handleDownloadPdf}
+          onDownloadJson={handleDownloadJson}
+          analysisResult={analysisResult}
           isDemoMode={isDemoMode}
           queryId={activeQueryId}
         />
@@ -862,36 +978,36 @@ export default function Home() {
 }
 
 // -------------------------------------------------------------
-// SATELLITE WORKSTATION BOARD
+// WORKSTATION BOARD (Main Console Layout)
 // -------------------------------------------------------------
-function Board({
-  scenario,
-  scenarioId,
-  question,
-  setQuestion,
-  evidence,
-  selectedEvidence,
+function WorkstationBoard({
+  activeTaskTab,
+  onTaskTabChange,
+  queryText,
+  setQueryText,
+  stagedAssets,
+  activeStagedAssets,
+  stagingValidation,
   isRunning,
   isComplete,
-  onScenario,
-  onUpload,
-  onEvidence,
-  onRun,
-  onReset,
-  onReceipt,
-  backendImageUrl,
-  backendAnswer,
-  backendReport,
-  backendTrace,
-  backendValidationResult,
+  pipelineStep,
+  onUploadFiles,
+  onToggleAsset,
+  onRemoveAsset,
+  onRunQuery,
+  onOpenLibrary,
+  onInspectReport,
+  onDownloadPdf,
+  analysisResult,
+  executionTrace,
+  validationError,
   isDemoMode,
+  currentTask,
 }) {
-  const [activeStageTab, setActiveStageTab] = useState("image"); // image, split, map
-
-  // Overlay Toggles
-  const [showGrounding, setShowGrounding] = useState(false);
-  const [showMask, setShowMask] = useState(false);
-  const [showAOI, setShowAOI] = useState(false);
+  const [activeMediaTab, setActiveMediaTab] = useState("image"); // 'image' | 'split' | 'map'
+  const [showGrounding, setShowGrounding] = useState(true);
+  const [showMask, setShowMask] = useState(true);
+  const [showAOI, setShowAOI] = useState(true);
 
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -900,774 +1016,981 @@ function Board({
     e.preventDefault();
     setIsDragging(true);
   };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
+  const handleDragLeave = () => setIsDragging(false);
   const handleDrop = e => {
     e.preventDefault();
     setIsDragging(false);
     const files = Array.from(e.dataTransfer?.files ?? []);
     if (files.length) {
-      onUpload(files);
+      onUploadFiles(files);
     }
   };
 
-  // Processing steps timeline
-  const pipelineStep = useMemo(() => {
-    if (isRunning) return 3; // Routing/Processing
-    if (isComplete) return 4; // Inference complete
-    if (selectedEvidence.length > 0) return 2; // Metadata validated
-    return 1; // Query configured
-  }, [isRunning, isComplete, selectedEvidence]);
+  const primaryAsset = activeStagedAssets[0] || null;
+  const secondaryAsset = activeStagedAssets[1] || null;
+  const showAnalysisPanels = isRunning || isComplete || !!analysisResult;
 
-  const likelyTask = useMemo(() => {
-    if (selectedEvidence.length === 2) {
-      const modalities = selectedEvidence.map(e => e.kind);
-      if (modalities.includes("OPTICAL") && modalities.includes("SAR")) {
-        return "Bimodal sensor fusion model";
-      }
-      return "Temporal change detection model";
-    }
-    if (selectedEvidence.length === 1) {
-      return "Single-scene classification model";
-    }
-    return "Awaiting image selection...";
-  }, [selectedEvidence]);
-
-  const validationAlert = useMemo(() => {
-    if (backendValidationResult) return backendValidationResult.error;
-
-    if (scenarioId === "change" && selectedEvidence.length === 1) {
-      return "Format Alert: Change analysis requires a multi-temporal image pair. Please stage a secondary optical scene.";
-    }
-    if (scenarioId === "fusion" && selectedEvidence.length === 1) {
-      return "Modality Alert: Fusion analysis requires optical + SAR microwave inputs. Please stage a SAR radar asset.";
-    }
-    return null;
-  }, [backendValidationResult, scenarioId, selectedEvidence]);
-
-  return (
-    <div className="space-y-6">
-      {/* Title */}
-      <section className="flex flex-col gap-3">
+  // 1. STAGED ASSETS PANEL
+  const renderStagedAssets = () => (
+    <article className="investigation-plane plane-blue rounded-lg p-3.5 md:p-4 shadow-xs">
+      <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#cfe3ff] mb-3 justify-between">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#1179FF]" />
-          <p className="eyebrow text-[#1179FF]">Workstation Console</p>
+          <span className="h-5 w-5 rounded-full bg-[#ddecff] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+            01
+          </span>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+              Staged Assets
+            </h3>
+            <p className="text-[9px] text-[#5a709c]">
+              Input satellite raster files
+            </p>
+          </div>
         </div>
-        <h1 className="font-editorial text-[38px] md:text-[54px] tracking-tight leading-[1.05] text-navy font-bold">
-          Satellite Imagery Query Workstation
-        </h1>
-        <p className="max-w-[700px] text-sm md:text-base leading-relaxed text-[#5a709c]">
-          Submit natural-language queries against multispectral image datasets.
-          The Java agent parses coordinate bands, validates spatial overlaps,
-          and routes queries to adapted VLMs.
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-[9px] font-bold bg-[#1179FF] text-white px-1.5 py-0.5 rounded">
+            {activeStagedAssets.length} Active
+          </span>
+          <button
+            onClick={onOpenLibrary}
+            className="text-[10px] font-bold text-[#1179FF] hover:underline cursor-pointer"
+          >
+            Library
+          </button>
+        </div>
+      </div>
+
+      {/* Drag & Drop Upload Zone */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`upload-stage-stamp cursor-pointer border-dashed border-2 mb-3 p-3 text-center rounded-lg transition ${
+          isDragging
+            ? "border-[#1179FF] bg-[#EDF5FF] scale-[1.01]"
+            : "border-[#8eb6ec] hover:border-[#1179FF] bg-white/60"
+        }`}
+      >
+        <Upload size={18} className="mx-auto text-[#1179FF] mb-1" />
+        <p className="text-[10px] font-bold text-navy uppercase">DRAG & DROP GEOTIFF / TIFF</p>
+        <p className="text-[8px] text-[#7082aa] mt-0.5">
+          Supports GeoTIFF, TIFF, PNG, JPG (Multi-band optical & SAR)
         </p>
-      </section>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept=".tif,.tiff,.png,.jpg,.jpeg"
+          onChange={e => onUploadFiles(Array.from(e.target.files ?? []))}
+          className="hidden"
+        />
+      </div>
 
-      {/* Sleek Analysis Pipeline Ribbon */}
-      <section className="case-ribbon rounded-lg">
-        {[
-          { num: "01", label: "Query", detail: "Configure question" },
-          { num: "02", label: "Metadata", detail: "Validate coordinates" },
-          { num: "03", label: "Routing", detail: "Determine strategy" },
-          { num: "04", label: "Inference", detail: "Run VLM analysis" },
-          { num: "05", label: "Report", detail: "Generate output log" },
-        ].map((step, idx) => {
-          const stepNum = idx + 1;
-          const isActive = pipelineStep === stepNum;
-          const isDone = pipelineStep > stepNum;
-
+      {/* Staged Assets List */}
+      <div className="space-y-2 max-h-[220px] overflow-y-auto overflow-x-hidden pr-0.5 scrollbar-thin">
+        {stagedAssets.map(file => {
+          const mod = file.modality === "SAR" ? "SAR" : "OPTICAL";
           return (
             <div
-              key={step.label}
-              className={`ribbon-step ${isDone ? "ribbon-done" : isActive ? "ribbon-active" : "ribbon-pending"}`}
+              key={file.id}
+              className={`rounded-lg border p-2.5 transition flex items-center gap-2.5 ${
+                mod === "SAR"
+                  ? "bg-[#faf5ff] border-[#e9d5ff]"
+                  : "bg-white border-[#dce5fb]"
+              } ${file.included ? "opacity-100 shadow-xs" : "opacity-40"}`}
             >
-              <span className="ribbon-number">{isDone ? "✓" : step.num}</span>
-              <div>
-                <strong>{step.label}</strong>
-                <small>{step.detail}</small>
+              {/* File Type Icon (Image Logo) */}
+              <div
+                className={`h-8 w-8 shrink-0 rounded-md flex items-center justify-center border ${
+                  mod === "SAR"
+                    ? "bg-[#f3e8ff] border-[#d8b4fe] text-[#7846D7]"
+                    : "bg-[#edf5ff] border-[#c7d9fc] text-[#1179FF]"
+                }`}
+              >
+                {mod === "SAR" ? (
+                  <Radar size={16} className="stroke-[2.2]" />
+                ) : (
+                  <FileImage size={16} className="stroke-[2.2]" />
+                )}
+              </div>
+
+              {/* Text Info: Full Name + Modality & Size aligned clearly */}
+              <div className="min-w-0 flex-1">
+                <p
+                  className="text-xs font-bold text-[#112557] break-all leading-snug"
+                  title={file.name}
+                >
+                  {file.name}
+                </p>
+                <div className="flex items-center gap-1.5 mt-1 text-[10px]">
+                  <span
+                    className={`font-mono text-[8px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
+                      mod === "SAR"
+                        ? "bg-[#7846D7] text-white"
+                        : "bg-[#1179FF] text-white"
+                    }`}
+                  >
+                    {mod}
+                  </span>
+                  <span className="font-mono text-[#334155] font-semibold shrink-0">
+                    {file.size}
+                  </span>
+                  <span className="text-[#94a3b8]">•</span>
+                  <span className="font-mono text-[#64748b] shrink-0">
+                    {file.metadata?.bands ? `${file.metadata.bands}B` : "3B"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-0.5 shrink-0 -mr-1">
+                <button
+                  onClick={() => onToggleAsset(file.id)}
+                  title={file.included ? "Exclude from query" : "Include in query"}
+                  className={`p-1 rounded transition cursor-pointer ${
+                    file.included
+                      ? "text-emerald-600 hover:bg-emerald-50"
+                      : "text-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  <Check size={16} className="stroke-[2.5]" />
+                </button>
+                <button
+                  onClick={() => onRemoveAsset(file.id)}
+                  title="Remove file"
+                  className="p-1 rounded text-[#ff7c70] hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                >
+                  <Trash2 size={15} />
+                </button>
               </div>
             </div>
           );
         })}
-      </section>
 
-      {/* Workspace Columns */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
-        {/* COLUMN 1: IMAGE ASSETS (Left - col-span-3) */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Staged Image Assets */}
-          <article className="investigation-plane plane-blue rounded-lg p-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-[#cfe3ff] mb-4 justify-between">
-              <div className="flex items-center gap-2">
-                <span className="h-6 w-6 rounded-full bg-[#ddecff] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
-                  02
-                </span>
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
-                    Staged Assets
-                  </h3>
-                  <p className="text-[10px] text-[#5a709c]">
-                    Input satellite grid files
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={onEvidence}
-                className="text-[10px] font-bold text-[#1179FF] hover:underline"
-              >
-                Library
-              </button>
-            </div>
+        {!stagedAssets.length && (
+          <div className="text-center py-5 border border-dashed border-[#cfe3ff] rounded-lg bg-white/40">
+            <p className="text-[10px] text-[#7082aa] font-medium">
+              No satellite files staged.
+            </p>
+            <p className="text-[9px] text-[#8ea4cc] mt-0.5">
+              Drag files above or click to browse.
+            </p>
+          </div>
+        )}
+      </div>
+    </article>
+  );
 
-            {/* Drag & Drop Upload Zone */}
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`upload-stage-stamp cursor-pointer border-dashed border-2 mb-4 p-4 text-center rounded transition ${
-                isDragging
-                  ? "border-[#1179FF] bg-[#EDF5FF]"
-                  : "border-[#8eb6ec] hover:border-[#1179FF]"
+  // 2. COMPOSE QUERY PANEL
+  const renderComposeQuery = () => (
+    <article className="investigation-plane plane-white rounded-lg p-4 md:p-5 shadow-xs">
+      <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+            02
+          </span>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+              Compose Query
+            </h3>
+            <p className="text-[10px] text-[#7082aa]">
+              Task-specific reasoning prompt
+            </p>
+          </div>
+        </div>
+
+        {/* Task Tabs: VQA / CHANGE / FUSION / GROUNDING */}
+        <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa] flex-wrap">
+          {Object.keys(TASK_CONFIGS).map(taskId => (
+            <button
+              key={taskId}
+              onClick={() => onTaskTabChange(taskId)}
+              className={`px-2.5 py-1 font-mono text-[9px] font-bold uppercase rounded-md transition cursor-pointer ${
+                activeTaskTab === taskId
+                  ? "bg-[#112557] text-[#B7F23A] shadow-xs"
+                  : "text-[#7082aa] hover:text-navy"
               }`}
             >
-              <Upload size={18} className="text-[#1179FF]" />
-              <p className="text-[10px] font-bold">DRAG & DROP GEOTIFF</p>
-              <p className="text-[8px] text-[#7082aa]">
-                GeoTIFF / TIFF or standard files
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".tif,.tiff,.png,.jpg,.jpeg"
-                onChange={e => onUpload(Array.from(e.target.files ?? []))}
-                className="hidden"
-              />
-            </div>
-
-            {/* List of staged assets */}
-            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-              {evidence.map(file => (
-                <div
-                  key={file.id}
-                  className={`evidence-ticket ${file.kind === "SAR" ? "evidence-ticket-sar" : ""} ${file.warning ? "evidence-ticket-warning" : ""} ${file.included ? "opacity-100" : "opacity-40"}`}
-                >
-                  <span className="evidence-ticket-icon rounded">
-                    {file.kind === "SAR" ? (
-                      <Radar size={14} />
-                    ) : (
-                      <FileImage size={14} />
-                    )}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="text-[10px] font-bold text-navy truncate"
-                      title={file.name}
-                    >
-                      {file.name}
-                    </p>
-                    <p className="font-mono text-[7px] text-[#7082aa] mt-0.5">
-                      {file.kind} · {file.date}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => toggleEvidence(file.id)}
-                    className="p-1 hover:bg-[#EDF5FF] text-[#7082aa] rounded animate-fade-in"
-                  >
-                    <Check
-                      size={12}
-                      className={
-                        file.included
-                          ? "text-emerald-600 font-bold"
-                          : "text-gray-300"
-                      }
-                    />
-                  </button>
-                </div>
-              ))}
-              {!evidence.length && (
-                <p className="text-center text-[10px] text-[#7082aa] py-3">
-                  No staged files.
-                </p>
-              )}
-            </div>
-          </article>
-
-          {/* PIPELINE ROUTING TRACE LOGS */}
-          <article className="investigation-plane plane-white rounded-lg p-5">
-            <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-4">
-              <div className="flex items-center gap-2.5">
-                <Activity size={16} className="text-[#1179FF]" />
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
-                    Execution Trace
-                  </h3>
-                  <p className="text-[10px] text-[#7082aa]">
-                    Polymorphic route logs
-                  </p>
-                </div>
-              </div>
-              <span className="font-mono text-[8px] font-bold text-[#1179FF] uppercase bg-[#EDF5FF] px-1.5 py-0.5 rounded">
-                {isDemoMode ? "DEMO" : "JVM"}
-              </span>
-            </div>
-
-            <div className="trace-board space-y-3 max-h-[340px] overflow-y-auto pr-1">
-              {(backendTrace.length > 0
-                ? backendTrace
-                : isComplete
-                  ? scenario.trace
-                  : []
-              ).map((step, idx) => (
-                <div key={idx} className="border-l-2 border-[#1179FF]/30 pl-3 py-1 hover:border-[#1179FF] transition">
-                  <h4 className="text-[10px] font-bold text-navy flex items-center gap-1.5 flex-wrap">
-                    <span>{step.name || step.eventName}</span>
-                    {step.toolName && (
-                      <span className="font-mono text-[7px] font-bold bg-[#EDF5FF] text-[#1179FF] px-1 rounded">
-                        {step.toolName}
-                      </span>
-                    )}
-                  </h4>
-                  <p className="text-[9px] text-[#5a709c] mt-0.5 leading-relaxed">
-                    {step.detail}
-                  </p>
-                  <div className="flex items-center gap-2 font-mono text-[7px] text-[#7082aa] mt-1.5">
-                    <span>Latency: {step.time || "8ms"}</span>
-                    <span className="text-emerald-700 font-bold bg-[#efffc9] px-1 py-0.2 rounded text-[7px]">
-                      {step.status || "SUCCESS"}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {!isComplete && !isRunning && (
-                <p className="text-[10px] text-[#7082aa] py-3 italic text-center">
-                  Execute query to stream trace logs.
-                </p>
-              )}
-              {isRunning && (
-                <div className="flex items-center gap-2 text-[10px] text-[#1179FF] py-3 font-semibold justify-center">
-                  <Orbit size={14} className="animate-spin" />
-                  <span>Streaming route trace...</span>
-                </div>
-              )}
-            </div>
-          </article>
-        </div>
-
-        {/* COLUMN 2: ACTIVE OBSERVATION VIEW (Center - col-span-6) */}
-        <div className="lg:col-span-6 space-y-4">
-          {/* Query input */}
-          <article className="investigation-plane plane-white rounded-lg p-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
-              <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
-                01
-              </span>
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
-                  Compose Query
-                </h3>
-                <p className="text-[10px] text-[#7082aa]">
-                  Formulate analysis question
-                </p>
-              </div>
-            </div>
-
-            {/* Scenarios shortcuts */}
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {Object.keys(scenarios).map(id => (
-                <button
-                  key={id}
-                  onClick={() => onScenario(id)}
-                  className={`border px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[.06em] rounded transition ${
-                    scenarioId === id
-                      ? "border-navy bg-navy text-white"
-                      : "border-[#dfe6fa] bg-[#F8FBFF] text-[#7184aa] hover:border-[#aebdf0] hover:bg-white"
-                  }`}
-                >
-                  {scenarios[id].short}
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              className="w-full min-h-[90px] resize-none border border-[#dbe4fa] bg-[#fbfdff] p-3 text-xs font-semibold leading-relaxed text-navy outline-none rounded focus:border-[#1179FF] focus:bg-white transition"
-              placeholder="Enter query about the staged satellite assets..."
-            />
-
-            {/* Pipeline Status Overview */}
-            <div className="mt-3 space-y-2 border-t border-[#edf1fb] pt-3">
-              <div className="flex justify-between items-center text-[10px] text-[#5a709c]">
-                <span>Staged assets:</span>
-                <span className="font-mono font-bold bg-[#EDF5FF] px-1.5 py-0.5 rounded text-[#1179FF]">
-                  {selectedEvidence.length} file
-                  {selectedEvidence.length === 1 ? "" : "s"}
-                </span>
-              </div>
-              <div className="text-[10px] text-[#5a709c]">
-                <span>Target Engine: </span>
-                <span className="font-bold text-navy">{likelyTask}</span>
-              </div>
-            </div>
-          </article>
-
-          {/* Main Observation View Frame */}
-          <article className="investigation-plane stage-plane rounded-lg overflow-hidden flex flex-col relative">
-            {/* Header */}
-            <div className="stage-chrome border-b border-[#e1eafa]">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
-                <span className="font-mono text-[9px] font-bold tracking-wider text-[#1179FF] uppercase">
-                  {scenarioId === "fusion"
-                    ? "Multimodal Sensor Array"
-                    : scenarioId === "change"
-                      ? "Temporal Image Pair"
-                      : "Optical Grid Scene"}
-                </span>
-              </div>
-
-              {/* View Selector Tabs */}
-              <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa]">
-                {[
-                  { id: "image", label: "Image View" },
-                  { id: "split", label: "Split Compare" },
-                  { id: "map", label: "Interactive Map" },
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      if (tab.id === "split" && selectedEvidence.length < 2) {
-                        toast.info(
-                          "Split compare requires at least 2 staged images."
-                        );
-                        return;
-                      }
-                      setActiveStageTab(tab.id);
-                    }}
-                    className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition ${
-                      activeStageTab === tab.id
-                        ? "bg-white text-navy shadow-sm"
-                        : "text-[#7082aa] hover:text-navy"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Central Media Canvas */}
-            <div className="relative min-h-[380px] bg-[#112557] overflow-hidden flex items-center justify-center">
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,#112557_95%)] pointer-events-none" />
-
-              {/* Map View */}
-              {activeStageTab === "map" && (
-                <div className="absolute inset-0 w-full h-full">
-                  <MapView
-                    className="w-full h-full"
-                    initialCenter={{ lat: 16.3952, lng: 81.7516 }}
-                    initialZoom={13}
-                  />
-                </div>
-              )}
-
-              {/* Image View */}
-              {activeStageTab === "image" && (
-                <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-                  {backendImageUrl || selectedEvidence[0]?.url ? (
-                    <img
-                      src={backendImageUrl || selectedEvidence[0]?.url}
-                      alt="Satellite Observation Grid"
-                      className="w-full h-full object-cover transition duration-300"
-                    />
-                  ) : selectedEvidence.length > 0 ? (
-                    <div className="flex flex-col items-center justify-center text-center p-6 text-[#7082aa]">
-                      <div className="h-16 w-16 rounded-full bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] mb-3 border border-[#d2e3fc]">
-                        <FileImage size={32} />
-                      </div>
-                      <p className="text-sm font-bold text-navy">Staged Asset: {selectedEvidence[0]?.name}</p>
-                      <p className="text-xs text-[#7082aa] mt-1 max-w-xs leading-relaxed">
-                        GeoTIFF raster dataset staged. Click "Run Query Analysis" to process.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-center p-6 text-[#7082aa]">
-                      <div className="h-16 w-16 rounded-full bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] mb-3 border border-[#d2e3fc]">
-                        <ScanSearch size={32} />
-                      </div>
-                      <p className="text-sm font-bold text-navy">No Image Displayed</p>
-                      <p className="text-xs text-[#7082aa] mt-1 max-w-xs leading-relaxed">
-                        Upload GeoTIFF/image assets or run backend analysis to display imagery output.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Split Slider */}
-              {activeStageTab === "split" && (
-                <div className="absolute inset-0 w-full h-full">
-                  <ImageCompareSlider
-                    img1={selectedEvidence[0]?.url || selectedEvidence[0]?.path || null}
-                    img2={selectedEvidence[1]?.url || selectedEvidence[1]?.path || null}
-                    label1={`T1 (${selectedEvidence[0]?.name || "Asset 1"})`}
-                    label2={`T2 (${selectedEvidence[1]?.name || "Asset 2"})`}
-                  />
-                </div>
-              )}
-
-              {/* Overlays SVG overlay */}
-              {activeStageTab === "image" && (
-                <div className="absolute inset-0 pointer-events-none">
-                  {showGrounding && (isComplete || backendImageUrl) && (
-                    <svg className="absolute inset-0 w-full h-full">
-                      <rect
-                        x="35%"
-                        y="30%"
-                        width="35%"
-                        height="30%"
-                        fill="none"
-                        stroke="#B7F23A"
-                        strokeWidth="2.5"
-                        strokeDasharray="6 3"
-                        className="animate-pulse"
-                      />
-                      <g transform="translate(180, 100)">
-                        <rect
-                          x="0"
-                          y="0"
-                          width="130"
-                          height="18"
-                          fill="#112557"
-                          rx="3"
-                        />
-                        <text
-                          x="6"
-                          y="12"
-                          fill="#B7F23A"
-                          className="font-mono text-[8px] font-bold"
-                        >
-                          [VLM GROUNDING MASK: 94%]
-                        </text>
-                      </g>
-                    </svg>
-                  )}
-                  {showMask && isComplete && (
-                    <div className="absolute inset-0 bg-[#FF7C70]/15 mix-blend-overlay border border-[#FF7C70]/30" />
-                  )}
-                  {showAOI && (
-                    <svg className="absolute inset-0 w-full h-full">
-                      <rect
-                        x="15%"
-                        y="15%"
-                        width="70%"
-                        height="70%"
-                        fill="none"
-                        stroke="#1179FF"
-                        strokeWidth="2.5"
-                        strokeDasharray="8 4"
-                      />
-                      <text
-                        x="16%"
-                        y="13%"
-                        fill="#1179FF"
-                        className="font-mono text-[8px] font-bold"
-                      >
-                        [BOUNDS AOI LIMIT]
-                      </text>
-                    </svg>
-                  )}
-                </div>
-              )}
-
-              {/* Translucent Cloud alert */}
-              {scenarioId === "change" && (
-                <div className="absolute top-4 left-4 z-10 bg-[#FF7C70]/90 text-navy font-bold text-[9px] px-2.5 py-1 rounded shadow flex items-center gap-1.5">
-                  <AlertCircle size={12} />
-                  <span>
-                    Cloud Cover Alert: 15% noise detected in T1 band.
-                    Calibrating filters.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Readout coordinates footer */}
-            <div className="bg-white px-4 py-2 border-t border-[#e2ebfb] flex items-center justify-between text-[10px] font-mono text-[#5a709c]">
-              <div className="flex items-center gap-1">
-                <MapPin size={12} className="text-[#1179FF]" />
-                <span>Dataset File: {selectedEvidence[0] ? selectedEvidence[0].name : "No Active Staged Asset"}</span>
-              </div>
-              <div>
-                <span>{selectedEvidence[0] ? `Size: ${selectedEvidence[0].size} · Mode: ${selectedEvidence[0].kind}` : "Raster Metadata Awaiting Staging"}</span>
-              </div>
-            </div>
-          </article>
-
-          {/* Overlays toggle switches */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-[#dfe7fb] rounded-lg">
-            <span className="text-[10px] font-bold text-navy uppercase tracking-wider">
-              Raster Overlays:
-            </span>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showGrounding}
-                  onChange={() => setShowGrounding(!showGrounding)}
-                  className="rounded text-[#1179FF]"
-                />
-                <span>Grounding Boxes</span>
-              </label>
-              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showMask}
-                  onChange={() => setShowMask(!showMask)}
-                  className="rounded text-[#7846D7]"
-                />
-                <span>Change Masks</span>
-              </label>
-              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showAOI}
-                  onChange={() => setShowAOI(!showAOI)}
-                  className="rounded text-[#B7F23A]"
-                />
-                <span>AOI Boundaries</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Staged inputs warnings */}
-          {validationAlert && (
-            <div className="bg-[#fff7f5] border-l-4 border-[#FF7C70] p-4 text-xs text-[#8c514c] rounded-r-lg space-y-1">
-              <div className="flex items-center gap-1.5 font-bold">
-                <AlertCircle size={14} className="text-[#FF7C70]" />
-                <span>GEOSPATIAL STAGING ALIGNMENT WARNING</span>
-              </div>
-              <p>{validationAlert}</p>
-            </div>
-          )}
-
-          {/* Run and Report action shelf */}
-          <div className="flex items-center justify-between gap-4 bg-white p-4 border border-[#dfe7fb] rounded-lg">
-            <div className="text-[11px] text-[#5a709c]">
-              {isRunning
-                ? "Java agent evaluating routing..."
-                : isComplete
-                  ? "Analysis complete."
-                  : "Stage assets and execute query."}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={onRun}
-                disabled={isRunning}
-                className="secondary-button"
-              >
-                {isRunning ? (
-                  <>
-                    <Orbit size={14} className="animate-spin" />
-                    <span>JVM processing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Play size={14} fill="currentColor" />
-                    <span>Run Query Analysis</span>
-                  </>
-                )}
-              </button>
-              {isComplete && (
-                <button onClick={onReceipt} className="primary-button">
-                  <FileText size={14} />
-                  <span>Inspect Report</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* COLUMN 3: ANALYSIS OUTPUT & FEATURES (Right - col-span-3) */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Analysis output */}
-          <article
-            className={`investigation-plane rounded-lg p-5 border ${
-              isComplete
-                ? backendReport?.verdict === "Strongly supported" ||
-                  scenario.status === "Strongly verified"
-                  ? "plane-lime"
-                  : "plane-yellow"
-                : "plane-white"
-            }`}
-          >
-            <div className="flex items-center gap-2 pb-3 border-b border-black/10 mb-4 justify-between">
-              <div className="flex items-center gap-2">
-                <span className="h-6 w-6 rounded-full bg-black/5 flex items-center justify-center font-mono text-[9px] font-bold">
-                  03
-                </span>
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider">
-                    Analysis Output
-                  </h3>
-                  <p className="text-[9px] text-[#5a709c]">
-                    Visual model prediction
-                  </p>
-                </div>
-              </div>
-              {isComplete && (
-                <span
-                  className={`px-2 py-0.5 font-mono text-[8px] font-bold rounded ${
-                    (backendReport?.verdict || scenario.status).includes(
-                      "Strongly"
-                    )
-                      ? "bg-[#B7F23A] text-[#234413]"
-                      : "bg-[#F4B900]/25 text-[#735200]"
-                  }`}
-                >
-                  {scenario.confidence || "HIGH"}
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <p className="text-[10px] text-[#5a709c] eyebrow">
-                  Verification status
-                </p>
-                <h4 className="font-editorial text-xl md:text-2xl tracking-tight mt-1 font-bold break-words uppercase">
-                  {isComplete
-                    ? (backendReport?.verdict || scenario.status || "").replace(/_/g, " ")
-                    : "Awaiting Execution..."}
-                </h4>
-              </div>
-
-              <div>
-                <p className="text-[10px] text-[#5a709c] eyebrow">
-                  VLM response
-                </p>
-                <p className="text-xs leading-relaxed text-navy mt-1">
-                  {isComplete
-                    ? backendAnswer || scenario.result
-                    : "Configure query inputs. Click 'Run Query Analysis' to trigger JVM strategy handlers and VLM inference."}
-                </p>
-              </div>
-            </div>
-          </article>
-
-          {/* Analysis highlights / Processed Features */}
-          <article className="investigation-plane plane-white rounded-lg p-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
-              <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
-                04
-              </span>
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
-                  Detected Features
-                </h3>
-                <p className="text-[10px] text-[#7082aa]">
-                  Raster classification details
-                </p>
-              </div>
-            </div>
-
-            {isComplete ? (
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <p className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
-                    Analysis Highlights
-                  </p>
-                  {(backendReport
-                    ? [
-                        {
-                          id: "f1",
-                          detail:
-                            "Spectral boundary change mapped across target coordinate pixels.",
-                          source: "Java Difference Processor",
-                          pass: true,
-                        },
-                      ]
-                    : scenario.features
-                  ).map(feat => (
-                    <div key={feat.id} className="claim-ledger-item">
-                      <p className="text-[11px] font-bold text-navy">
-                        {feat.detail}
-                      </p>
-                      <div className="flex justify-between items-center mt-1.5 text-[8px] font-mono text-[#7082aa]">
-                        <span>Source: {feat.source}</span>
-                        <span className="text-emerald-700 font-bold">
-                          VERIFIED
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-2 pt-2 border-t border-[#edf1fb]">
-                  <p className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
-                    Raster limitations
-                  </p>
-                  {(backendReport
-                    ? [
-                        {
-                          detail:
-                            "VLM inference limits are calibrated against static training datasets.",
-                        },
-                      ]
-                    : scenario.limitations
-                  ).map((lim, i) => (
-                    <div
-                      key={i}
-                      className="claim-ledger-item claim-ledger-challenge"
-                    >
-                      <p className="text-[11px] font-semibold text-[#8c514c]">
-                        {lim.detail}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="text-[10px] text-[#7082aa] text-center py-6">
-                Highlights populated after analysis execution.
-              </p>
-            )}
-          </article>
-
-          {/* Recommendations (Yellow highlight card) */}
-          <article className="investigation-plane plane-yellow rounded-lg p-5">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#f4db94] mb-3">
-              <Info size={14} className="text-[#F4B900]" />
-              <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#735200]">
-                Next analysis steps
-              </span>
-            </div>
-            <p className="text-xs leading-relaxed text-[#735200]">
-              {isComplete
-                ? backendReport?.nextBestEvidence || scenario.recommendation
-                : "Awaiting model response. System will output next analysis steps here."}
-            </p>
-          </article>
+              {TASK_CONFIGS[taskId].tabLabel}
+            </button>
+          ))}
         </div>
       </div>
 
+      {/* Query Input Box */}
+      <div className="space-y-2">
+        <textarea
+          value={queryText}
+          onChange={e => setQueryText(e.target.value)}
+          placeholder={currentTask.placeholder}
+          className="w-full min-h-[85px] resize-none border border-[#dbe4fa] bg-[#fbfdff] p-3 text-xs font-medium leading-relaxed text-navy outline-none rounded-lg focus:border-[#1179FF] focus:bg-white transition"
+        />
 
+        {/* Target Engine readout + Staged assets count */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#edf1fb] text-[10px] text-[#5a709c]">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#7082aa]">Target Engine:</span>
+            <span className="font-mono font-bold text-[#1179FF] bg-[#EDF5FF] px-2 py-0.5 rounded">
+              {currentTask.targetEngine}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#7082aa]">Staged:</span>
+            <span className="font-mono font-bold text-navy">
+              {activeStagedAssets.length} file
+              {activeStagedAssets.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+
+  // 3. ACTION CTA SHELF
+  const renderActionShelf = () => (
+    <div className="space-y-2.5">
+      {/* Inline Validation Error Banner */}
+      {!stagingValidation.isValid && (
+        <div className="bg-[#fff7f5] border-l-4 border-[#FF7C70] p-3 text-xs text-[#8c514c] rounded-r-lg space-y-0.5 shadow-2xs">
+          <div className="flex items-center gap-1.5 font-bold">
+            <AlertCircle size={14} className="text-[#FF7C70]" />
+            <span>TASK STAGING VALIDATION ALERT</span>
+          </div>
+          <p className="text-[11px]">{stagingValidation.message}</p>
+        </div>
+      )}
+
+      {/* Primary CTA Run Query Action Shelf */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 border border-[#dfe7fb] rounded-lg shadow-xs">
+        <div className="text-[11px] text-[#5a709c]">
+          {isRunning
+            ? "Dispatched to JVM model runtime..."
+            : isComplete
+            ? "Inference complete. Review output and features."
+            : "Stage required assets and click to analyze."}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRunQuery}
+            disabled={isRunning || !stagingValidation.isValid || !queryText.trim()}
+            className={`secondary-button font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-2 transition cursor-pointer ${
+              isRunning
+                ? "opacity-80 cursor-wait bg-[#EDF5FF]"
+                : stagingValidation.isValid && queryText.trim()
+                ? "bg-[#B7F23A] text-[#112557] hover:bg-[#a6e029] border-none shadow-xs hover:scale-[1.02]"
+                : "opacity-40 cursor-not-allowed bg-gray-100 text-gray-400"
+            }`}
+          >
+            {isRunning ? (
+              <>
+                <Orbit size={16} className="animate-spin text-[#112557]" />
+                <span>JVM Running...</span>
+              </>
+            ) : (
+              <>
+                <Play size={15} fill="currentColor" />
+                <span>Run Query Analysis</span>
+              </>
+            )}
+          </button>
+
+          {isComplete && (
+            <button
+              onClick={onInspectReport}
+              className="primary-button font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-1.5 bg-[#112557] text-white hover:bg-[#1c387d] cursor-pointer shadow-xs"
+            >
+              <FileText size={15} />
+              <span>Inspect Report</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // 4. MULTIMODAL SENSOR ARRAY
+  const renderSensorArray = () => (
+    <div className="space-y-4">
+      <article className="investigation-plane stage-plane rounded-lg overflow-hidden flex flex-col relative shadow-xs">
+        {/* Header / Tabs */}
+        <div className="stage-chrome border-b border-[#e1eafa] flex items-center justify-between p-3 bg-white flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+            <span className="font-mono text-[9px] font-bold tracking-wider text-[#1179FF] uppercase">
+              Multimodal Sensor Array
+            </span>
+          </div>
+
+          {/* Media Mode Tabs */}
+          <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa]">
+            {[
+              { id: "image", label: "Image View" },
+              { id: "split", label: "Split Compare" },
+              { id: "map", label: "Interactive Map" },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id === "split" && activeStagedAssets.length < 2) {
+                    toast.info("Split compare requires at least 2 staged images.");
+                    return;
+                  }
+                  setActiveMediaTab(tab.id);
+                }}
+                className={`px-3 py-1 text-[9px] font-bold rounded-md transition cursor-pointer ${
+                  activeMediaTab === tab.id
+                    ? "bg-[#112557] text-white shadow-xs"
+                    : "text-[#7082aa] hover:text-navy"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Central Media Canvas */}
+        <div className="relative min-h-[420px] bg-[#112557] overflow-hidden flex items-center justify-center">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+
+          {/* TAB 1: Image View */}
+          {activeMediaTab === "image" && (
+            <div className="relative w-full h-full p-2 flex items-center justify-center overflow-hidden">
+              {analysisResult?.resultImageUrl || primaryAsset?.previewUrl ? (
+                <div className="relative max-w-full max-h-full flex items-center justify-center">
+                  <img
+                    src={analysisResult?.resultImageUrl || primaryAsset?.previewUrl}
+                    alt="Satellite Observation Grid"
+                    className="max-w-full max-h-[520px] w-auto h-auto object-contain transition duration-300 select-none shadow-lg rounded"
+                    onError={e => {
+                      if (primaryAsset?.file && !e.currentTarget.src.startsWith("blob:")) {
+                        e.currentTarget.src = URL.createObjectURL(primaryAsset.file);
+                      } else if (primaryAsset?.name) {
+                        e.currentTarget.src = `/uploads/${encodeURIComponent(primaryAsset.name)}`;
+                      }
+                    }}
+                  />
+
+                  {/* SVG Raster Overlays Layer */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Grounding Boxes */}
+                    {showGrounding &&
+                      (analysisResult?.boundingBoxes?.length > 0 ||
+                        activeTaskTab === "GROUNDING") &&
+                      (isComplete || analysisResult) && (
+                        <svg className="absolute inset-0 w-full h-full">
+                          <rect
+                            x="30%"
+                            y="25%"
+                            width="40%"
+                            height="35%"
+                            fill="none"
+                            stroke="#B7F23A"
+                            strokeWidth="2.5"
+                            strokeDasharray="6 3"
+                            className="animate-pulse"
+                          />
+                          <g transform="translate(10, 20)">
+                            <rect
+                              x="0"
+                              y="0"
+                              width="150"
+                              height="20"
+                              fill="#112557"
+                              rx="4"
+                            />
+                            <text
+                              x="8"
+                              y="14"
+                              fill="#B7F23A"
+                              className="font-mono text-[9px] font-bold"
+                            >
+                              [GROUNDING BOX: 94%]
+                            </text>
+                          </g>
+                        </svg>
+                      )}
+
+                    {/* Change Masks */}
+                    {showMask && (activeTaskTab === "CHANGE" || analysisResult?.changeMask) && isComplete && (
+                      <div className="absolute inset-0 bg-[#FF7C70]/20 mix-blend-screen border-2 border-[#FF7C70]/40 pointer-events-none flex items-center justify-center">
+                        <span className="font-mono text-[9px] font-bold text-[#FF7C70] bg-[#112557]/80 px-2 py-1 rounded">
+                          [TEMPORAL CHANGE HEATMAP OVERLAY ACTIVE]
+                        </span>
+                      </div>
+                    )}
+
+                    {/* AOI Boundaries */}
+                    {showAOI && (
+                      <svg className="absolute inset-0 w-full h-full">
+                        <rect
+                          x="4%"
+                          y="4%"
+                          width="92%"
+                          height="92%"
+                          fill="none"
+                          stroke="#1179FF"
+                          strokeWidth="2"
+                          strokeDasharray="8 4"
+                        />
+                        <text
+                          x="6%"
+                          y="16"
+                          fill="#1179FF"
+                          className="font-mono text-[8px] font-bold"
+                        >
+                          [AOI BOUNDS: EPSG:4326]
+                        </text>
+                      </svg>
+                    )}
+                  </div>
+                </div>
+              ) : activeStagedAssets.length > 0 ? (
+                <div className="flex flex-col items-center justify-center text-center p-6 text-[#7082aa]">
+                  <div className="h-16 w-16 rounded-full bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] mb-3 border border-[#d2e3fc]">
+                    <FileImage size={32} />
+                  </div>
+                  <p className="text-sm font-bold text-white">
+                    Staged: {primaryAsset?.name}
+                  </p>
+                  <p className="text-xs text-[#8ea4cc] mt-1 max-w-xs leading-relaxed">
+                    GeoTIFF raster staged. Click "Run Query Analysis" to execute inference.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-6 text-[#7082aa]">
+                  <div className="h-16 w-16 rounded-full bg-[#EDF5FF]/10 flex items-center justify-center text-[#1179FF] mb-3 border border-[#1179FF]/20">
+                    <ScanSearch size={32} />
+                  </div>
+                  <p className="text-sm font-bold text-white">No Imagery Loaded</p>
+                  <p className="text-xs text-[#8ea4cc] mt-1 max-w-xs leading-relaxed">
+                    Upload or drag GeoTIFF / satellite image assets to preview here.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: Split Compare Slider */}
+          {activeMediaTab === "split" && (
+            <div className="absolute inset-0 w-full h-full">
+              <SplitImageCompare
+                img1={primaryAsset?.previewUrl || null}
+                img2={secondaryAsset?.previewUrl || null}
+                label1={`T1 (${primaryAsset?.name || "Asset 1"})`}
+                label2={`T2 (${secondaryAsset?.name || "Asset 2"})`}
+              />
+            </div>
+          )}
+
+          {/* TAB 3: Interactive Map (Leaflet) */}
+          {activeMediaTab === "map" && (
+            <div className="absolute inset-0 w-full h-full">
+              <InteractiveMap
+                center={[16.3952, 81.7516]}
+                zoom={13}
+                imageUrl={analysisResult?.resultImageUrl || primaryAsset?.previewUrl}
+                showAOI={showAOI}
+                showGrounding={showGrounding}
+                boundingBoxes={analysisResult?.boundingBoxes || []}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Real Raster Metadata Status Bar */}
+        <div className="bg-white px-4 py-2.5 border-t border-[#e2ebfb] flex flex-wrap items-center justify-between text-[10px] font-mono text-[#5a709c] gap-2">
+          <div className="flex items-center gap-1.5">
+            <MapPin size={13} className="text-[#1179FF]" />
+            <span className="font-bold text-navy truncate max-w-[280px]">
+              {primaryAsset ? primaryAsset.name : "No Active Staged Asset"}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            {primaryAsset ? (
+              <>
+                <span>
+                  Bands:{" "}
+                  <strong className="text-navy font-bold">
+                    {primaryAsset.metadata?.bands || 3}
+                  </strong>
+                </span>
+                <span>
+                  CRS:{" "}
+                  <strong className="text-navy font-bold">
+                    {primaryAsset.metadata?.crs || "EPSG:4326"}
+                  </strong>
+                </span>
+                <span>
+                  Res:{" "}
+                  <strong className="text-navy font-bold">
+                    {primaryAsset.metadata?.resolution || "10m"}
+                  </strong>
+                </span>
+                <span>
+                  Mod:{" "}
+                  <strong className="text-[#1179FF] font-bold">
+                    {primaryAsset.modality}
+                  </strong>
+                </span>
+              </>
+            ) : (
+              <span className="text-[#7082aa] italic">
+                Raster Metadata Awaiting Staging
+              </span>
+            )}
+          </div>
+        </div>
+      </article>
+
+      {/* Raster Overlays Checkbox Toggles */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-[#dfe7fb] rounded-lg shadow-xs">
+        <span className="text-[10px] font-bold text-navy uppercase tracking-wider">
+          Raster Overlays:
+        </span>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer hover:text-navy">
+            <input
+              type="checkbox"
+              checked={showGrounding}
+              onChange={() => setShowGrounding(!showGrounding)}
+              className="rounded text-[#1179FF]"
+            />
+            <span>Grounding Boxes</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer hover:text-navy">
+            <input
+              type="checkbox"
+              checked={showMask}
+              onChange={() => setShowMask(!showMask)}
+              className="rounded text-[#7846D7]"
+            />
+            <span>Change Masks</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-[10px] font-semibold text-[#5a709c] cursor-pointer hover:text-navy">
+            <input
+              type="checkbox"
+              checked={showAOI}
+              onChange={() => setShowAOI(!showAOI)}
+              className="rounded text-[#B7F23A]"
+            />
+            <span>AOI Boundaries</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 5. EXECUTION TRACE
+  const renderExecutionTrace = () => (
+    <article className="investigation-plane plane-white rounded-lg p-5 animate-in fade-in duration-300 shadow-xs">
+      <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-4">
+        <div className="flex items-center gap-2">
+          <Activity size={16} className="text-[#1179FF]" />
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+              Execution Trace
+            </h3>
+            <p className="text-[10px] text-[#7082aa]">
+              Polymorphic route logs
+            </p>
+          </div>
+        </div>
+        <span className="font-mono text-[8px] font-bold text-[#1179FF] uppercase bg-[#EDF5FF] px-2 py-0.5 rounded border border-[#d2e3fc]">
+          {isDemoMode ? "DEMO" : "JVM"}
+        </span>
+      </div>
+
+      <div className="space-y-2.5 max-h-[300px] overflow-y-auto overflow-x-hidden pr-0.5 scrollbar-thin">
+        {executionTrace.length > 0 ? (
+          executionTrace.map((step, idx) => (
+            <div
+              key={idx}
+              className="border-l-2 border-[#1179FF]/40 pl-2.5 py-1 hover:border-[#1179FF] transition font-mono overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] font-bold text-navy truncate flex-1 min-w-0" title={step.name || step.eventName}>
+                  {step.name || step.eventName}
+                </span>
+                {step.toolName && (
+                  <span className="text-[7px] font-bold bg-[#EDF5FF] text-[#1179FF] px-1 py-0.5 rounded shrink-0">
+                    {step.toolName}
+                  </span>
+                )}
+              </div>
+              <p className="text-[9px] text-[#5a709c] mt-0.5 leading-relaxed font-sans break-words">
+                {step.detail}
+              </p>
+              <div className="flex items-center justify-between text-[8px] text-[#7082aa] mt-1 gap-1">
+                <span className="truncate max-w-[130px]" title={step.time || step.timestamp || "12ms"}>
+                  Latency: {formatTraceTimestamp(step.time || step.timestamp)}
+                </span>
+                <span
+                  className={`font-bold text-[7px] px-1.5 py-0.2 rounded shrink-0 ${
+                    step.status === "FAILED"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-[#efffc9] text-emerald-800"
+                  }`}
+                >
+                  {step.status || "SUCCESS"}
+                </span>
+              </div>
+            </div>
+          ))
+        ) : isRunning ? (
+          <div className="flex flex-col items-center justify-center text-center py-6 text-[#1179FF] space-y-2">
+            <Orbit size={20} className="animate-spin text-[#1179FF]" />
+            <p className="text-[10px] font-mono font-bold">
+              STREAMING POLYMORPHIC LOGS...
+            </p>
+          </div>
+        ) : (
+          <p className="text-[10px] text-[#7082aa] py-6 italic text-center">
+            Execute query to stream JVM routing trace logs.
+          </p>
+        )}
+      </div>
+    </article>
+  );
+
+  // 6. ANALYSIS OUTPUT
+  const renderAnalysisOutput = () => (
+    <article
+      className={`investigation-plane rounded-lg p-5 border transition shadow-xs ${
+        isComplete
+          ? analysisResult?.confidence >= 80
+            ? "plane-lime"
+            : "plane-yellow"
+          : "plane-white"
+      }`}
+    >
+      <div className="flex items-center gap-2 pb-3 border-b border-black/10 mb-4 justify-between">
+        <div className="flex items-center gap-2">
+          <span className="h-6 w-6 rounded-full bg-black/5 flex items-center justify-center font-mono text-[9px] font-bold">
+            03
+          </span>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider">
+              Analysis Output
+            </h3>
+            <p className="text-[9px] text-[#5a709c]">
+              Visual model prediction
+            </p>
+          </div>
+        </div>
+
+        {/* Confidence Badge */}
+        {isComplete && analysisResult && (
+          <span
+            className={`px-2 py-0.5 font-mono text-[8px] font-bold rounded ${
+              analysisResult.confidence >= 80
+                ? "bg-[#B7F23A] text-[#234413]"
+                : analysisResult.confidence >= 50
+                ? "bg-[#F4B900]/30 text-[#735200]"
+                : "bg-[#FF7C70]/30 text-[#bd3b2f]"
+            }`}
+          >
+            {analysisResult.confidenceLabel || `${analysisResult.confidence}%`}
+          </span>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        {/* Verification Status */}
+        <div>
+          <p className="text-[10px] text-[#5a709c] eyebrow">
+            Verification status
+          </p>
+          <h4 className="font-editorial text-xl md:text-2xl tracking-tight mt-1 font-bold break-words uppercase">
+            {isRunning ? (
+              <span className="text-[#1179FF] flex items-center gap-1.5 animate-pulse">
+                <Orbit size={18} className="animate-spin" />
+                PROCESSING...
+              </span>
+            ) : isComplete ? (
+              analysisResult?.investigatorReport?.verdict ||
+              (analysisResult?.confidence >= 80
+                ? "VERIFIED"
+                : "PARTIALLY VERIFIED")
+            ) : (
+              "AWAITING EXECUTION..."
+            )}
+          </h4>
+        </div>
+
+        {/* Confidence Bar */}
+        {isComplete && analysisResult && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-[9px] font-mono text-[#5a709c]">
+              <span>Model Confidence</span>
+              <span className="font-bold">{analysisResult.confidence}%</span>
+            </div>
+            <div className="h-2 w-full bg-black/10 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  analysisResult.confidence >= 80
+                    ? "bg-[#4d791f]"
+                    : analysisResult.confidence >= 50
+                    ? "bg-[#f4b900]"
+                    : "bg-[#ff7c70]"
+                }`}
+                style={{ width: `${analysisResult.confidence}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* VLM Response */}
+        <div>
+          <p className="text-[10px] text-[#5a709c] eyebrow">
+            VLM response
+          </p>
+          <p className="text-xs leading-relaxed text-navy mt-1">
+            {isRunning ? (
+              <span className="text-[#7082aa] italic animate-pulse">
+                Polymorphic vision transformer inference running in JVM runtime...
+              </span>
+            ) : isComplete ? (
+              analysisResult?.answer
+            ) : (
+              "Configure query inputs. Click 'Run Query Analysis' to trigger JVM strategy handlers and VLM inference."
+            )}
+          </p>
+        </div>
+
+        {/* PDF Download Button */}
+        {isComplete && (
+          <button
+            onClick={onDownloadPdf}
+            className="w-full mt-2 secondary-button justify-center text-[10px] font-bold py-1.5 bg-white hover:bg-[#EDF5FF] cursor-pointer"
+          >
+            <Download size={13} />
+            <span>Download PDF Report</span>
+          </button>
+        )}
+      </div>
+    </article>
+  );
+
+  // 7. DETECTED FEATURES
+  const renderDetectedFeatures = () => (
+    <article className="investigation-plane plane-white rounded-lg p-5 shadow-xs">
+      <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
+        <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
+          04
+        </span>
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
+            Detected Features
+          </h3>
+          <p className="text-[10px] text-[#7082aa]">
+            Raster classification details
+          </p>
+        </div>
+      </div>
+
+      {isComplete && analysisResult ? (
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <p className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
+              Analysis Highlights
+            </p>
+            <div className="claim-ledger-item">
+              <p className="text-[11px] font-bold text-navy">
+                {activeTaskTab === "VQA"
+                  ? "Urban built-up grid boundary mapped in center quadrant."
+                  : activeTaskTab === "CHANGE"
+                  ? "Spectral vegetation change mapped across eastern shoreline."
+                  : activeTaskTab === "FUSION"
+                  ? "SAR radar backscatter combined with optical spectral bands."
+                  : "Target spatial feature localized with bounding box coordinates."}
+              </p>
+              <div className="flex justify-between items-center mt-1 text-[8px] font-mono text-[#7082aa]">
+                <span>Source: {currentTask.targetEngine}</span>
+                <span className="text-emerald-700 font-bold">VERIFIED</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Limitations */}
+          {analysisResult.limitations?.length > 0 && (
+            <div className="space-y-1.5 pt-2 border-t border-[#edf1fb]">
+              <p className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
+                Raster Limitations
+              </p>
+              {analysisResult.limitations.map((lim, i) => (
+                <div key={i} className="claim-ledger-item claim-ledger-challenge">
+                  <p className="text-[10px] font-medium text-[#8c514c]">
+                    - {lim}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-[10px] text-[#7082aa] text-center py-6">
+          Highlights populated after analysis execution.
+        </p>
+      )}
+    </article>
+  );
+
+  // 8. NEXT ANALYSIS STEPS
+  const renderNextSteps = () => (
+    <article className="investigation-plane plane-yellow rounded-lg p-5 shadow-xs">
+      <div className="flex items-center gap-2 pb-2 border-b border-[#f4db94] mb-3">
+        <Info size={14} className="text-[#F4B900]" />
+        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#735200]">
+          Next Analysis Steps
+        </span>
+      </div>
+      <p className="text-xs leading-relaxed text-[#735200]">
+        {isComplete
+          ? analysisResult?.investigatorReport?.nextBestEvidence ||
+            currentTask.nextStepSuggestion
+          : "Awaiting model response. The system will recommend next contextual steps here."}
+      </p>
+    </article>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Workstation Header */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+          <p className="eyebrow text-[#1179FF]">Workstation Console</p>
+        </div>
+        <h1 className="font-editorial text-[38px] md:text-[54px] tracking-tight leading-[1.05] text-navy font-bold">
+          Satellite Vision-Language Console
+        </h1>
+        <p className="max-w-[760px] text-sm md:text-base leading-relaxed text-[#5a709c]">
+          Agentic remote-sensing workbench for optical and SAR Earth observation imagery.
+          Validates coordinate reference bands, decomposes polymorphic queries, and streams
+          real-time polymorphic execution trace telemetry.
+        </p>
+      </section>
+
+      {/* 5-Step Workflow Stepper */}
+      <section className="w-full bg-white border border-[#dfe7fb] rounded-xl p-4 md:px-6 md:py-4 shadow-xs overflow-x-auto">
+        <div className="flex items-center justify-between min-w-[740px]">
+          {[
+            { num: "01", label: "Query", detail: "Task & Prompt" },
+            { num: "02", label: "Metadata", detail: "CRS & Bands" },
+            { num: "03", label: "Routing", detail: "Polymorphic JVM" },
+            { num: "04", label: "Inference", detail: "UniRS / Vision" },
+            { num: "05", label: "Report", detail: "Telemetry Dossier" },
+          ].map((step, idx, arr) => {
+            const stepIndex = idx + 1;
+            const isDone = pipelineStep > stepIndex;
+            const isActive = pipelineStep === stepIndex;
+            const isLast = idx === arr.length - 1;
+
+            return (
+              <div key={step.num} className="flex items-center flex-1 last:flex-none">
+                {/* Step Item: Circle + Labels */}
+                <div className="flex items-center gap-3 shrink-0">
+                  {/* Circle (38px diameter) */}
+                  <div
+                    className={`h-[38px] w-[38px] rounded-full flex items-center justify-center font-mono text-xs font-bold shrink-0 transition-all duration-200 ${
+                      isDone
+                        ? "bg-[#112557] text-white shadow-xs"
+                        : isActive
+                        ? "bg-[#2563EB] text-white shadow-[0_0_0_5px_rgba(37,99,235,0.2)]"
+                        : "bg-[#F3F4F6] text-[#9CA3AF]"
+                    }`}
+                  >
+                    {isDone ? <Check size={16} className="stroke-[2.5]" /> : step.num}
+                  </div>
+
+                  {/* Text: Title + Subtitle */}
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs md:text-sm font-bold text-[#112557] leading-tight">
+                      {step.label}
+                    </span>
+                    <span className="text-[10px] md:text-[11px] text-[#6B7280] leading-tight mt-0.5 whitespace-nowrap">
+                      {step.detail}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Single thin 2px horizontal connector line between steps */}
+                {!isLast && (
+                  <div className="flex-1 h-[2px] bg-[#E5E7EB] mx-4 min-w-[20px]" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* TOP WORKBENCH: STAGED ASSETS, COMPOSE QUERY & SENSOR ARRAY */}
+      {/* ========================================================= */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
+        {/* Left Column: Staged Assets + Compose Query + Run Query Action Shelf */}
+        <div className="lg:col-span-5 space-y-5">
+          {renderStagedAssets()}
+          {renderComposeQuery()}
+          {renderActionShelf()}
+        </div>
+
+        {/* Right Column: Multimodal Sensor Array */}
+        <div className="lg:col-span-7 space-y-5">
+          {renderSensorArray()}
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* BOTTOM SECTION: ANALYSIS OUTPUT, EXECUTION TRACE & DETECTED FEATURES */}
+      {/* (Appears below the main workbench when query analysis is executed) */}
+      {/* ========================================================= */}
+      {showAnalysisPanels && (
+        <section className="space-y-4 pt-4 border-t border-[#dfe7fb] animate-in fade-in slide-in-from-bottom-4 duration-400">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-navy">
+                Inference Results & Execution Telemetry
+              </h2>
+            </div>
+            <span className="font-mono text-[8px] font-bold text-[#1179FF] uppercase bg-[#EDF5FF] px-2.5 py-0.5 rounded border border-[#d2e3fc]">
+              {isDemoMode ? "DEMO MODE" : "JVM MODEL RUNTIME"}
+            </span>
+          </div>
+
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
+            {/* Box 1: Execution Trace (4 cols) */}
+            <div className="lg:col-span-4 space-y-5">
+              {renderExecutionTrace()}
+            </div>
+
+            {/* Box 2: Analysis Output (4 cols) */}
+            <div className="lg:col-span-4 space-y-5">
+              {renderAnalysisOutput()}
+            </div>
+
+            {/* Box 3: Detected Features & Next Steps (4 cols) */}
+            <div className="lg:col-span-4 space-y-5">
+              {renderDetectedFeatures()}
+              {renderNextSteps()}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
 // -------------------------------------------------------------
-// IMAGE LIBRARY COMPONENT (formerly Evidence Library)
+// IMAGE LIBRARY VIEW COMPONENT
 // -------------------------------------------------------------
-function EvidenceView({
-  evidence,
-  selectedCount,
+function AssetLibraryView({
+  stagedAssets,
+  activeCount,
   onUpload,
   onToggle,
   onRemove,
@@ -1687,13 +2010,13 @@ function EvidenceView({
             Image Library
           </h1>
           <p className="text-sm text-[#5b719d] mt-2 max-w-md">
-            Review spatial resolution details and verify date profiles of staged
-            image assets.
+            Review spatial resolution details, coordinate bands, and modality profiles of
+            staged raster assets.
           </p>
         </div>
 
         <div className="flex gap-2">
-          <button onClick={onBack} className="primary-button bg-navy">
+          <button onClick={onBack} className="primary-button bg-navy text-white">
             <ArrowLeft size={14} />
             <span>Workspace</span>
           </button>
@@ -1714,21 +2037,21 @@ function EvidenceView({
 
       <div className="bg-white px-5 py-4 border border-[#dfe7fb] rounded-lg text-sm text-[#5a709c] flex items-center justify-between">
         <span>
-          Staged assets:{" "}
+          Active staged assets:{" "}
           <strong className="font-editorial text-2xl text-navy">
-            {selectedCount}
+            {activeCount}
           </strong>{" "}
-          file{selectedCount === 1 ? "" : "s"} active
+          file{activeCount === 1 ? "" : "s"}
         </span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {evidence.map(item => (
+        {stagedAssets.map(item => (
           <article
             key={item.id}
             className={`investigation-plane rounded-lg p-5 border ${
               item.included
-                ? item.kind === "SAR"
+                ? item.modality === "SAR"
                   ? "plane-violet"
                   : "plane-blue"
                 : "plane-white"
@@ -1736,24 +2059,26 @@ function EvidenceView({
           >
             <div className="space-y-4">
               <div className="flex justify-between items-start gap-4">
-                <span
-                  className={`h-10 w-10 flex items-center justify-center rounded ${
-                    item.kind === "SAR"
-                      ? "bg-[#eee5ff] text-[#7846d7]"
-                      : "bg-[#ddecff] text-[#1179ff]"
-                  }`}
-                >
-                  {item.kind === "SAR" ? (
-                    <Radar size={18} />
+                <div className="h-12 w-12 rounded bg-[#EDF5FF] border border-[#d2e3fc] flex items-center justify-center overflow-hidden">
+                  {item.previewUrl ? (
+                    <img
+                      src={item.previewUrl}
+                      alt={item.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : item.modality === "SAR" ? (
+                    <Radar size={22} className="text-[#7846D7]" />
                   ) : (
-                    <FileImage size={18} />
+                    <FileImage size={22} className="text-[#1179FF]" />
                   )}
-                </span>
+                </div>
 
                 <button
                   onClick={() => onToggle(item.id)}
-                  className={`include-toggle rounded-md ${
-                    item.included ? "include-toggle-active" : ""
+                  className={`include-toggle rounded-md px-3 py-1 text-[9px] font-bold ${
+                    item.included
+                      ? "bg-navy text-[#B7F23A]"
+                      : "bg-gray-100 text-gray-400"
                   }`}
                 >
                   {item.included ? "✓ Staged" : "Stage Asset"}
@@ -1768,20 +2093,17 @@ function EvidenceView({
                   {item.name}
                 </h3>
                 <p className="font-mono text-[8px] text-[#7084ad] mt-1 uppercase tracking-wider">
-                  {item.kind} · {item.date} · {item.size}
+                  {item.modality} · {item.metadata?.bands || 3} BANDS · {item.size}
+                </p>
+                <p className="font-mono text-[8px] text-[#7084ad] mt-0.5">
+                  CRS: {item.metadata?.crs || "EPSG:4326"}
                 </p>
               </div>
-
-              {item.warning && (
-                <div className="bg-[#fff7f5] border-l-2 border-[#FF7C70] p-2 text-[10px] text-[#8c514c]">
-                  {item.warning}
-                </div>
-              )}
             </div>
 
             <div className="flex justify-between items-center mt-5 pt-3 border-t border-navy/5">
               <span className="font-mono text-[8px] text-[#7084ad] tracking-wide">
-                UID: {item.id.slice(0, 8)}...
+                UID: {item.id.slice(0, 10)}...
               </span>
               <button
                 onClick={() => onRemove(item.id)}
@@ -1794,13 +2116,12 @@ function EvidenceView({
           </article>
         ))}
 
-        {!evidence.length && (
+        {!stagedAssets.length && (
           <div className="col-span-full border border-dashed border-[#b5c7ed] bg-white/50 p-12 text-center rounded-lg space-y-3">
             <Layers3 size={32} className="mx-auto text-[#7084ad]" />
             <h3 className="font-editorial text-xl text-navy">Library Empty</h3>
             <p className="text-xs text-[#7082aa] max-w-sm mx-auto">
-              Stage GeoTIFF raster assets or standard benchmark scenes to get
-              started.
+              Stage GeoTIFF raster assets or standard benchmark scenes to get started.
             </p>
           </div>
         )}
@@ -1810,20 +2131,22 @@ function EvidenceView({
 }
 
 // -------------------------------------------------------------
-// QUERY HISTORY ARCHIVE COMPONENT (formerly Case History)
+// QUERY HISTORY ARCHIVE VIEW COMPONENT
 // -------------------------------------------------------------
-function HistoryView({ history, onBack, onClear, onReopen }) {
+function QueryHistoryView({ history, onBack, onClear, onReload }) {
   const [filterType, setFilterType] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredHistory = useMemo(() => {
     return history.filter(item => {
       const typeMatch =
-        filterType === "ALL" || item.scenarioId === filterType.toLowerCase();
+        filterType === "ALL" ||
+        (item.taskType && item.taskType.toUpperCase() === filterType) ||
+        (item.scenarioId && item.scenarioId.toUpperCase() === filterType);
       const searchMatch =
         !searchQuery ||
-        item.query.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.result.toLowerCase().includes(searchQuery.toLowerCase());
+        (item.query && item.query.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (item.result && item.result.toLowerCase().includes(searchQuery.toLowerCase()));
       return typeMatch && searchMatch;
     });
   }, [history, filterType, searchQuery]);
@@ -1840,13 +2163,12 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
             Query History
           </h1>
           <p className="text-sm text-[#5b719d] mt-2 max-w-md">
-            Verify persisted reports and trace parameters saved to the local
-            SQLite database.
+            Verify persisted reports and trace parameters saved to the local SQLite database.
           </p>
         </div>
 
         <div className="flex gap-2">
-          <button onClick={onBack} className="primary-button bg-navy">
+          <button onClick={onBack} className="primary-button bg-navy text-white">
             <ArrowLeft size={14} />
             <span>Workspace</span>
           </button>
@@ -1864,13 +2186,13 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
 
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 border border-[#dfe7fb] rounded-lg">
         <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa]">
-          {["ALL", "VQA", "CHANGE", "FUSION"].map(type => (
+          {["ALL", "VQA", "CHANGE", "FUSION", "GROUNDING"].map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
               className={`px-3 py-1.5 text-[9px] font-bold rounded-md transition ${
                 filterType === type
-                  ? "bg-white text-navy shadow-sm"
+                  ? "bg-[#112557] text-[#B7F23A] shadow-sm"
                   : "text-[#7082aa] hover:text-navy"
               }`}
             >
@@ -1883,8 +2205,8 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
           type="text"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Filter queries..."
-          className="border border-[#dbe4fa] bg-[#fbfdff] px-3 py-1.5 text-xs rounded outline-none focus:border-[#1179FF] w-full md:w-64"
+          placeholder="Filter query text or results..."
+          className="border border-[#dbe4fa] bg-[#fbfdff] px-3 py-1.5 text-xs rounded-md outline-none focus:border-[#1179FF] w-full md:w-64"
         />
       </div>
 
@@ -1892,22 +2214,27 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
         {filteredHistory.map(record => (
           <article
             key={record.id}
-            className="flex flex-col gap-4 border-l-4 border-[#1179FF] bg-white p-5 sm:flex-row sm:items-center justify-between rounded shadow-sm hover:shadow transition"
+            className="flex flex-col gap-4 border-l-4 border-[#1179FF] bg-white p-5 sm:flex-row sm:items-center justify-between rounded-lg shadow-sm hover:shadow transition"
           >
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex items-center gap-3">
                 <span className="font-mono text-[9px] font-bold bg-[#EDF5FF] text-[#1179FF] px-2 py-0.5 rounded">
-                  {scenarios[record.scenarioId]?.label || "Custom Route"}
+                  {record.taskType || "VQA"}
                 </span>
                 <span className="font-mono text-[8px] text-[#7084ad]">
-                  {new Intl.DateTimeFormat(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }).format(new Date(record.createdAt))}
+                  {record.createdAt
+                    ? new Intl.DateTimeFormat(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(record.createdAt))
+                    : "Archived Run"}
+                </span>
+                <span className="font-mono text-[8px] font-bold bg-[#efffc9] text-emerald-800 px-1.5 py-0.5 rounded">
+                  {record.confidence || "HIGH"}
                 </span>
               </div>
 
-              <h3 className="font-editorial text-[22px] tracking-tight leading-snug text-navy font-bold">
+              <h3 className="font-editorial text-[20px] tracking-tight leading-snug text-navy font-bold">
                 "{record.query}"
               </h3>
 
@@ -1917,8 +2244,8 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
             </div>
 
             <button
-              onClick={() => onReopen(record)}
-              className="secondary-button shrink-0 border border-navy/10 bg-[#EDF5FF] hover:bg-[#ddecff]"
+              onClick={() => onReload(record)}
+              className="secondary-button shrink-0 border border-navy/10 bg-[#EDF5FF] hover:bg-[#ddecff] flex items-center gap-1.5 text-xs font-bold"
             >
               <ScanSearch size={14} />
               <span>Load Report</span>
@@ -1929,12 +2256,9 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
         {!filteredHistory.length && (
           <div className="border border-dashed border-[#b5c7ed] bg-white/50 p-12 text-center rounded-lg space-y-3">
             <History size={32} className="mx-auto text-[#7084ad]" />
-            <h3 className="font-editorial text-xl text-navy">
-              No queries archived
-            </h3>
+            <h3 className="font-editorial text-xl text-navy">No queries archived</h3>
             <p className="text-xs text-[#7082aa]">
-              Archived query results and SQLite database traces will display
-              here once generated.
+              Executed query results and SQLite database traces will display here.
             </p>
           </div>
         )}
@@ -1944,32 +2268,32 @@ function HistoryView({ history, onBack, onClear, onReopen }) {
 }
 
 // -------------------------------------------------------------
-// ANALYSIS REPORT MODAL COMPONENT (formerly Receipt Modal)
+// REPORT MODAL COMPONENT (PDF & JSON Download)
 // -------------------------------------------------------------
-function Receipt({
-  scenario,
-  question,
-  evidence,
-  complete,
+function ReportModal({
+  taskConfig,
+  queryText,
+  stagedAssets,
+  isComplete,
   onClose,
-  onDownload,
-  backendAnswer,
-  backendReport,
+  onDownloadPdf,
+  onDownloadJson,
+  analysisResult,
   isDemoMode,
   queryId,
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#112557]/40 p-5 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#112557]/50 p-5 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="receipt-modal w-full max-w-[700px] bg-white rounded-lg shadow-2xl flex flex-col animate-scale-up">
+      <div className="receipt-modal w-full max-w-[720px] bg-white rounded-lg shadow-2xl flex flex-col animate-scale-up border border-[#dce5fb]">
         <div className="receipt-header border-b border-[#edf1fb] p-6 bg-gradient-to-r from-[#F8FBFF] to-[#fffefc] flex justify-between items-start">
           <div>
             <p className="eyebrow text-[#1179FF]">Query Analysis Report</p>
             <h3 className="font-editorial text-3xl font-bold tracking-tight text-navy mt-1">
-              {scenario.label}
+              {taskConfig.title}
             </h3>
           </div>
           <button
@@ -1982,81 +2306,82 @@ function Receipt({
         </div>
 
         <div className="grid gap-6 p-6 md:grid-cols-[1.1fr_.9fr]">
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
               <p className="eyebrow text-[#7082aa]">User Query</p>
-              <p className="mt-1.5 text-sm font-semibold text-navy">
-                "{question}"
+              <p className="mt-1 text-sm font-semibold text-navy">
+                "{queryText}"
               </p>
             </div>
 
             <div>
-              <p className="eyebrow text-[#7082aa]">Model Output</p>
-              <p className="mt-1.5 font-editorial text-2xl leading-snug tracking-tight text-navy font-bold">
-                {complete ? backendAnswer || scenario.result : "N/A"}
+              <p className="eyebrow text-[#7082aa]">VLM Model Prediction</p>
+              <p className="mt-1 font-editorial text-xl leading-snug tracking-tight text-navy font-bold">
+                {isComplete ? analysisResult?.answer : "N/A"}
               </p>
             </div>
 
             <div className="bg-[#f5ffd9] border-l-3 border-[#B7F23A] px-4 py-3 text-xs leading-relaxed text-[#43681b] rounded-r">
               <span>
-                <strong>Metadata Integrity:</strong> Staged files include
-                verified coordinate reference bands. JSON report contains full
-                audit trace logs.
+                <strong>Metadata Integrity:</strong> Staged files include verified coordinate reference bands. JSON report contains full audit trace logs.
               </span>
             </div>
           </div>
 
-          <div className="receipt-side bg-[#F8FBFF] border border-[#dce5fb] p-5 rounded-lg flex flex-col justify-between">
-            <div className="space-y-4">
+          <div className="receipt-side bg-[#F8FBFF] border border-[#dce5fb] p-5 rounded-lg flex flex-col justify-between space-y-4">
+            <div>
               <p className="eyebrow text-[#7082aa]">Telemetry Profile</p>
-              <div className="space-y-3.5 text-xs border-b border-[#edf1fb] pb-4">
+              <div className="space-y-3 text-xs border-b border-[#edf1fb] pb-3 mt-2">
                 <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Task Route:</span>
                   <span className="font-mono font-bold text-navy">
-                    {scenario.task}
+                    {taskConfig.tabLabel}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Target Engine:</span>
+                  <span className="font-mono text-[10px] font-bold text-[#1179FF]">
+                    {taskConfig.targetEngine}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Staged Files:</span>
                   <span className="font-mono font-bold text-navy">
-                    {evidence.length} active
+                    {stagedAssets.length} active
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#7082aa]">Report Status:</span>
+                  <span className="text-[#7082aa]">Confidence:</span>
                   <span className="font-mono font-bold text-emerald-700">
-                    Audit Ready
+                    {analysisResult?.confidenceLabel || "HIGH (92%)"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Runtime:</span>
                   <span className="font-mono font-bold text-[#7846D7]">
-                    {isDemoMode ? "DEMO (WALK)" : "JVM PROXIED"}
+                    {isDemoMode ? "DEMO (LOCAL)" : "JVM PROXIED"}
                   </span>
                 </div>
               </div>
             </div>
 
-            <button
-              onClick={onDownload}
-              className="secondary-button w-full mt-6 justify-center"
-            >
-              <Download size={14} />
-              <span>Download JSON Report</span>
-            </button>
-
-            {!isDemoMode && complete && queryId && (
-              <a
-                href={`/outputs/report-${queryId}.pdf`}
-                download={`satquery-report-${queryId}.pdf`}
-                target="_blank"
-                rel="noreferrer"
-                className="primary-button w-full mt-2 justify-center text-center inline-flex items-center gap-1.5"
+            <div className="space-y-2">
+              <button
+                onClick={onDownloadPdf}
+                className="primary-button w-full justify-center bg-[#112557] text-white hover:bg-[#1c387d] text-xs font-bold py-2 rounded-md"
               >
                 <FileText size={14} />
                 <span>Download PDF Report</span>
-              </a>
-            )}
+              </button>
+
+              <button
+                onClick={onDownloadJson}
+                className="secondary-button w-full justify-center text-xs font-bold py-2 rounded-md"
+              >
+                <Download size={14} />
+                <span>Download JSON Report</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2064,8 +2389,10 @@ function Receipt({
   );
 }
 
-// Image slider compare component helper
-function ImageCompareSlider({
+// -------------------------------------------------------------
+// SPLIT IMAGE COMPARE SLIDER
+// -------------------------------------------------------------
+function SplitImageCompare({
   img1,
   img2,
   label1 = "T1 Before",
@@ -2094,31 +2421,28 @@ function ImageCompareSlider({
   };
 
   const handleMouseMove = e => {
-    if (e.buttons === 1) {
-      handleMove(e.clientX);
-    }
+    if (e.buttons === 1) handleMove(e.clientX);
   };
 
   const handleTouchMove = e => {
-    if (e.touches[0]) {
-      handleMove(e.touches[0].clientX);
-    }
+    if (e.touches[0]) handleMove(e.touches[0].clientX);
   };
 
   return (
     <div
       ref={containerRef}
-      className="slider-container h-full w-full min-h-[350px] relative select-none rounded bg-[#112557]"
+      className="slider-container h-full w-full min-h-[380px] relative select-none rounded bg-[#112557] overflow-hidden"
       onMouseMove={handleMouseMove}
       onTouchMove={handleTouchMove}
       onMouseDown={e => handleMove(e.clientX)}
     >
-      <div className="slider-after absolute inset-0">
+      {/* Background (After / T2 Image) */}
+      <div className="slider-after absolute inset-0 flex items-center justify-center">
         {img2 ? (
           <img
-            src={img2}
+            src={toWebUrl(img2)}
             alt="After"
-            className="w-full h-full object-cover pointer-events-none"
+            className="w-full h-full object-contain pointer-events-none"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-[#0b1739] text-[#7082aa]">
@@ -2126,20 +2450,21 @@ function ImageCompareSlider({
             <span className="text-xs font-mono">{label2} (No Image Staged)</span>
           </div>
         )}
-        <span className="absolute right-4 bottom-4 bg-[#112557]/80 text-[#B7F23A] font-mono text-[9px] font-bold tracking-wider px-2 py-1 z-10 rounded">
+        <span className="absolute right-4 bottom-4 bg-[#112557]/80 text-[#B7F23A] font-mono text-[9px] font-bold tracking-wider px-2.5 py-1 z-10 rounded">
           {label2}
         </span>
       </div>
 
+      {/* Foreground (Before / T1 Image) */}
       <div
-        className="slider-before absolute inset-y-0 left-0 overflow-hidden border-r border-[#1179FF]/40"
+        className="slider-before absolute inset-y-0 left-0 overflow-hidden border-r-2 border-[#1179FF]"
         style={{ width: `${sliderPos}%` }}
       >
         {img1 ? (
           <img
-            src={img1}
+            src={toWebUrl(img1)}
             alt="Before"
-            className="absolute inset-y-0 left-0 object-cover pointer-events-none"
+            className="absolute inset-y-0 left-0 object-contain pointer-events-none"
             style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
           />
         ) : (
@@ -2151,17 +2476,20 @@ function ImageCompareSlider({
             <span className="text-xs font-mono">{label1} (No Image Staged)</span>
           </div>
         )}
-        <span className="absolute left-4 bottom-4 bg-[#112557]/80 text-[#1179FF] font-mono text-[9px] font-bold tracking-wider px-2 py-1 z-10 rounded">
+        <span className="absolute left-4 bottom-4 bg-[#112557]/80 text-[#1179FF] font-mono text-[9px] font-bold tracking-wider px-2.5 py-1 z-10 rounded">
           {label1}
         </span>
       </div>
 
+      {/* Draggable Divider Handle */}
       <div
-        className="slider-handle absolute top-0 bottom-0"
-        style={{ left: `${sliderPos}%` }}
+        className="slider-handle absolute top-0 bottom-0 z-20 cursor-ew-resize"
+        style={{ left: `${sliderPos}%`, transform: "translateX(-50%)" }}
       >
-        <div className="slider-handle-button select-none">
-          <span className="text-[#B7F23A] font-bold text-sm">↔</span>
+        <div className="h-full w-0.5 bg-[#B7F23A] shadow-md flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full bg-[#112557] border-2 border-[#B7F23A] flex items-center justify-center text-[#B7F23A] shadow-lg">
+            <SlidersHorizontal size={14} />
+          </div>
         </div>
       </div>
     </div>
