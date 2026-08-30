@@ -3,7 +3,9 @@ package com.satquery.client;
 import com.satquery.model.Evidence;
 import java.util.List;
 
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public class ModelResponse {
+
     private String answer;
     private List<Evidence> evidence;
     private List<String> limitations;

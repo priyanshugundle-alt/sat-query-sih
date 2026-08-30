@@ -45,9 +45,11 @@ public class HttpModelClient implements ModelClient {
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/analyze"))
                     .header("Content-Type", "application/json")
+                    .header("X-SatQuery-Api-Key", "satquery-vlm-key-2026-sih")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                     .timeout(Duration.ofSeconds(10))
                     .build();
+
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 

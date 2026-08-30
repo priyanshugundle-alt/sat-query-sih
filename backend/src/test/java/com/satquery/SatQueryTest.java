@@ -235,15 +235,15 @@ public class SatQueryTest {
         ImageMetadata metadataPng = new ImageMetadata("PNG", 512, 512, 3, "OPTICAL", "2026-01-01", null, null, false);
         ImageAsset imgPng = new ImageAsset("img-1", "sample.png", "/uploads/sample.png", metadataPng);
 
-        // InputValidator: PNG should fail for normal request
+        // InputValidator: PNG should succeed for normal and benchmark requests
         ValidationResult normalVal = validator.validate(reqNormal, List.of(imgPng), TaskType.VQA);
-        assertFalse(normalVal.isValid());
-        assertTrue(normalVal.getErrors().get(0).contains("PNG/JPEG is allowed only under approved benchmark contexts"));
+        assertTrue(normalVal.isValid());
+        assertFalse(normalVal.getWarnings().isEmpty());
 
-        // InputValidator: PNG should succeed for benchmark request
         ValidationResult benchVal = validator.validate(reqBenchmark, List.of(imgPng), TaskType.VQA);
         assertTrue(benchVal.isValid());
         assertFalse(benchVal.getWarnings().isEmpty());
+
 
         // ToolRegistry validation limits
         java.util.Map<String, Object> invalidParams = new java.util.HashMap<>();

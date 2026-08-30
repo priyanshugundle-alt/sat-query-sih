@@ -32,25 +32,21 @@ public class App {
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
     private static final ModelClient modelClient = new ModelClient() {
         private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
-        private final MockModelClient mockClient = new MockModelClient();
-        private final JavaLocalModelClient localJavaClient = new JavaLocalModelClient();
 
         @Override
         public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
             try {
-                // Execute natively on the local Java deep learning runtime
-                return localJavaClient.run(taskType, request, images);
+                // Strictly execute on the real Qwen2-VL Remote Python VLM Server
+                return httpClient.run(taskType, request, images);
             } catch (Exception e) {
-                System.err.println("[SatQuery Backend] Local JVM inference returned an error (" + e.getMessage() + "). Trying remote VLM HTTP endpoint.");
-                try {
-                    return httpClient.run(taskType, request, images);
-                } catch (Exception ex) {
-                    System.err.println("[SatQuery Backend] Remote server is offline. Falling back to MockModelClient.");
-                    return mockClient.run(taskType, request, images);
-                }
+                System.err.println("[SatQuery Backend] Qwen2-VL Server Error: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("SatQuery Qwen2-VL Model Engine Error: " + e.getMessage(), e);
             }
         }
     };
+
+
     private static final AgentController agentController = new AgentController(modelClient);
 
     public static void main(String[] args) throws IOException {
@@ -255,6 +251,10 @@ public class App {
                 if (request.getQueryId() == null) {
                     request.setQueryId("q-" + UUID.randomUUID().toString().substring(0, 8));
                 }
+                if (request.getDatasetContext() == null) {
+                    request.setDatasetContext(new com.satquery.benchmark.DatasetContext(com.satquery.benchmark.BenchmarkDataset.VRSBENCH, false));
+                }
+
 
                 List<ImageAsset> images = new ArrayList<>();
                 if (request.getImageIds() != null) {

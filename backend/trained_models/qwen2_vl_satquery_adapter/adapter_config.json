@@ -1,0 +1,6 @@
+{
+  "base_model": "Qwen/Qwen2-VL-7B-Instruct",
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "task": "Remote Sensing VQA, Grounding, Change Analysis, Fusion"
+}

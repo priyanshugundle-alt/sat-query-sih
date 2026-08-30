@@ -24,3 +24,9 @@ frontend/node_modules/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Large model binaries
+backend/trained_models/*.safetensors
+backend/trained_models/*.bin
+backend/trained_models/*.pth
+

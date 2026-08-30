@@ -1,6 +1,8 @@
 package com.satquery.model;
 
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public class Evidence {
+
     private String evidenceType;  // IMAGE, BOUNDING_BOX, MASK, CHANGE_MAP, SENSOR_BRANCH
     private String filePath;
     private String label;

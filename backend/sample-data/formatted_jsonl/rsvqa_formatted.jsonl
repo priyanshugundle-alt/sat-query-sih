@@ -1,0 +1,7 @@
+{"id": "rsvqa_rsvqa-01", "image": "uploads/rsvqa_image1.png", "conversations": [{"from": "user", "value": "<image>\nAre agricultural fields visible in this image?"}, {"from": "assistant", "value": "yes"}]}
+{"id": "rsvqa_rsvqa-02", "image": "uploads/rsvqa_image2.png", "conversations": [{"from": "user", "value": "<image>\nIs there a major reservoir in the region?"}, {"from": "assistant", "value": "no"}]}
+{"id": "rsvqa_rsvqa-03", "image": "uploads/rsvqa_image3.png", "conversations": [{"from": "user", "value": "<image>\nAre there high-density structures in the central grid?"}, {"from": "assistant", "value": "yes"}]}
+{"id": "rsvqa_rsvqa-04", "image": "uploads/rsvqa_image4.png", "conversations": [{"from": "user", "value": "<image>\nAre clouds covering more than 20% of the image?"}, {"from": "assistant", "value": "no"}]}
+{"id": "rsvqa_rsvqa-05", "image": "uploads/rsvqa_image5.png", "conversations": [{"from": "user", "value": "<image>\nIs there a coastal harbor facility visible?"}, {"from": "assistant", "value": "yes"}]}
+{"id": "rsvqa_rsvqa-06", "image": "uploads/rsvqa_image6.png", "conversations": [{"from": "user", "value": "<image>\nAre forest woodlands dominant in the southwest sector?"}, {"from": "assistant", "value": "yes"}]}
+{"id": "rsvqa_rsvqa-07", "image": "uploads/rsvqa_image7.png", "conversations": [{"from": "user", "value": "<image>\nAre there any linear irrigation channels present?"}, {"from": "assistant", "value": "yes"}]}
