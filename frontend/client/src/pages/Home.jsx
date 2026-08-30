@@ -33,7 +33,6 @@ import {
   Compass,
 } from "lucide-react";
 import { toast } from "sonner";
-import { InteractiveMap } from "@/components/InteractiveMap";
 import {
   checkJvmHealth,
   uploadAsset,
@@ -1328,7 +1327,6 @@ function WorkstationBoard({
             {[
               { id: "image", label: "Image View" },
               { id: "split", label: "Split Compare" },
-              { id: "map", label: "Interactive Map" },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -1400,7 +1398,7 @@ function WorkstationBoard({
                               height="20"
                               fill="#112557"
                               rx="4"
-                            />
+                              />
                             <text
                               x="8"
                               y="14"
@@ -1481,20 +1479,6 @@ function WorkstationBoard({
                 img2={secondaryAsset?.previewUrl || null}
                 label1={`T1 (${primaryAsset?.name || "Asset 1"})`}
                 label2={`T2 (${secondaryAsset?.name || "Asset 2"})`}
-              />
-            </div>
-          )}
-
-          {/* TAB 3: Interactive Map (Leaflet) */}
-          {activeMediaTab === "map" && (
-            <div className="absolute inset-0 w-full h-full">
-              <InteractiveMap
-                center={[16.3952, 81.7516]}
-                zoom={13}
-                imageUrl={analysisResult?.resultImageUrl || primaryAsset?.previewUrl}
-                showAOI={showAOI}
-                showGrounding={showGrounding}
-                boundingBoxes={analysisResult?.boundingBoxes || []}
               />
             </div>
           )}
