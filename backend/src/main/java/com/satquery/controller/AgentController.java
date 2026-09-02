@@ -9,6 +9,8 @@ import com.satquery.validation.InputValidator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AgentController {
     private final InputValidator validator;
@@ -67,6 +69,10 @@ public class AgentController {
             failedResult.setStatus("VALIDATION_FAILED");
             failedResult.setMode("REAL_MODE");
             failedResult.setReportUrl("/api/report/" + failedResult.getQueryId());
+            failedResult.setTimestamp(ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")));
+            if (images != null && !images.isEmpty() && images.get(0).getMetadata() != null) {
+                failedResult.setImageMetadata(images.get(0).getMetadata());
+            }
             failedResult.setEvidenceSummary("No dynamic features extracted.");
             
             String answerText = "Validation Error: " + errorMsg;
@@ -202,6 +208,11 @@ public class AgentController {
 
         result.setMode("REAL_MODE");
         result.setReportUrl("/api/report/" + result.getQueryId());
+        String formattedTimestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"));
+        result.setTimestamp(formattedTimestamp);
+        if (images != null && !images.isEmpty() && images.get(0).getMetadata() != null) {
+            result.setImageMetadata(images.get(0).getMetadata());
+        }
         if (result.getEvidence() != null && !result.getEvidence().isEmpty()) {
             result.setEvidenceSummary(result.getEvidence().get(0).getDescription());
         } else {

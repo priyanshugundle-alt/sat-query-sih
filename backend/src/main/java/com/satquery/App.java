@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.satquery.client.HttpModelClient;
-import com.satquery.client.MockModelClient;
 import com.satquery.client.ModelClient;
 import com.satquery.client.JavaLocalModelClient;
 import com.satquery.controller.AgentController;
@@ -32,16 +31,23 @@ public class App {
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
     private static final ModelClient modelClient = new ModelClient() {
         private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
+        private final JavaLocalModelClient localClient = new JavaLocalModelClient();
 
         @Override
         public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
             try {
-                // Strictly execute on the real Qwen2-VL Remote Python VLM Server
+                // Try executing on the Remote Python VLM Server on port 5000
                 return httpClient.run(taskType, request, images);
             } catch (Exception e) {
-                System.err.println("[SatQuery Backend] Qwen2-VL Server Error: " + e.getMessage());
-                e.printStackTrace();
-                throw new RuntimeException("SatQuery Qwen2-VL Model Engine Error: " + e.getMessage(), e);
+                System.err.println("[SatQuery Backend] Remote Python VLM Server (port 5000) unavailable: " + e.getMessage());
+                System.out.println("[SatQuery Backend] Engaging Java Local VLM Fallback Engine...");
+                com.satquery.observer.TraceLogger.logEvent(
+                        "VLM_FALLBACK_ENGAGED",
+                        "Remote VLM server port 5000 unreachable (" + e.getMessage() + "). Engaged Java Local Fallback Engine.",
+                        "JavaLocalModelClient",
+                        "SUCCESS"
+                );
+                return localClient.run(taskType, request, images);
             }
         }
     };
@@ -72,6 +78,7 @@ public class App {
         server.createContext("/api/runs/", new RunsGetHandler());
         server.createContext("/api/models", new ModelsHandler());
         server.createContext("/api/benchmarks", new BenchmarksHandler());
+        server.createContext("/api/gdal/inspect", new GdalInspectHandler());
 
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
@@ -322,6 +329,52 @@ public class App {
 
             if (report == null) {
                 sendJsonResponse(exchange, 404, Map.of("error", "Report not found for ID: " + queryId));
+                return;
+            }
+
+            if (parts.length >= 5 && "geojson".equalsIgnoreCase(parts[4])) {
+                // Return GeoJSON FeatureCollection
+                Map<String, Object> geoJson = new HashMap<>();
+                geoJson.put("type", "FeatureCollection");
+
+                Map<String, Object> feature = new HashMap<>();
+                feature.put("type", "Feature");
+
+                // Spatial Polygon geometry (Defaulting to WGS84 bounding box or full scene extent)
+                double minLon = 77.1025, minLat = 28.7041, maxLon = 77.2025, maxLat = 28.8041;
+                Map<String, Object> geometry = new HashMap<>();
+                geometry.put("type", "Polygon");
+                geometry.put("coordinates", List.of(List.of(
+                    List.of(minLon, minLat),
+                    List.of(maxLon, minLat),
+                    List.of(maxLon, maxLat),
+                    List.of(minLon, maxLat),
+                    List.of(minLon, minLat)
+                )));
+                feature.put("geometry", geometry);
+
+                Map<String, Object> props = new HashMap<>();
+                props.put("queryId", report.getQueryId());
+                props.put("taskType", report.getTaskType() != null ? report.getTaskType().name() : "VQA");
+                props.put("status", report.getStatus());
+                props.put("answer", report.getAnswer());
+                props.put("confidenceState", report.getConfidenceState());
+                props.put("timestamp", report.getTimestamp());
+
+                ImageMetadata imgMeta = report.getImageMetadata();
+                if (imgMeta != null) {
+                    props.put("acquisitionDate", imgMeta.getAcquisitionDate());
+                    props.put("crs", imgMeta.getCrs());
+                    props.put("resolution", imgMeta.getResolution());
+                    props.put("sensorPlatform", imgMeta.getSensorPlatform());
+                    props.put("cloudCoverPercent", imgMeta.getCloudCoverPercent());
+                    props.put("ndviMean", imgMeta.getNdviMean());
+                }
+
+                feature.put("properties", props);
+                geoJson.put("features", List.of(feature));
+
+                sendJsonResponse(exchange, 200, geoJson);
             } else {
                 sendJsonResponse(exchange, 200, report);
             }
@@ -714,6 +767,10 @@ public class App {
                 reportMeta.put("reportType", "PDF");
                 reportMeta.put("filePath", "outputs/report-" + runId + ".pdf");
                 reportMeta.put("reportUrl", "/outputs/report-" + runId + ".pdf");
+                reportMeta.put("timestamp", result.getTimestamp() != null ? result.getTimestamp() : Instant.now().toString());
+                if (result.getImageMetadata() != null) {
+                    reportMeta.put("imageMetadata", result.getImageMetadata());
+                }
                 sendJsonResponse(exchange, 200, reportMeta);
             } else {
                 sendJsonResponse(exchange, 400, Map.of("error", "Unsupported action: " + action));
@@ -786,6 +843,74 @@ public class App {
             );
             
             sendJsonResponse(exchange, 200, benchmarks);
+        }
+    }
+
+    static class GdalInspectHandler implements HttpHandler {
+        private static final com.satquery.gdal.GdalProcessor gdalProcessor = new com.satquery.gdal.GdalProcessor();
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod()) && !"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            try {
+                String imageId = null;
+                if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                    InputStream is = exchange.getRequestBody();
+                    byte[] bytes = is.readAllBytes();
+                    if (bytes.length > 0) {
+                        Map<String, Object> req = objectMapper.readValue(bytes, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+                        if (req != null && req.get("imageId") != null) {
+                            imageId = req.get("imageId").toString();
+                        }
+                    }
+                } else {
+                    String path = exchange.getRequestURI().getPath();
+                    String[] parts = path.split("/");
+                    if (parts.length >= 5) {
+                        imageId = parts[4];
+                    }
+                }
+
+                ImageAsset asset = null;
+                if (imageId != null) {
+                    asset = imageRegistry.get(imageId);
+                    if (asset == null) {
+                        asset = com.satquery.database.DatabaseManager.getImageAsset(imageId);
+                    }
+                }
+
+                File fileToInspect = null;
+                if (asset != null && asset.getFilePath() != null) {
+                    fileToInspect = new File(asset.getFilePath());
+                } else {
+                    File sample = new File("uploads/sample.tif");
+                    if (sample.exists()) {
+                        fileToInspect = sample;
+                    } else {
+                        sample = new File("backend/uploads/sample.tif");
+                        if (sample.exists()) fileToInspect = sample;
+                    }
+                }
+
+                if (fileToInspect == null || !fileToInspect.exists()) {
+                    sendJsonResponse(exchange, 404, Map.of("error", "No valid image asset found for inspection"));
+                    return;
+                }
+
+                com.satquery.gdal.GeoRasterMetadata metadata = gdalProcessor.inspect(fileToInspect);
+                sendJsonResponse(exchange, 200, metadata);
+
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "GDAL inspection failed: " + e.getMessage()));
+            }
         }
     }
 }

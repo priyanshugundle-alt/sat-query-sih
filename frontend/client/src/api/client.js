@@ -105,6 +105,10 @@ export async function uploadAsset(file) {
       resolution: data.metadata?.resolution || "10m GSD",
       georeferenced: data.metadata?.georeferenced ?? true,
       boundingBox: data.metadata?.boundingBox || null,
+      fileSize: data.metadata?.fileSize || null,
+      fileSizeBytes: data.metadata?.fileSizeBytes || (file ? file.size : 0),
+      bitDepth: data.metadata?.bitDepth || "8-bit",
+      colorSpace: data.metadata?.colorSpace || "sRGB",
     },
     rawFile: file,
   };
@@ -235,6 +239,8 @@ export function normalizeTaskResult(data, taskType) {
 
   return {
     queryId,
+    timestamp: data.timestamp || new Date().toLocaleString(),
+    imageMetadata: data.imageMetadata || null,
     status,
     isFailed,
     answer: data.answer || "No response generated.",
@@ -281,6 +287,30 @@ export async function downloadReportPdf(queryId) {
     // Fallback direct URL navigation
     window.open(`/outputs/report-${queryId}.pdf`, "_blank");
     return true;
+  }
+}
+
+/**
+ * Download GeoJSON report for spatial GIS mapping
+ */
+export async function downloadGeoJsonReport(queryId) {
+  try {
+    const res = await apiClient.get(`/api/report/${queryId}/geojson`);
+    const blob = new Blob([JSON.stringify(res.data, null, 2)], {
+      type: "application/geo+json",
+    });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `SatQuery-Spatial-${queryId}.geojson`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+    return true;
+  } catch (error) {
+    console.error("GeoJSON export failed:", error);
+    throw error;
   }
 }
 

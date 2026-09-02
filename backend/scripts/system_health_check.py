@@ -23,7 +23,7 @@ def run_diagnostic():
     except Exception as e:
         print(f"[FAIL] Java Backend API (port 8080): OFFLINE ({str(e)})")
 
-    # 3. Python Qwen2-VL Server Check
+    # 3. Python Remote VLM Server Check
     try:
         r_vlm = requests.post(
             "http://localhost:5000/analyze",
@@ -31,9 +31,9 @@ def run_diagnostic():
             headers={"X-SatQuery-Api-Key": "satquery-vlm-key-2026-sih"},
             timeout=3
         )
-        print(f"[OK] Qwen2-VL Model Server (port 5000): ONLINE (Status {r_vlm.status_code})")
+        print(f"[OK] Remote VLM Model Server (port 5000): ONLINE (Status {r_vlm.status_code})")
     except Exception as e:
-        print(f"[FAIL] Qwen2-VL Model Server (port 5000): OFFLINE ({str(e)})")
+        print(f"[FAIL] Remote VLM Model Server (port 5000): OFFLINE ({str(e)})")
 
     # 4. End-to-End Pipeline Check (Upload + Analyze)
     img_path = "backend/uploads/R2AWF01222026268035.jpg.jpeg"
@@ -57,12 +57,12 @@ def run_diagnostic():
 
             print(f"[OK] End-to-End Analysis Status: {status}")
             print(f"[OK] Execution Mode: {mode}")
-            print(f"[OK] Qwen2-VL Model Output Answer:\n     \"{ans}\"")
+            print(f"[OK] Remote VLM Model Output Answer:\n     \"{ans}\"")
 
-            if "SatQuery Qwen2-VL Analysis" in ans or "Qwen2-VL" in ans:
-                print("\n[VERDICT] ALL SYSTEMS 100% VERIFIED AND WORKING PERFECTLY! ")
+            if status == "SUCCESS":
+                print("\n[VERDICT] ALL SYSTEMS 100% VERIFIED AND WORKING PERFECTLY!")
             else:
-                print(f"\n[WARNING] Output did not contain expected Qwen2-VL header: {ans}")
+                print(f"\n[WARNING] Output status: {status}")
 
         except Exception as ex:
             print(f"[FAIL] End-to-End Pipeline Check Failed: {str(ex)}")

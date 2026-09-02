@@ -25,7 +25,7 @@ public class ImageAssetRepository {
             ImageMetadata meta = asset.getMetadata();
             if (meta != null) {
                 pstmt.setString(5, meta.getFormat());
-                pstmt.setLong(6, 1024L * 1024L); // 1MB mock size
+                pstmt.setLong(6, meta.getFileSizeBytes() > 0 ? meta.getFileSizeBytes() : (asset.getFilePath() != null ? new java.io.File(asset.getFilePath()).length() : 0L));
                 pstmt.setInt(7, meta.getWidth());
                 pstmt.setInt(8, meta.getHeight());
                 pstmt.setInt(9, meta.getBandCount() != null ? meta.getBandCount() : 3);
@@ -83,6 +83,40 @@ public class ImageAssetRepository {
             }
         } catch (SQLException e) {
             System.err.println("Error retrieving image asset: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public ImageAsset findByQueryId(String queryId) {
+        String sql = "SELECT * FROM image_assets WHERE query_id = ? LIMIT 1";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, queryId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    ImageMetadata meta = new ImageMetadata(
+                            rs.getString("file_format"),
+                            rs.getInt("width"),
+                            rs.getInt("height"),
+                            rs.getInt("band_count"),
+                            rs.getString("modality"),
+                            rs.getString("acquisition_date"),
+                            rs.getString("crs"),
+                            rs.getString("bounding_box"),
+                            rs.getInt("georeferenced") == 1
+                    );
+                    meta.setFileSizeBytes(rs.getLong("file_size_bytes"));
+                    return new ImageAsset(
+                            rs.getString("image_id"),
+                            rs.getString("file_name"),
+                            rs.getString("file_path"),
+                            meta
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving image asset by query ID: " + e.getMessage());
         }
         return null;
     }

@@ -7,8 +7,6 @@ import java.util.List;
 public class BenchmarkContextValidator {
 
     public void validate(QueryRequest request, List<ImageAsset> images, List<String> errors, List<String> warnings) {
-        boolean hasBenchmarkContext = request.getDatasetContext() != null;
-        
         for (ImageAsset img : images) {
             String format = img.getMetadata().getFormat();
             boolean isTiff = "TIFF".equalsIgnoreCase(format) || "GEOTIFF".equalsIgnoreCase(format);

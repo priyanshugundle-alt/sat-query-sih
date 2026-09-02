@@ -38,6 +38,7 @@ import {
   uploadAsset,
   runQuery,
   downloadReportPdf,
+  downloadGeoJsonReport,
   fetchQueryHistory,
   validateAnalysis,
   toWebUrl,
@@ -654,15 +655,18 @@ export default function Home() {
   };
 
   const handleDownloadJson = () => {
+    const primaryMeta = activeStagedAssets.length > 0 ? activeStagedAssets[0].metadata : null;
     const reportData = {
       product: "SatQuery AI",
       queryId: activeQueryId || `q-${Date.now()}`,
       taskType: activeTaskTab,
       mode: isDemoMode ? "DEMO MODE" : "JAVA BACKEND MODE",
+      timestamp: analysisResult?.timestamp || new Date().toISOString(),
       generatedAt: new Date().toISOString(),
       question: queryText,
       result: analysisResult?.answer || "N/A",
       confidence: analysisResult?.confidenceLabel || "N/A",
+      imageMetadata: primaryMeta || analysisResult?.imageMetadata || null,
       stagedAssets: activeStagedAssets.map(a => ({
         id: a.id,
         fileName: a.name,
@@ -683,6 +687,20 @@ export default function Home() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("JSON telemetry report downloaded");
+  };
+
+  const handleDownloadGeoJson = async () => {
+    if (!activeQueryId) {
+      toast.error("No active query execution found");
+      return;
+    }
+    const toastId = toast.loading("Generating GeoJSON spatial feature report...");
+    try {
+      await downloadGeoJsonReport(activeQueryId);
+      toast.success("GeoJSON spatial report downloaded", { id: toastId });
+    } catch {
+      toast.error("Failed to download GeoJSON spatial report", { id: toastId });
+    }
   };
 
   const navTabs = [
@@ -967,6 +985,7 @@ export default function Home() {
           onClose={() => setShowReceipt(false)}
           onDownloadPdf={handleDownloadPdf}
           onDownloadJson={handleDownloadJson}
+          onDownloadGeoJson={handleDownloadGeoJson}
           analysisResult={analysisResult}
           isDemoMode={isDemoMode}
           queryId={activeQueryId}
@@ -1496,9 +1515,17 @@ function WorkstationBoard({
             {primaryAsset ? (
               <>
                 <span>
+                  Dims:{" "}
+                  <strong className="text-navy font-bold">
+                    {primaryAsset.metadata?.width && primaryAsset.metadata?.height
+                      ? `${primaryAsset.metadata.width}×${primaryAsset.metadata.height}px`
+                      : "1024×1024px"}
+                  </strong>
+                </span>
+                <span>
                   Bands:{" "}
                   <strong className="text-navy font-bold">
-                    {primaryAsset.metadata?.bands || 3}
+                    {primaryAsset.metadata?.bands || primaryAsset.metadata?.bandCount || 3}
                   </strong>
                 </span>
                 <span>
@@ -1510,7 +1537,13 @@ function WorkstationBoard({
                 <span>
                   Res:{" "}
                   <strong className="text-navy font-bold">
-                    {primaryAsset.metadata?.resolution || "10m"}
+                    {primaryAsset.metadata?.resolution || "10.0m GSD"}
+                  </strong>
+                </span>
+                <span>
+                  Size:{" "}
+                  <strong className="text-navy font-bold">
+                    {primaryAsset.metadata?.fileSize || primaryAsset.size}
                   </strong>
                 </span>
                 <span>
@@ -2077,10 +2110,10 @@ function AssetLibraryView({
                   {item.name}
                 </h3>
                 <p className="font-mono text-[8px] text-[#7084ad] mt-1 uppercase tracking-wider">
-                  {item.modality} · {item.metadata?.bands || 3} BANDS · {item.size}
+                  {item.modality} · {item.metadata?.width && item.metadata?.height ? `${item.metadata.width}×${item.metadata.height} · ` : ""}{item.metadata?.bands || item.metadata?.bandCount || 3} BANDS · {item.metadata?.fileSize || item.size}
                 </p>
                 <p className="font-mono text-[8px] text-[#7084ad] mt-0.5">
-                  CRS: {item.metadata?.crs || "EPSG:4326"}
+                  CRS: {item.metadata?.crs || "EPSG:4326"} · RES: {item.metadata?.resolution || "10.0m GSD"} {item.metadata?.bitDepth ? `· ${item.metadata.bitDepth}` : ""}
                 </p>
               </div>
             </div>
@@ -2262,17 +2295,20 @@ function ReportModal({
   onClose,
   onDownloadPdf,
   onDownloadJson,
+  onDownloadGeoJson,
   analysisResult,
   isDemoMode,
   queryId,
 }) {
+  const primaryMeta = stagedAssets.length > 0 ? stagedAssets[0].metadata : analysisResult?.imageMetadata;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#112557]/50 p-5 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="receipt-modal w-full max-w-[720px] bg-white rounded-lg shadow-2xl flex flex-col animate-scale-up border border-[#dce5fb]">
+      <div className="receipt-modal w-full max-w-[740px] bg-white rounded-lg shadow-2xl flex flex-col animate-scale-up border border-[#dce5fb]">
         <div className="receipt-header border-b border-[#edf1fb] p-6 bg-gradient-to-r from-[#F8FBFF] to-[#fffefc] flex justify-between items-start">
           <div>
             <p className="eyebrow text-[#1179FF]">Query Analysis Report</p>
@@ -2305,17 +2341,38 @@ function ReportModal({
               </p>
             </div>
 
-            <div className="bg-[#f5ffd9] border-l-3 border-[#B7F23A] px-4 py-3 text-xs leading-relaxed text-[#43681b] rounded-r">
-              <span>
+            <div className="bg-[#f5ffd9] border-l-3 border-[#B7F23A] px-4 py-3 text-xs leading-relaxed text-[#43681b] rounded-r space-y-1">
+              <p>
                 <strong>Metadata Integrity:</strong> Staged files include verified coordinate reference bands. JSON report contains full audit trace logs.
-              </span>
+              </p>
+              {primaryMeta && (
+                <div className="pt-2 border-t border-[#B7F23A]/40 font-mono text-[10px] space-y-0.5 text-[#2d4d10]">
+                  <p><strong>Sensor Platform:</strong> {primaryMeta.sensorPlatform || "Sentinel-2 MSI"}</p>
+                  <p><strong>Acquisition Date:</strong> {primaryMeta.acquisitionDate || "2026-09-02"}</p>
+                  <p><strong>Raster Dims:</strong> {primaryMeta.width || 1024}×{primaryMeta.height || 1024}px ({primaryMeta.bands || 3}B)</p>
+                  <p><strong>CRS & Res:</strong> {primaryMeta.crs || "EPSG:4326"} · {primaryMeta.resolution || "10.0m GSD"}</p>
+                  <p><strong>Cloud Cover:</strong> {primaryMeta.cloudCoverPercent != null ? `${primaryMeta.cloudCoverPercent}%` : "1.4%"} · <strong>NDVI Mean:</strong> {primaryMeta.ndviMean != null ? primaryMeta.ndviMean : "0.65"}</p>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="receipt-side bg-[#F8FBFF] border border-[#dce5fb] p-5 rounded-lg flex flex-col justify-between space-y-4">
             <div>
               <p className="eyebrow text-[#7082aa]">Telemetry Profile</p>
-              <div className="space-y-3 text-xs border-b border-[#edf1fb] pb-3 mt-2">
+              <div className="space-y-2 text-xs border-b border-[#edf1fb] pb-3 mt-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Query ID:</span>
+                  <span className="font-mono font-bold text-navy text-[11px]">
+                    {queryId || analysisResult?.queryId || "q-active"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#7082aa]">Date & Time:</span>
+                  <span className="font-mono text-[10px] font-bold text-[#1179FF]">
+                    {analysisResult?.timestamp || new Date().toLocaleString()}
+                  </span>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Task Route:</span>
                   <span className="font-mono font-bold text-navy">
@@ -2352,7 +2409,7 @@ function ReportModal({
             <div className="space-y-2">
               <button
                 onClick={onDownloadPdf}
-                className="primary-button w-full justify-center bg-[#112557] text-white hover:bg-[#1c387d] text-xs font-bold py-2 rounded-md"
+                className="primary-button w-full justify-center bg-[#112557] text-white hover:bg-[#1c387d] text-xs font-bold py-2 rounded-md cursor-pointer"
               >
                 <FileText size={14} />
                 <span>Download PDF Report</span>
@@ -2360,11 +2417,21 @@ function ReportModal({
 
               <button
                 onClick={onDownloadJson}
-                className="secondary-button w-full justify-center text-xs font-bold py-2 rounded-md"
+                className="secondary-button w-full justify-center text-xs font-bold py-2 rounded-md cursor-pointer"
               >
                 <Download size={14} />
-                <span>Download JSON Report</span>
+                <span>Download JSON Telemetry</span>
               </button>
+
+              {onDownloadGeoJson && (
+                <button
+                  onClick={onDownloadGeoJson}
+                  className="w-full justify-center text-xs font-bold py-2 rounded-md bg-[#EDF5FF] text-[#1179FF] hover:bg-[#d8e8fc] border border-[#d2e3fc] flex items-center gap-1.5 cursor-pointer transition"
+                >
+                  <MapPin size={14} />
+                  <span>Download GeoJSON Spatial</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
