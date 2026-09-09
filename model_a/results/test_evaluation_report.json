@@ -1,0 +1,237 @@
+{
+  "model_name": "Model-A-ResNet18-SAR",
+  "model_version": "1.0.0",
+  "evaluation_timestamp": "2026-09-09 22:40:12",
+  "dataset": "BigEarthNet-S1 (Sentinel-1 SAR)",
+  "evaluation_protocol": {
+    "split": "held_out_test",
+    "split_type": "acquisition_level",
+    "official_labels_only": true,
+    "threshold": 0.5
+  },
+  "global_metrics": {
+    "macro_f1": 0.6124700972873546,
+    "macro_precision": 0.722771450178938,
+    "macro_recall": 0.5496572893131753,
+    "micro_f1": 0.7050302432711086,
+    "micro_precision": 0.77695211197991,
+    "micro_recall": 0.6452957912289873,
+    "hamming_loss": 0.08620731391272402,
+    "exact_match_ratio": 0.25934743790920406,
+    "test_loss": 0.20891677955906415,
+    "total_test_samples": 73924,
+    "evaluation_time_sec": 326.85472798347473,
+    "threshold": 0.5
+  },
+  "per_class_metrics": [
+    {
+      "class_id": 0,
+      "class_name": "Urban fabric",
+      "support": 7574,
+      "true_positives": 4646,
+      "false_positives": 1132,
+      "false_negatives": 2928,
+      "precision": 0.8041,
+      "recall": 0.6134,
+      "f1_score": 0.6959
+    },
+    {
+      "class_id": 1,
+      "class_name": "Industrial or commercial units",
+      "support": 1721,
+      "true_positives": 511,
+      "false_positives": 229,
+      "false_negatives": 1210,
+      "precision": 0.6905,
+      "recall": 0.2969,
+      "f1_score": 0.4153
+    },
+    {
+      "class_id": 2,
+      "class_name": "Arable land",
+      "support": 34464,
+      "true_positives": 28032,
+      "false_positives": 4418,
+      "false_negatives": 6432,
+      "precision": 0.8639,
+      "recall": 0.8134,
+      "f1_score": 0.8379
+    },
+    {
+      "class_id": 3,
+      "class_name": "Permanent crops",
+      "support": 3266,
+      "true_positives": 912,
+      "false_positives": 963,
+      "false_negatives": 2354,
+      "precision": 0.4864,
+      "recall": 0.2792,
+      "f1_score": 0.3548
+    },
+    {
+      "class_id": 4,
+      "class_name": "Pastures",
+      "support": 17373,
+      "true_positives": 7910,
+      "false_positives": 2321,
+      "false_negatives": 9463,
+      "precision": 0.7731,
+      "recall": 0.4553,
+      "f1_score": 0.5731
+    },
+    {
+      "class_id": 5,
+      "class_name": "Complex cultivation patterns",
+      "support": 16128,
+      "true_positives": 7877,
+      "false_positives": 2920,
+      "false_negatives": 8251,
+      "precision": 0.7296,
+      "recall": 0.4884,
+      "f1_score": 0.5851
+    },
+    {
+      "class_id": 6,
+      "class_name": "Land principally occupied by agriculture, with significant areas of natural vegetation",
+      "support": 17208,
+      "true_positives": 8310,
+      "false_positives": 3570,
+      "false_negatives": 8898,
+      "precision": 0.6995,
+      "recall": 0.4829,
+      "f1_score": 0.5714
+    },
+    {
+      "class_id": 7,
+      "class_name": "Agro-forestry areas",
+      "support": 4734,
+      "true_positives": 3472,
+      "false_positives": 1113,
+      "false_negatives": 1262,
+      "precision": 0.7573,
+      "recall": 0.7334,
+      "f1_score": 0.7451
+    },
+    {
+      "class_id": 8,
+      "class_name": "Broad-leaved forest",
+      "support": 18698,
+      "true_positives": 10634,
+      "false_positives": 4324,
+      "false_negatives": 8064,
+      "precision": 0.7109,
+      "recall": 0.5687,
+      "f1_score": 0.6319
+    },
+    {
+      "class_id": 9,
+      "class_name": "Coniferous forest",
+      "support": 25415,
+      "true_positives": 20621,
+      "false_positives": 5564,
+      "false_negatives": 4794,
+      "precision": 0.7875,
+      "recall": 0.8114,
+      "f1_score": 0.7993
+    },
+    {
+      "class_id": 10,
+      "class_name": "Mixed forest",
+      "support": 28369,
+      "true_positives": 21815,
+      "false_positives": 5936,
+      "false_negatives": 6554,
+      "precision": 0.7861,
+      "recall": 0.769,
+      "f1_score": 0.7774
+    },
+    {
+      "class_id": 11,
+      "class_name": "Natural grassland and sparsely vegetated areas",
+      "support": 1385,
+      "true_positives": 397,
+      "false_positives": 195,
+      "false_negatives": 988,
+      "precision": 0.6706,
+      "recall": 0.2866,
+      "f1_score": 0.4016
+    },
+    {
+      "class_id": 12,
+      "class_name": "Moors, heathland and sclerophyllous vegetation",
+      "support": 1030,
+      "true_positives": 423,
+      "false_positives": 162,
+      "false_negatives": 607,
+      "precision": 0.7231,
+      "recall": 0.4107,
+      "f1_score": 0.5238
+    },
+    {
+      "class_id": 13,
+      "class_name": "Transitional woodland, shrub",
+      "support": 24113,
+      "true_positives": 12518,
+      "false_positives": 5930,
+      "false_negatives": 11595,
+      "precision": 0.6786,
+      "recall": 0.5191,
+      "f1_score": 0.5882
+    },
+    {
+      "class_id": 14,
+      "class_name": "Beaches, dunes, sands",
+      "support": 200,
+      "true_positives": 90,
+      "false_positives": 29,
+      "false_negatives": 110,
+      "precision": 0.7563,
+      "recall": 0.45,
+      "f1_score": 0.5643
+    },
+    {
+      "class_id": 15,
+      "class_name": "Inland wetlands",
+      "support": 5662,
+      "true_positives": 2361,
+      "false_positives": 573,
+      "false_negatives": 3301,
+      "precision": 0.8047,
+      "recall": 0.417,
+      "f1_score": 0.5493
+    },
+    {
+      "class_id": 16,
+      "class_name": "Coastal wetlands",
+      "support": 205,
+      "true_positives": 65,
+      "false_positives": 183,
+      "false_negatives": 140,
+      "precision": 0.2621,
+      "recall": 0.3171,
+      "f1_score": 0.287
+    },
+    {
+      "class_id": 17,
+      "class_name": "Inland waters",
+      "support": 10764,
+      "true_positives": 8551,
+      "false_positives": 1078,
+      "false_negatives": 2213,
+      "precision": 0.888,
+      "recall": 0.7944,
+      "f1_score": 0.8386
+    },
+    {
+      "class_id": 18,
+      "class_name": "Marine waters",
+      "support": 5937,
+      "true_positives": 5560,
+      "false_positives": 902,
+      "false_negatives": 377,
+      "precision": 0.8604,
+      "recall": 0.9365,
+      "f1_score": 0.8968
+    }
+  ]
+}

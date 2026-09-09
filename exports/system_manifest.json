@@ -1,0 +1,51 @@
+{
+  "title": "SatQuery AI \u2014 Competition Evaluation Manifest",
+  "problem_statement": {
+    "id": "26167",
+    "title": "Natural Language Querying for Remote Sensing & Earth Observation",
+    "organization": "Indian Space Research Organisation (ISRO) / Space Applications Centre (SAC)",
+    "category": "Software / AI & Deep Learning for Geospatial Intelligence"
+  },
+  "timestamp": "2026-09-08T15:01:44.312190",
+  "runtime_environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.12.10",
+    "torch_version": "2.6.0+cu124",
+    "cuda_version": "12.4",
+    "gpu_accelerator": "NVIDIA GeForce RTX 3050 A Laptop GPU"
+  },
+  "architecture_specs": {
+    "model_a": {
+      "architecture": "ResNet18-SAR (Dual-Polarization Adapted)",
+      "pretrained_backbone": "resnet18",
+      "embedding_dimension": 512,
+      "num_classes": 19,
+      "weights_path": "D:\\SIH\\sat-query-sih\\model_a\\checkpoints\\best_model_a.pt"
+    },
+    "agent_orchestrator": {
+      "routing_engine": "Deterministic Regex Rule Engine + Multi-Specialist Dispatcher",
+      "geo_gatekeeper": "Active (16-bit GeoTIFF header, spatial validity, dynamic range checks)",
+      "vector_retrieval": "Dense 512-dim Normalized Cosine Embedding Index",
+      "explainability": "Grad-CAM Biophysical Radar Backscatter Heatmaps",
+      "session_store": "Multi-Turn Session Memory (LRU In-Memory + Thread-Safe)",
+      "audit_layer": "SHA-256 Cryptographic Zero-Hallucination Audit Logs"
+    }
+  },
+  "phases_delivered": [
+    "Phase 1: Environment & Tooling Verification",
+    "Phase 2: BigEarthNet-S1 Dataset Pipeline & Integrity Gate",
+    "Phase 3: Model A (ResNet18-SAR Dual-Pol Classifier)",
+    "Phase 4: Model A Evaluation & Metric Verification",
+    "Phase 5: 512-D Feature Encoder & High-Performance Extraction",
+    "Phase 6: Multi-Tool Agent Orchestrator & Cryptographic Verification",
+    "Phase 7: Production FastAPI Service & Modern Web Dashboard",
+    "Phase 8: Multi-Turn Sessions, Demo Presets & Automated Benchmarking",
+    "Phase 9: Semantic Geo-Search & Grad-CAM Explainable AI",
+    "Phase 10: Geospatial ROI Sub-Patch Analytics & SIH Dossier Packager",
+    "Phase 11: ISRO Bhuvan / QGIS Geospatial Vector Exporter & Model Registry",
+    "Phase 12: Rapid Disaster & Crisis Response Engine",
+    "Phase 13: Large-Area AOI Strip Mosaicing & Ground-Station Edge Model Optimization"
+  ],
+  "benchmark_metrics": {},
+  "benchmark_kpis": {}
+}

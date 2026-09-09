@@ -1,0 +1,127 @@
+{
+  "receipt_id": "SQ-20260908-E93866",
+  "timestamp": "2026-09-08 00:08:02",
+  "query": "Classify the primary land cover categories in this Sentinel-1 SAR acquisition.",
+  "intent": "sar_classification",
+  "input_metadata": {
+    "vh": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_41\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_41_VH.tif",
+    "vv": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_41\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_41_VV.tif"
+  },
+  "geo_validity_gate": {
+    "status": "VALID",
+    "passed_checks": [
+      "File Existence",
+      "Spatial Dimension Matching",
+      "Data Integrity & NaN Tolerance (<20%)",
+      "SAR Decibel Range Sanity Check"
+    ]
+  },
+  "specialist_routing": {
+    "selected_tool": "Model-A-ResNet18-SAR",
+    "model_version": "1.0.0",
+    "processing_time_ms": 5.73
+  },
+  "evidence_and_uncertainty": {
+    "uncertainty_level": "Likely",
+    "confidence_score": 0.6397,
+    "claims": [
+      {
+        "claim": "Presence of Urban fabric",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.552)"
+      },
+      {
+        "claim": "Presence of Industrial or commercial units",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.450)"
+      },
+      {
+        "claim": "Presence of Arable land",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.439)"
+      },
+      {
+        "claim": "Presence of Permanent crops",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.429)"
+      },
+      {
+        "claim": "Presence of Pastures",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.499)"
+      },
+      {
+        "claim": "Presence of Complex cultivation patterns",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.501)"
+      },
+      {
+        "claim": "Presence of Land principally occupied by agriculture, with significant areas of natural vegetation",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.515)"
+      },
+      {
+        "claim": "Presence of Agro-forestry areas",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.535)"
+      },
+      {
+        "claim": "Presence of Broad-leaved forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.483)"
+      },
+      {
+        "claim": "Presence of Coniferous forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.520)"
+      },
+      {
+        "claim": "Presence of Mixed forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.408)"
+      },
+      {
+        "claim": "Presence of Natural grassland and sparsely vegetated areas",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.640)"
+      },
+      {
+        "claim": "Presence of Moors, heathland and sclerophyllous vegetation",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.448)"
+      },
+      {
+        "claim": "Presence of Transitional woodland, shrub",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.500)"
+      },
+      {
+        "claim": "Presence of Beaches, dunes, sands",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.453)"
+      },
+      {
+        "claim": "Presence of Inland wetlands",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.440)"
+      },
+      {
+        "claim": "Presence of Coastal wetlands",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.632)"
+      },
+      {
+        "claim": "Presence of Inland waters",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.626)"
+      },
+      {
+        "claim": "Presence of Marine waters",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.549)"
+      }
+    ]
+  },
+  "final_answer": "Based on Sentinel-1 SAR analysis, the primary land-cover categories detected are: Urban fabric, Industrial or commercial units, Arable land, Permanent crops, Pastures, Complex cultivation patterns, Land principally occupied by agriculture, with significant areas of natural vegetation, Agro-forestry areas, Broad-leaved forest, Coniferous forest, Mixed forest, Natural grassland and sparsely vegetated areas, Moors, heathland and sclerophyllous vegetation, Transitional woodland, shrub, Beaches, dunes, sands, Inland wetlands, Coastal wetlands, Inland waters, Marine waters (Confidence: 0.64).",
+  "total_latency_ms": 21.73
+}
