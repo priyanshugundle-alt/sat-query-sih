@@ -45,14 +45,55 @@ export async function parseGeoTiffFile(file) {
     const height = image.getHeight();
     const samplesPerPixel = image.getSamplesPerPixel() || 3;
     const geoKeys = image.getGeoKeys ? image.getGeoKeys() : null;
+    
+    // Extract comprehensive metadata
+    const fileDirectory = image.getFileDirectory();
+    let bbox = null;
+    let resolution = null;
+    
+    try {
+      if (image.getBoundingBox) {
+        bbox = image.getBoundingBox();
+      }
+      if (image.getResolution) {
+        resolution = image.getResolution();
+      }
+    } catch (e) {
+      console.warn("Could not extract bbox/resolution", e);
+    }
+
+    const metadata = {
+      geoKeys,
+      bbox,
+      resolution,
+      modelTiepoint: fileDirectory.ModelTiepoint,
+      modelPixelScale: fileDirectory.ModelPixelScale,
+      epsg: geoKeys ? geoKeys.ProjectedCSTypeGeoKey || geoKeys.GeographicTypeGeoKey : null,
+      fileDirectory: fileDirectory // Raw tags
+    };
 
     // Read raster data
     const rasters = await image.readRasters({ interleave: false });
     
     // Create an offscreen canvas to render pixel data
+    // Scale up tiny images to at least 512px for better clarity when previewing
+    const minPreviewSize = 512;
+    let targetWidth = width;
+    let targetHeight = height;
+    
+    if (width < minPreviewSize || height < minPreviewSize) {
+      const scale = Math.max(minPreviewSize / width, minPreviewSize / height);
+      targetWidth = Math.round(width * scale);
+      targetHeight = Math.round(height * scale);
+    }
+    
+    // Cap maximum size to 1024 to prevent memory issues
+    targetWidth = Math.min(targetWidth, 1024);
+    targetHeight = Math.min(targetHeight, 1024);
+
     const canvas = document.createElement("canvas");
-    canvas.width = Math.min(width, 1024);
-    canvas.height = Math.min(height, 1024);
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {
@@ -101,6 +142,9 @@ export async function parseGeoTiffFile(file) {
     const tempCtx = tempCanvas.getContext("2d");
     tempCtx.putImageData(imgData, 0, 0);
 
+    // Use high-quality bicubic interpolation for the upscale
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
     const previewUrl = canvas.toDataURL("image/png");
 
@@ -111,7 +155,7 @@ export async function parseGeoTiffFile(file) {
       bands: samplesPerPixel,
       format: "GeoTIFF (Raster Grid)",
       isGeoTiff: true,
-      geoKeys,
+      metadata,
     };
   } catch (error) {
     console.warn("Client-side GeoTIFF render fallback:", error);
@@ -129,17 +173,30 @@ export async function parseGeoTiffFile(file) {
 }
 
 function getMinMax(array) {
-  let min = Infinity;
-  let max = -Infinity;
-  const sampleStep = Math.max(1, Math.floor(array.length / 5000));
+  // Collect a sample of valid pixels
+  const samples = [];
+  const sampleStep = Math.max(1, Math.floor(array.length / 10000));
+  
   for (let i = 0; i < array.length; i += sampleStep) {
     const val = array[i];
-    if (val !== undefined && !isNaN(val)) {
-      if (val < min) min = val;
-      if (val > max) max = val;
+    if (val !== undefined && !isNaN(val) && val > 0) { // Ignore 0/nodata values
+      samples.push(val);
     }
   }
-  if (min === max || min === Infinity) {
+
+  if (samples.length === 0) return { min: 0, max: 255 };
+
+  // Sort the samples to find percentiles
+  samples.sort((a, b) => a - b);
+  
+  // Use 2nd and 98th percentile to ignore extreme dark/bright outliers
+  const minIdx = Math.floor(samples.length * 0.02);
+  const maxIdx = Math.floor(samples.length * 0.98);
+  
+  let min = samples[minIdx];
+  let max = samples[maxIdx];
+
+  if (min === max || min === undefined) {
     min = 0;
     max = 255;
   }

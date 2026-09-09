@@ -31,10 +31,13 @@ public class InputValidator {
         switch (taskType) {
             case VQA:
             case GROUNDING:
+            case CAPTIONING:
+            case INFORMATION_EXTRACTION:
                 singleValidator.validate(images, taskType, errors);
                 break;
 
             case CHANGE_ANALYSIS:
+            case CHANGE_UNDERSTANDING:
                 changeValidator.validate(images, errors);
                 if (errors.isEmpty()) {
                     geoGate.checkCrsMatch(images, errors);
