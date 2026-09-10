@@ -31,14 +31,19 @@
   --color-ring: var(--ring);
 
   /* Semantic Color System */
-  --color-navy: #112557;
-  --color-optical: #1179ff;
-  --color-sar: #7846d7;
-  --color-lime: #b7f23a;
-  --color-coral: #ff7c70;
-  --color-yellow: #f4b900;
-  --color-mineral: #f8fbff;
-  --color-sky: #edf5ff;
+  --color-navy: #0D1D42;
+  --color-slate-body: #2E4368;
+  --color-teal: #088080;
+  --color-midnight: #054848;
+  --color-seafoam: #9FE4E4;
+  --color-lime: #B7F23A;
+  --color-coral: #F16060;
+  --color-orchid: #A47CF3;
+  --color-optical: #1179FF;
+  --color-sar: #7846D7;
+  --color-yellow: #F4B900;
+  --color-mineral: #F8FBFF;
+  --color-sky: #EDF5FF;
 
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, serif;
@@ -47,15 +52,15 @@
 
 :root {
   --radius: 0.5rem;
-  --primary: #112557;
-  --primary-foreground: #f8fbff;
-  --background: #f8fbff;
-  --foreground: #112557;
-  --card: #ffffff;
-  --card-foreground: #112557;
-  --border: #dce5fb;
-  --input: #dce5fb;
-  --ring: #1179ff;
+  --primary: #088080;
+  --primary-foreground: #F3F3F3;
+  --background: #088080;
+  --foreground: #F3F3F3;
+  --card: rgba(255, 255, 255, 0.94);
+  --card-foreground: #0D1D42;
+  --border: rgba(255, 255, 255, 0.25);
+  --input: rgba(255, 255, 255, 0.3);
+  --ring: #9FE4E4;
 }
 
 @layer base {
@@ -63,12 +68,12 @@
     border-color: var(--border);
   }
   html {
-    background: #f8fbff;
+    background: #088080;
     scroll-behavior: smooth;
   }
   body {
-    background-color: #f8fbff;
-    color: #112557;
+    background-color: #088080;
+    color: #f3f3f3;
     font-family: var(--font-sans);
     margin: 0;
     min-width: 320px;
@@ -81,7 +86,7 @@
   button:focus-visible,
   input:focus-visible,
   textarea:focus-visible {
-    outline: 3px solid rgba(17, 121, 255, 0.28);
+    outline: 3px solid rgba(159, 228, 228, 0.5);
     outline-offset: 2px;
   }
 }
@@ -107,26 +112,34 @@
 
   /* Main Shell Layout */
   .prism-shell {
+    background-color: #088080;
     background:
       radial-gradient(
-        circle at 82% 4%,
-        rgba(183, 242, 58, 0.12),
-        transparent 25%
+        circle at 82% 6%,
+        rgba(159, 228, 228, 0.28),
+        transparent 35%
       ),
       radial-gradient(
-        circle at 8% 35%,
-        rgba(17, 121, 255, 0.1),
-        transparent 30%
+        circle at 12% 38%,
+        rgba(4, 65, 65, 0.5),
+        transparent 45%
       ),
-      linear-gradient(150deg, #f8fbff 0%, #edf3ff 50%, #fffbf2 100%);
+      radial-gradient(
+        circle at 50% 88%,
+        rgba(183, 242, 58, 0.08),
+        transparent 35%
+      ),
+      linear-gradient(155deg, #088080 0%, #066666 45%, #054848 100%);
+    color: #f3f3f3;
+    min-height: 100vh;
   }
 
   .prism-side {
     position: sticky;
     top: 0;
     height: 100vh;
-    border-right: 1px solid #dfe7fb;
-    background: rgba(255, 255, 255, 0.85);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(6, 75, 75, 0.88);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
   }
@@ -225,42 +238,856 @@
     transition: all 200ms ease;
   }
 
-  /* Color Planes for Visual System */
+  /* ========================================================= */
+  /* From Uiverse.io by ali-sazzad - Frosted Aurora Glass Card */
+  /* ========================================================= */
+  .sazzad-card {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    background: rgba(255, 255, 255, 0.25);
+    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+
+    box-shadow:
+      0 20px 50px rgba(0, 0, 0, 0.15),
+      inset 0 1px 2px rgba(255, 255, 255, 0.55);
+
+    transition: all 0.4s ease;
+  }
+
+  .sazzad-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 25px 65px rgba(0, 0, 0, 0.22),
+      inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  }
+
+  /* Inner Glow Panel */
+  .sazzad-bg {
+    position: absolute;
+    inset: 5px;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.94),
+      rgba(245, 248, 255, 0.82)
+    );
+    border-radius: 16px;
+    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Foreground Interactive Content */
+  .sazzad-content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Animated Aurora Blob Base */
+  .sazzad-aurora {
+    position: absolute;
+    top: 40%;
+    left: 40%;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    filter: blur(32px);
+    z-index: 1;
+    pointer-events: none;
+    animation: sazzad-aurora-move 6.5s infinite ease-in-out;
+    opacity: 0.85;
+  }
+
+  /* Feature Aurora Variants */
+  .sazzad-aurora-rose {
+    background: radial-gradient(
+      circle,
+      rgba(255, 0, 72, 0.85),
+      rgba(255, 0, 0, 0.4),
+      transparent
+    );
+  }
+
+  .sazzad-aurora-blue {
+    background: radial-gradient(
+      circle,
+      rgba(17, 121, 255, 0.85),
+      rgba(0, 210, 255, 0.45),
+      transparent
+    );
+  }
+
+  .sazzad-aurora-purple {
+    background: radial-gradient(
+      circle,
+      rgba(164, 124, 243, 0.9),
+      rgba(104, 63, 234, 0.45),
+      transparent
+    );
+  }
+
+  .sazzad-aurora-teal {
+    background: radial-gradient(
+      circle,
+      rgba(8, 128, 128, 0.9),
+      rgba(159, 228, 228, 0.55),
+      transparent
+    );
+  }
+
+  .sazzad-aurora-cyan {
+    background: radial-gradient(
+      circle,
+      rgba(0, 210, 255, 0.85),
+      rgba(17, 121, 255, 0.45),
+      transparent
+    );
+  }
+
+  .sazzad-aurora-lime {
+    background: radial-gradient(
+      circle,
+      rgba(183, 242, 58, 0.85),
+      rgba(46, 117, 89, 0.4),
+      transparent
+    );
+  }
+
+  .sazzad-aurora-amber {
+    background: radial-gradient(
+      circle,
+      rgba(244, 185, 0, 0.85),
+      rgba(255, 124, 112, 0.45),
+      transparent
+    );
+  }
+
+  /* Aurora Animation Keyframes */
+  @keyframes sazzad-aurora-move {
+    0% {
+      transform: translate(-60%, -60%) scale(1);
+    }
+    30% {
+      transform: translate(10%, -40%) scale(1.15);
+    }
+    60% {
+      transform: translate(20%, 20%) scale(1.05);
+    }
+    80% {
+      transform: translate(-40%, 10%) scale(1.2);
+    }
+    100% {
+      transform: translate(-60%, -60%) scale(1);
+    }
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by Javierrocadev - Feature Card System */
+  /* ========================================================= */
+  .uiverse-card,
   .investigation-plane {
     position: relative;
-    border: 1px solid;
-    box-shadow: 0 12px 30px rgba(50, 80, 143, 0.05);
-    transition: all 200ms ease;
+    overflow: hidden;
+    border-radius: 15px;
+    background: rgba(105, 13, 197, 0.08);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(105, 13, 197, 0.18);
+    box-shadow: 0 10px 30px -10px rgba(105, 13, 197, 0.12), 0 4px 16px rgba(0, 0, 0, 0.03);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
+
+  .uiverse-card:hover,
+  .investigation-plane:hover {
+    box-shadow: 0 18px 42px -10px rgba(105, 13, 197, 0.2), 0 6px 20px rgba(0, 0, 0, 0.05);
+    border-color: rgba(105, 13, 197, 0.32);
+    transform: translateY(-2px);
+  }
+
+  /* Uiverse.io signature floating animated ring */
+  .uiverse-card::before,
+  .investigation-plane::before {
+    content: "";
+    height: 100px;
+    width: 100px;
+    position: absolute;
+    top: -40px;
+    left: -20px;
+    border-radius: 50%;
+    border: 35px solid rgba(255, 255, 255, 0.18);
+    transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: blur(0.5rem);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .uiverse-card:hover::before,
+  .investigation-plane:hover::before {
+    width: 140px;
+    height: 140px;
+    top: -30px;
+    left: 50%;
+    filter: blur(0rem);
+    border-color: rgba(255, 255, 255, 0.38);
+  }
+
+  /* Ensure card contents sit securely above the floating animated ring */
+  .uiverse-card > *,
+  .investigation-plane > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Feature Card Thematic Color Variants */
+  .uiverse-card-blue,
   .plane-blue {
-    border-color: #cfe3ff;
-    border-top: 5px solid #1179ff;
-    background: #f5faff;
+    background: rgba(17, 121, 255, 0.06);
+    border-color: rgba(17, 121, 255, 0.22);
+    border-top: 4px solid #1179ff;
   }
-  .plane-yellow {
-    border-color: #f4db94;
-    border-top: 5px solid #f4b900;
-    background: #fffbed;
+  .uiverse-card-blue::before,
+  .plane-blue::before {
+    border-color: rgba(17, 121, 255, 0.18);
   }
+  .uiverse-card-blue:hover::before,
+  .plane-blue:hover::before {
+    border-color: rgba(17, 121, 255, 0.36);
+  }
+
+  .uiverse-card-purple,
+  .plane-violet {
+    background: rgba(105, 13, 197, 0.08);
+    border-color: rgba(105, 13, 197, 0.22);
+    border-top: 4px solid #690dc5;
+  }
+  .uiverse-card-purple::before,
+  .plane-violet::before {
+    border-color: rgba(105, 13, 197, 0.18);
+  }
+  .uiverse-card-purple:hover::before,
+  .plane-violet:hover::before {
+    border-color: rgba(105, 13, 197, 0.36);
+  }
+
+  .uiverse-card-indigo {
+    background: rgba(120, 70, 215, 0.07);
+    border-color: rgba(120, 70, 215, 0.22);
+    border-top: 4px solid #7846d7;
+  }
+  .uiverse-card-indigo::before {
+    border-color: rgba(120, 70, 215, 0.18);
+  }
+  .uiverse-card-indigo:hover::before {
+    border-color: rgba(120, 70, 215, 0.36);
+  }
+
+  .uiverse-card-cyan {
+    background: rgba(17, 37, 87, 0.05);
+    border-color: rgba(17, 121, 255, 0.2);
+    border-top: 4px solid #112557;
+  }
+  .uiverse-card-cyan::before {
+    border-color: rgba(17, 121, 255, 0.16);
+  }
+  .uiverse-card-cyan:hover::before {
+    border-color: rgba(17, 121, 255, 0.35);
+  }
+
+  .uiverse-card-lime,
   .plane-lime {
-    border-color: #ceee90;
-    border-top: 5px solid #b7f23a;
-    background: #efffc9;
+    background: rgba(183, 242, 58, 0.12);
+    border-color: rgba(183, 242, 58, 0.38);
+    border-top: 4px solid #84c414;
   }
+  .uiverse-card-lime::before,
+  .plane-lime::before {
+    border-color: rgba(183, 242, 58, 0.24);
+  }
+  .uiverse-card-lime:hover::before,
+  .plane-lime:hover::before {
+    border-color: rgba(183, 242, 58, 0.48);
+  }
+
+  .uiverse-card-yellow,
+  .plane-yellow {
+    background: rgba(244, 185, 0, 0.09);
+    border-color: rgba(244, 185, 0, 0.3);
+    border-top: 4px solid #f4b900;
+  }
+  .uiverse-card-yellow::before,
+  .plane-yellow::before {
+    border-color: rgba(244, 185, 0, 0.2);
+  }
+  .uiverse-card-yellow:hover::before,
+  .plane-yellow:hover::before {
+    border-color: rgba(244, 185, 0, 0.42);
+  }
+
+  .uiverse-card-white,
+  .plane-white {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(223, 231, 251, 0.9);
+    border-top: 4px solid #112557;
+  }
+  .uiverse-card-white::before,
+  .plane-white::before {
+    border-color: rgba(17, 121, 255, 0.12);
+  }
+  .uiverse-card-white:hover::before,
+  .plane-white:hover::before {
+    border-color: rgba(17, 121, 255, 0.3);
+  }
+
+  .uiverse-card-slate {
+    background: rgba(255, 255, 255, 0.86);
+    border-color: rgba(200, 215, 245, 0.7);
+    border-top: 4px solid #1179ff;
+  }
+  .uiverse-card-slate::before {
+    border-color: rgba(17, 121, 255, 0.15);
+  }
+  .uiverse-card-slate:hover::before {
+    border-color: rgba(17, 121, 255, 0.35);
+  }
+
   .plane-coral {
     border-color: #ffc9c0;
-    border-top: 5px solid #ff7c70;
+    border-top: 4px solid #ff7c70;
     background: #fff3f0;
   }
-  .plane-white {
-    border-color: #dfe7fb;
-    border-top: 5px solid #112557;
-    background: rgba(255, 255, 255, 0.95);
+  .plane-coral::before {
+    border-color: rgba(255, 124, 112, 0.2);
   }
-  .plane-violet {
-    border-color: #dcd1ff;
-    border-top: 5px solid #7846d7;
-    background: #f6f2ff;
+  .plane-coral:hover::before {
+    border-color: rgba(255, 124, 112, 0.4);
+  }
+
+  /* Uiverse.io typography and action button styles */
+  .uiverse-title {
+    font-weight: 800;
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #0D1D42;
+    line-height: 1.2;
+  }
+  .uiverse-subtitle {
+    font-size: 9.5px;
+    font-weight: 500;
+    color: #2E4368;
+  }
+
+  .uiverse-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .uiverse-btn {
+    border: none;
+    height: 28px;
+    padding: 0 10px;
+    background-color: rgba(247, 234, 234, 0.65);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #112557;
+    transition: all 0.2s ease;
+  }
+  .uiverse-btn:hover {
+    background-color: rgb(247, 234, 234);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  .uiverse-btn:active {
+    transform: translateY(0);
+  }
+  .uiverse-svg-icon {
+    stroke: rgb(38, 59, 126);
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by AlimurtuzaCodes - Cosmic Sparkle Button */
+  /* ========================================================= */
+  .btn-sparkle-run,
+  .btn-uiverse-sparkle {
+    border: none;
+    min-width: 14em;
+    height: 46px;
+    padding: 0 24px;
+    border-radius: 9999px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    background: #1C1A1C;
+    cursor: pointer;
+    transition: all 450ms ease-in-out;
+    position: relative;
+    user-select: none;
+  }
+
+  .btn-sparkle-run .sparkle,
+  .btn-uiverse-sparkle .sparkle {
+    fill: #AAAAAA;
+    color: #AAAAAA;
+    transition: all 800ms ease;
+    flex-shrink: 0;
+  }
+
+  .btn-sparkle-run .text,
+  .btn-uiverse-sparkle .text {
+    font-weight: 600;
+    color: #AAAAAA;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    transition: all 450ms ease;
+  }
+
+  .btn-sparkle-run:hover:not(:disabled),
+  .btn-uiverse-sparkle:hover:not(:disabled) {
+    background: linear-gradient(0deg, #0ca5a5, #054848);
+    box-shadow:
+      inset 0px 1px 0px 0px rgba(255, 255, 255, 0.5),
+      inset 0px -4px 0px 0px rgba(0, 0, 0, 0.25),
+      0px 0px 0px 4px rgba(159, 228, 228, 0.35),
+      0px 0px 60px 0px rgba(0, 229, 255, 0.6);
+    transform: translateY(-2px);
+  }
+
+  .btn-sparkle-run:hover:not(:disabled) .text,
+  .btn-uiverse-sparkle:hover:not(:disabled) .text {
+    color: #ffffff;
+  }
+
+  .btn-sparkle-run:hover:not(:disabled) .sparkle,
+  .btn-uiverse-sparkle:hover:not(:disabled) .sparkle {
+    fill: #9FE4E4;
+    color: #9FE4E4;
+    transform: scale(1.25) rotate(15deg);
+  }
+
+  .btn-sparkle-run:active:not(:disabled),
+  .btn-uiverse-sparkle:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .btn-sparkle-run:disabled,
+  .btn-uiverse-sparkle:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #1a2e2e;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .btn-sparkle-run.is-running,
+  .btn-uiverse-sparkle.is-running {
+    background: linear-gradient(0deg, #088080, #054848);
+    box-shadow: 0px 0px 40px 0px rgba(0, 229, 255, 0.55);
+    cursor: wait;
+    opacity: 0.95;
+  }
+  .btn-sparkle-run.is-running .text,
+  .btn-uiverse-sparkle.is-running .text {
+    color: #ffffff;
+  }
+  .btn-sparkle-run.is-running .sparkle,
+  .btn-uiverse-sparkle.is-running .sparkle {
+    fill: #B7F23A;
+    color: #B7F23A;
+  }
+
+  /* After animation completes */
+  .btn-sparkle-run.is-complete {
+    background: linear-gradient(0deg, #054848, #088080);
+    border: 1px solid rgba(159, 228, 228, 0.45);
+    box-shadow: 0px 0px 25px rgba(8, 128, 128, 0.4);
+  }
+  .btn-sparkle-run.is-complete .text {
+    color: #9FE4E4;
+  }
+  .btn-sparkle-run.is-complete .sparkle {
+    fill: #B7F23A;
+    color: #B7F23A;
+  }
+  .btn-sparkle-run.is-complete:hover {
+    background: linear-gradient(0deg, #0ca5a5, #054848);
+    box-shadow: 0px 0px 50px rgba(0, 229, 255, 0.65);
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by Gaurav-WebDev - Wave Expansion Card */
+  /* ========================================================= */
+  .uiverse-hero-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    background: #ffffff;
+    border: 1px solid #dce5fb;
+    cursor: pointer;
+    transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 4px 24px rgba(50, 80, 143, 0.06);
+  }
+
+  .uiverse-hero-card::before {
+    content: "";
+    position: absolute;
+    height: 40%;
+    width: 100%;
+    background-color: #088080;
+    bottom: 0;
+    right: 0;
+    transform: translateY(70px);
+    border-radius: 100%;
+    transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .uiverse-hero-card .c-txt {
+    position: relative;
+    z-index: 2;
+  }
+
+  .uiverse-hero-title {
+    color: #0c1c44 !important;
+    transition: color 0.5s ease-in-out, text-shadow 0.5s ease-in-out;
+  }
+
+  .uiverse-hero-desc {
+    color: #2e4368 !important;
+    font-weight: 500;
+    transition: color 0.5s ease-in-out;
+  }
+
+  .uiverse-hero-badge {
+    color: #095ec2 !important;
+    background-color: #eaf2ff !important;
+    border-color: #c7dcff !important;
+    transition: all 0.5s ease-in-out;
+  }
+
+  /* Hover Wave & High-Contrast Typography */
+  .uiverse-hero-card:hover::before {
+    transform: scale(7) translate(-20px);
+  }
+
+  .uiverse-hero-card:hover {
+    box-shadow: 0 10px 40px rgba(8, 128, 128, 0.25), 0 0 70px rgba(159, 228, 228, 0.3);
+    border-color: rgba(8, 128, 128, 0.45);
+  }
+
+  .uiverse-hero-card:hover .uiverse-hero-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  }
+
+  .uiverse-hero-card:hover .uiverse-hero-desc {
+    color: #f1f7f9 !important;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+  }
+
+  .uiverse-hero-card:hover .uiverse-hero-badge {
+    color: #d1f7f7 !important;
+    background-color: rgba(6, 75, 75, 0.65) !important;
+    border-color: rgba(159, 228, 228, 0.6) !important;
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by jeremyssocial - 3D Rotating Cube Loader */
+  /* ========================================================= */
+  .loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 8.5em;
+    perspective: 800px;
+  }
+
+  .loader-cube {
+    position: relative;
+    width: 4.5em;
+    height: 4.5em;
+    transform-style: preserve-3d;
+    animation: rotateCube 3s infinite linear;
+  }
+
+  .loader-side {
+    position: absolute;
+    width: 4.5em;
+    height: 4.5em;
+    background: rgba(8, 128, 128, 0.45);
+    border: 0.12em solid rgba(159, 228, 228, 0.9);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: inset 0 0 16px rgba(159, 228, 228, 0.35), 0 0 8px rgba(8, 128, 128, 0.2);
+    transition: background 0.3s, border 0.3s, opacity 0.3s;
+  }
+
+  .front {
+    transform: translateZ(2.25em);
+  }
+  .back {
+    transform: rotateY(180deg) translateZ(2.25em);
+  }
+  .right {
+    transform: rotateY(90deg) translateZ(2.25em);
+  }
+  .left {
+    transform: rotateY(-90deg) translateZ(2.25em);
+  }
+  .top {
+    transform: rotateX(90deg) translateZ(2.25em);
+  }
+  .bottom {
+    transform: rotateX(-90deg) translateZ(2.25em);
+  }
+
+  /* Keyframes for continuous rotation */
+  @keyframes rotateCube {
+    from {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+    to {
+      transform: rotateX(360deg) rotateY(360deg);
+    }
+  }
+
+  /* Interactive states using pseudo-classes */
+  .loader-side:hover {
+    background: rgba(159, 228, 228, 0.6);
+  }
+
+  .loader-side:focus {
+    border: 0.12em solid #ffffff;
+  }
+
+  .loader-side:active {
+    opacity: 0.8;
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by CPC23 - Floating Task Buttons */
+  /* ========================================================= */
+  .cpc23-tabs-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(237, 245, 255, 0.9);
+    border: 1px solid #d5dffa;
+    border-radius: 12px;
+    overflow: visible;
+  }
+
+  .cpc23-task-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 11px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 8px;
+    cursor: pointer !important;
+    transition: 300ms all ease-in-out;
+    color: #7082aa;
+    border: none;
+    background: transparent;
+    user-select: none;
+  }
+
+  .cpc23-task-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Individual tab colors when hovered OR clicked/active */
+  #task-tab-vqa:hover,
+  #task-tab-vqa.active {
+    background-color: rgb(221, 157, 189);
+    color: #2b0b1a;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(221, 157, 189, 0.5);
+  }
+  #task-tab-vqa.active:hover {
+    box-shadow: 0 8px 20px rgba(221, 157, 189, 0.7);
+  }
+
+  #task-tab-change:hover,
+  #task-tab-change.active {
+    background-color: rgb(241, 96, 96);
+    color: #ffffff;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(241, 96, 96, 0.5);
+  }
+  #task-tab-change.active:hover {
+    box-shadow: 0 8px 20px rgba(241, 96, 96, 0.7);
+  }
+
+  #task-tab-fusion:hover,
+  #task-tab-fusion.active {
+    background-color: rgb(196, 143, 245);
+    color: #1e0933;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(196, 143, 245, 0.5);
+  }
+  #task-tab-fusion.active:hover {
+    box-shadow: 0 8px 20px rgba(196, 143, 245, 0.7);
+  }
+
+  #task-tab-grounding:hover,
+  #task-tab-grounding.active {
+    background-color: rgb(159, 228, 228);
+    color: #043838;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(159, 228, 228, 0.5);
+  }
+  #task-tab-grounding.active:hover {
+    box-shadow: 0 8px 20px rgba(159, 228, 228, 0.7);
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by mohamedkhire - Dynamic Depth Tabs */
+  /* ========================================================= */
+  .khire-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 14px;
+    background-color: rgba(5, 72, 72, 0.6);
+    -webkit-backdrop-filter: blur(30px);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(159, 228, 228, 0.22);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+  }
+
+  .khire-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 15px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer !important;
+    transition: 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    color: rgba(255, 255, 255, 0.82);
+    border: 1px solid transparent;
+    background-color: transparent;
+    overflow: hidden;
+    user-select: none;
+    z-index: 1;
+  }
+
+  /* Atmospheric glow bubble */
+  .khire-tab::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: rgba(159, 228, 228, 0.45);
+    filter: blur(10px);
+    opacity: 0;
+    transition: opacity 400ms ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .khire-tab.active {
+    background-color: #ffffff;
+    color: #088080;
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  }
+
+  .khire-tab.active::before {
+    opacity: 1;
+    background-color: rgba(159, 228, 228, 0.6);
+  }
+
+  .khire-tab:hover {
+    transform: scale(1.08, 1.08);
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.16);
+    border-color: rgba(159, 228, 228, 0.4);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+  }
+
+  .khire-tab.active:hover {
+    background-color: #ffffff;
+    color: #054848;
+    box-shadow: 0 8px 24px rgba(159, 228, 228, 0.45);
+  }
+
+  .khire-tab:hover::before {
+    opacity: 1;
+  }
+
+  /* Sibling focus/blur effect on hover */
+  .khire-nav:hover > .khire-tab:not(:hover) {
+    filter: blur(2.5px);
+    transform: scale(0.94, 0.94);
+    opacity: 0.65;
+  }
+
+  /* ========================================================= */
+  /* From Uiverse.io by SteveBloX - Tactile Glassmorphic Card */
+  /* ========================================================= */
+  .steveblox-modal-analysis {
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .steveblox-modal-analysis:hover {
+    border: 1.5px solid #088080;
+    transform: scale(1.015);
+    box-shadow: 16px 24px 60px rgba(0, 0, 0, 0.28), 0 0 25px rgba(159, 228, 228, 0.45);
+  }
+
+  .steveblox-modal-analysis:active {
+    transform: scale(0.985) rotateZ(1deg);
   }
 
   /* Central Satellite Stage & Halo */
@@ -429,11 +1256,11 @@
     background: rgba(244, 255, 217, 0.8);
   }
   .claim-ledger-challenge {
-    border-left-color: #ff7c70;
-    background: rgba(255, 243, 240, 0.5);
+    border-left-color: #F16060;
+    background: rgba(241, 96, 96, 0.12);
   }
   .claim-ledger-challenge:hover {
-    background: rgba(255, 243, 240, 0.8);
+    background: rgba(241, 96, 96, 0.22);
   }
 
   /* Action Buttons */
@@ -521,22 +1348,97 @@
     border-color: #8c514c;
   }
 
-  /* Receipt Modal Container */
-  .receipt-modal {
-    overflow: hidden;
-    border: 1px solid #d7e1fa;
-    background: #ffffff;
-    box-shadow: 0 25px 60px rgba(17, 37, 87, 0.18);
-    border-radius: 12px;
+  /* ========================================================= */
+  /* iOS / iPhone Glassmorphic Dialog & Modal System */
+  /* ========================================================= */
+  .ios-glass-overlay {
+    background: rgba(12, 22, 45, 0.45);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    backdrop-filter: blur(24px) saturate(190%);
   }
 
-  .receipt-header {
+  .ios-glass-modal,
+  .receipt-modal {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.78);
+    -webkit-backdrop-filter: blur(40px) saturate(210%) contrast(102%);
+    backdrop-filter: blur(40px) saturate(210%) contrast(102%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      0 32px 72px -16px rgba(17, 37, 87, 0.28),
+      0 16px 36px -12px rgba(0, 0, 0, 0.16),
+      inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35);
+    border-radius: 28px;
+    transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Specular reflection line across the top edge (signature iPhone glass sheen) */
+  .receipt-modal::before,
+  .ios-glass-modal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.9) 20%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.9) 80%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  .receipt-header,
+  .ios-glass-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    border-bottom: 1px solid #e1e8fb;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     padding: 20px 24px;
-    background: linear-gradient(90deg, #f5f8ff, #fffcfa);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.35) 100%);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+
+  .ios-glass-card {
+    background: rgba(255, 255, 255, 0.58);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 18px;
+    box-shadow:
+      0 4px 16px -2px rgba(0, 0, 0, 0.03),
+      inset 0 1px 1.5px rgba(255, 255, 255, 0.9);
+  }
+
+  .ios-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.06);
+    color: #3a3a3c;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  .ios-close-btn:hover {
+    background: rgba(0, 0, 0, 0.12);
+    color: #1c1c1e;
+    transform: scale(1.06);
+  }
+  .ios-close-btn:active {
+    transform: scale(0.92);
   }
 }
 
