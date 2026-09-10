@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from collections import Counter
 
-ROOT = Path(r"D:\SIH\sat-query-sih")
+ROOT = Path(__file__).resolve().parent
 MODEL_A = ROOT / "model_a"
 
 INDEX_FILE = MODEL_A / "cache" / "patch_index.json"

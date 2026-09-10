@@ -20,6 +20,7 @@ from agent.model_b_adapter import OpticalSpecialistSimulator
 from agent.multimodal_fusion import MultiModalFusionEngine
 from model_a.inference import ModelAInference
 from model_a.encoder import SAREncoder
+from agent.qwen_brain import QWEN_BRAIN
 
 
 class SatQueryAgent:
@@ -45,6 +46,26 @@ class SatQueryAgent:
         
         # Model B registry (will be plugged in when Dataset 2 is trained)
         self.model_b = None
+        
+        # Ensure Qwen Brain is initialized
+        self.qwen = QWEN_BRAIN
+
+    def _generate_png_bytes(self, vh_path, vv_path) -> bytes:
+        from PIL import Image
+        import io
+        with Image.open(vh_path) as img_vh:
+            vh_arr = np.array(img_vh, dtype=np.float32)
+        with Image.open(vv_path) as img_vv:
+            vv_arr = np.array(img_vv, dtype=np.float32)
+        # False color mapping
+        r = np.clip((vv_arr - (-25.0)) / 25.0, 0.0, 1.0) * 255.0
+        g = np.clip((vh_arr - (-32.0)) / 27.0, 0.0, 1.0) * 255.0
+        ratio = np.clip((vv_arr - vh_arr) / 15.0, 0.0, 1.0) * 255.0
+        rgb = np.stack([r, g, ratio], axis=-1).astype(np.uint8)
+        pil_img = Image.fromarray(rgb).resize((256, 256), Image.Resampling.BILINEAR)
+        buf = io.BytesIO()
+        pil_img.save(buf, format="PNG")
+        return buf.getvalue()
 
     def register_model_b(self, model_b_instance: Any):
         """
@@ -166,14 +187,25 @@ class SatQueryAgent:
             ans = str(model_res.get("result", {}))
 
         else:
-            # Default: Model A SAR Specialist
-            selected_model_name = "Model-A-ResNet18-SAR"
+            # Default: SAR Analysis (Model A + Qwen)
+            selected_model_name = "Agentic-VQA-Pipeline"
             model_res = self.model_a.predict(vh_input=vh_path, vv_input=vv_path)
             detected = model_res["result"]["detected_classes"]
             probs = model_res["result"].get("class_probabilities", {})
 
+            # Convert GeoTIFF to PNG for Qwen NLP visual reasoning
+            try:
+                png_bytes = self._generate_png_bytes(vh_path, vv_path)
+            except Exception:
+                png_bytes = None
+
             # Check if user asked a specific targeted question or requested caption
-            specific_ans = SceneCaptioner.answer_specific_question(query, detected, probs)
+            specific_ans = SceneCaptioner.answer_specific_question(
+                query=query, 
+                image_bytes=png_bytes,
+                detected_classes=detected, 
+                probabilities=probs
+            )
             if specific_ans:
                 ans = specific_ans
             elif detected:

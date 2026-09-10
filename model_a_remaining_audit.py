@@ -8,7 +8,7 @@ import traceback
 from pathlib import Path
 from collections import Counter, defaultdict
 
-ROOT = Path(r"D:\SIH\sat-query-sih")
+ROOT = Path(__file__).resolve().parent
 MODEL_A = ROOT / "model_a"
 
 INDEX_FILE = MODEL_A / "cache" / "patch_index.json"
@@ -229,6 +229,8 @@ try:
     index = load_json(INDEX_FILE)
     split_data = load_json(SPLIT_FILE)
     label_raw = load_json(LABEL_FILE)
+    if isinstance(label_raw, dict) and "BigEarthNet-19_labels" in label_raw:
+        label_raw = label_raw["BigEarthNet-19_labels"]
 
     label_map = normalize_label_mapping(label_raw)
     reverse_map = {v: k for k, v in label_map.items()}
