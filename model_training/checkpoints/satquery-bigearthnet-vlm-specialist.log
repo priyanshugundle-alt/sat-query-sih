@@ -1,0 +1,31 @@
+[{"stream_name":"stderr","time":8.822518808,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.822591841,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.822597049,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.822599936,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":9.598678017,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":9.598713709,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":9.598719457,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":9.598724136,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":45.629282591,"data":"\u001b[33mWARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7cca2759b470\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/bitsandbytes/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":78.149597768,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7cca26ab6bd0\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/bitsandbytes/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":111.135891415,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7cca26ab58e0\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/bitsandbytes/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":145.171090837,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7cca26b05b80\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/bitsandbytes/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":181.150853836,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7cca26b059d0\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/bitsandbytes/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":213.191997381,"data":"\u001b[0m\u001b[31mERROR: Could not find a version that satisfies the requirement bitsandbytes (from versions: none)\u001b[0m\u001b[31m\r\n"}
+,{"stream_name":"stdout","time":213.192032309,"data":"\u001b[0m\u001b[31mERROR: No matching distribution found for bitsandbytes\u001b[0m\u001b[31m\r\n"}
+,{"stream_name":"stdout","time":213.391015305,"data":"\u001b[0mDownloading BigEarthNet metadata and annotations...\n"}
+,{"stream_name":"stdout","time":245.384197952,"data":"Metadata download note: \u003curlopen error [Errno -3] Temporary failure in name resolution\u003e\n"}
+,{"stream_name":"stdout","time":275.424625637,"data":"Preparing VLM configuration for Qwen/Qwen2-VL-7B-Instruct...\n"}
+,{"stream_name":"stdout","time":275.424674183,"data":"LoRA configuration prepared successfully.\n"}
+,{"stream_name":"stdout","time":275.469564818,"data":"  adding: satquery_bigearthnet_lora/ (stored 0%)\r\n"}
+,{"stream_name":"stdout","time":275.46960193,"data":"  adding: satquery_bigearthnet_lora/adapter_config.json (deflated 4%)\r\n"}
+,{"stream_name":"stdout","time":275.571692265,"data":"Successfully created satquery_bigearthnet_lora.zip. Ready for download!\n"}
+,{"stream_name":"stderr","time":280.884196688,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":280.88423292,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":281.087147792,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":281.087180707,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":281.827793743,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":282.207562344,"data":"[NbConvertApp] Writing 8892 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":285.145327113,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":286.158558003,"data":"[NbConvertApp] Writing 284335 bytes to __results__.html\n"}
+]

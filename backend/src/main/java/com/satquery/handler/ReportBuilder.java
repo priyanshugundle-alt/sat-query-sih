@@ -86,21 +86,32 @@ public class ReportBuilder {
                 contentStream.showText("Analysis Output Result:");
                 contentStream.endText();
 
-                // Render answer text wrapped or simplified (clean line chunks)
+                // Render answer text wrapped across multiple lines
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 9.5f);
                 contentStream.newLineAtOffset(50, 577);
                 String qText = sanitize(result.getAnswer());
-                if (qText != null && qText.length() > 80) {
-                    contentStream.showText(qText.substring(0, 80));
-                    contentStream.newLineAtOffset(0, -13);
-                    if (qText.length() > 160) {
-                        contentStream.showText(qText.substring(80, 160) + "...");
-                    } else {
-                        contentStream.showText(qText.substring(80));
+                if (qText != null && !qText.isEmpty()) {
+                    int maxLineLen = 85;
+                    int yOffset = 0;
+                    int startIdx = 0;
+                    int lineCount = 0;
+                    while (startIdx < qText.length() && lineCount < 4) {
+                        int endIdx = Math.min(startIdx + maxLineLen, qText.length());
+                        if (endIdx < qText.length()) {
+                            int lastSpace = qText.lastIndexOf(' ', endIdx);
+                            if (lastSpace > startIdx) {
+                                endIdx = lastSpace;
+                            }
+                        }
+                        String line = qText.substring(startIdx, endIdx).trim();
+                        if (lineCount > 0) {
+                            contentStream.newLineAtOffset(0, -13);
+                        }
+                        contentStream.showText(line);
+                        startIdx = endIdx + 1;
+                        lineCount++;
                     }
-                } else if (qText != null) {
-                    contentStream.showText(qText);
                 } else {
                     contentStream.showText("N/A");
                 }

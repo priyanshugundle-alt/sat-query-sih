@@ -57,6 +57,8 @@ public class App {
         server.createContext("/api/models", new ModelsHandler());
         server.createContext("/api/benchmarks", new BenchmarksHandler());
         server.createContext("/api/gdal/inspect", new GdalInspectHandler());
+        server.createContext("/api/analysis/spectral", new SpectralHandler());
+        server.createContext("/api/analysis/area", new AreaHandler());
 
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
@@ -911,6 +913,60 @@ public class App {
 
             } catch (Exception e) {
                 sendJsonResponse(exchange, 500, Map.of("error", "GDAL inspection failed: " + e.getMessage()));
+            }
+        }
+    }
+
+    static class SpectralHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            try {
+                InputStream is = exchange.getRequestBody();
+                String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                Map<String, Object> req = body.isEmpty() ? new HashMap<>() : objectMapper.readValue(body, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+
+                double red = req.get("red") != null ? Double.parseDouble(req.get("red").toString()) : 0.15;
+                double green = req.get("green") != null ? Double.parseDouble(req.get("green").toString()) : 0.20;
+                double blue = req.get("blue") != null ? Double.parseDouble(req.get("blue").toString()) : 0.10;
+                double nir = req.get("nir") != null ? Double.parseDouble(req.get("nir").toString()) : 0.65;
+                double swir = req.get("swir") != null ? Double.parseDouble(req.get("swir").toString()) : 0.08;
+
+                Map<String, Object> spectralResult = com.satquery.processor.SpectralIndexProcessor.analyzeBands(red, green, blue, nir, swir);
+                sendJsonResponse(exchange, 200, spectralResult);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Spectral Index computation failed: " + e.getMessage()));
+            }
+        }
+    }
+
+    static class AreaHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            try {
+                InputStream is = exchange.getRequestBody();
+                String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                Map<String, Object> req = body.isEmpty() ? new HashMap<>() : objectMapper.readValue(body, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+
+                double x1 = req.get("x1") != null ? Double.parseDouble(req.get("x1").toString()) : 0.2;
+                double y1 = req.get("y1") != null ? Double.parseDouble(req.get("y1").toString()) : 0.2;
+                double x2 = req.get("x2") != null ? Double.parseDouble(req.get("x2").toString()) : 0.8;
+                double y2 = req.get("y2") != null ? Double.parseDouble(req.get("y2").toString()) : 0.8;
+                int width = req.get("width") != null ? Integer.parseInt(req.get("width").toString()) : 1024;
+                int height = req.get("height") != null ? Integer.parseInt(req.get("height").toString()) : 1024;
+                double gsd = req.get("gsd") != null ? Double.parseDouble(req.get("gsd").toString()) : 10.0;
+
+                Map<String, Object> areaResult = com.satquery.processor.SpatialAreaCalculator.calculateBoundingBoxArea(x1, y1, x2, y2, width, height, gsd);
+                sendJsonResponse(exchange, 200, areaResult);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Spatial Area calculation failed: " + e.getMessage()));
             }
         }
     }

@@ -55,7 +55,7 @@ public class HttpModelClient implements ModelClient {
                     .header("Content-Type", "application/json")
                     .header("X-SatQuery-Api-Key", "satquery-vlm-key-2026-sih")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .timeout(Duration.ofSeconds(60)) // Increased timeout for heavy models
+                    .timeout(Duration.ofSeconds(60))
                     .build();
 
 
