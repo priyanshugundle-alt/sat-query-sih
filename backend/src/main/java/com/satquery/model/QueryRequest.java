@@ -12,6 +12,7 @@ public class QueryRequest {
     private com.satquery.benchmark.DatasetContext datasetContext;
     private Map<String, Object> parameters;
     private String requestedTask;
+    private List<Map<String, Object>> frontendAssets;
 
     public QueryRequest() {}
 
@@ -59,4 +60,7 @@ public class QueryRequest {
 
     public String getRequestedTask() { return requestedTask; }
     public void setRequestedTask(String requestedTask) { this.requestedTask = requestedTask; }
+
+    public List<Map<String, Object>> getFrontendAssets() { return frontendAssets; }
+    public void setFrontendAssets(List<Map<String, Object>> frontendAssets) { this.frontendAssets = frontendAssets; }
 }

@@ -1,0 +1,97 @@
+{
+  "receipt_id": "SQ-20260908-2E6E73",
+  "timestamp": "2026-09-08 01:02:24",
+  "query": "Classify the primary land cover categories in this Sentinel-1 SAR acquisition.",
+  "intent": "sar_classification",
+  "input_metadata": {
+    "vh": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_39_VH.tif",
+    "vv": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_62_39_VV.tif"
+  },
+  "geo_validity_gate": {
+    "status": "VALID",
+    "passed_checks": [
+      "File Existence",
+      "Spatial Dimension Matching",
+      "Data Integrity & NaN Tolerance (<20%)",
+      "SAR Decibel Range Sanity Check"
+    ]
+  },
+  "specialist_routing": {
+    "selected_tool": "Model-A-ResNet18-SAR",
+    "model_version": "1.0.0",
+    "processing_time_ms": 9.48
+  },
+  "evidence_and_uncertainty": {
+    "uncertainty_level": "Verified",
+    "confidence_score": 0.9309,
+    "claims": [
+      {
+        "claim": "Presence of Urban fabric",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.506)"
+      },
+      {
+        "claim": "Presence of Arable land",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.607)"
+      },
+      {
+        "claim": "Presence of Permanent crops",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.414)"
+      },
+      {
+        "claim": "Presence of Complex cultivation patterns",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.700)"
+      },
+      {
+        "claim": "Presence of Land principally occupied by agriculture, with significant areas of natural vegetation",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.448)"
+      },
+      {
+        "claim": "Presence of Broad-leaved forest",
+        "status": "VERIFIED",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.846)"
+      },
+      {
+        "claim": "Presence of Coniferous forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.407)"
+      },
+      {
+        "claim": "Presence of Mixed forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.439)"
+      },
+      {
+        "claim": "Presence of Natural grassland and sparsely vegetated areas",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.683)"
+      },
+      {
+        "claim": "Presence of Transitional woodland, shrub",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.431)"
+      },
+      {
+        "claim": "Presence of Coastal wetlands",
+        "status": "VERIFIED",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.931)"
+      },
+      {
+        "claim": "Presence of Inland waters",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.543)"
+      },
+      {
+        "claim": "Presence of Marine waters",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.440)"
+      }
+    ]
+  },
+  "final_answer": "Based on Sentinel-1 SAR analysis, the primary land-cover categories detected are: Urban fabric, Arable land, Permanent crops, Complex cultivation patterns, Land principally occupied by agriculture, with significant areas of natural vegetation, Broad-leaved forest, Coniferous forest, Mixed forest, Natural grassland and sparsely vegetated areas, Transitional woodland, shrub, Coastal wetlands, Inland waters, Marine waters (Confidence: 0.93).",
+  "total_latency_ms": 9.48
+}

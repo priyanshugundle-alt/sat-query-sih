@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SatQuery AI — Benchmark Report BM-20260908-010520</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#090d16;color:#f8fafc;font-family:'Outfit',sans-serif;padding:32px;min-height:100vh;}
+  h1{font-size:1.8rem;font-weight:800;}
+  h2{font-size:1.1rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;margin-top:32px;}
+  .hero{background:linear-gradient(135deg,#0f172a,#1e1b4b);border:1px solid #312e81;border-radius:14px;padding:32px;margin-bottom:32px;}
+  .overall{font-size:1.4rem;font-weight:800;color:#10b981;margin-top:10px;}
+  .meta{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;}
+  .meta-item{background:#ffffff0a;border-radius:8px;padding:8px 16px;}
+  .meta-label{font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;}
+  .meta-val{font-size:0.95rem;font-weight:700;color:#e2e8f0;font-family:'JetBrains Mono',monospace;}
+  table{width:100%;border-collapse:collapse;background:#0f172a;border-radius:10px;overflow:hidden;border:1px solid #1e293b;}
+  thead th{background:#1e293b;padding:10px 12px;text-align:left;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;}
+  .cats{display:flex;flex-wrap:wrap;gap:16px;}
+  footer{margin-top:48px;text-align:center;color:#334155;font-size:0.78rem;}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+    <div style="background:#818cf822;border:1px solid #818cf844;border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:700;color:#818cf8;font-family:'JetBrains Mono',monospace;">SIH 26167 / ISRO SAC</div>
+    <div style="background:#38bdf822;border:1px solid #38bdf844;border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:700;color:#38bdf8;font-family:'JetBrains Mono',monospace;">BM-20260908-010520</div>
+  </div>
+  <h1>SatQuery AI — Automated Benchmark Report</h1>
+  <div class="overall">✅ ALL TESTS PASSED</div>
+  <div class="meta">
+    <div class="meta-item"><div class="meta-label">Timestamp</div><div class="meta-val">2026-09-08T01:05:20</div></div>
+    <div class="meta-item"><div class="meta-label">Patches Evaluated</div><div class="meta-val">5</div></div>
+    <div class="meta-item"><div class="meta-label">Total Duration</div><div class="meta-val">0.53s</div></div>
+    <div class="meta-item"><div class="meta-label">Problem Statement</div><div class="meta-val">26167 (ISRO / SAC)</div></div>
+  </div>
+</div>
+
+<h2>Performance Metrics Summary</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Value</th><th>Status</th></tr></thead>
+  <tbody>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Intent Routing Accuracy</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">100.0 %</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Geo-Validity Precision</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">100.0 %</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">VQA Detection Rate</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">100.0 %</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Mean Confidence</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">0.7496</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Latency p50</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">11.79 ms</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Latency p95</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">12.56 ms</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Encoder Norm Deviation</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">0.0</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;">Total Duration</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;font-family:monospace;color:#38bdf8;">0.53 sec</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e293b;"><span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span></td>
+        </tr></tbody>
+</table>
+
+<h2>Category Results</h2>
+<div class="cats">
+        <div style="background:#0f172a;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:10px;padding:18px;flex:1;min-width:220px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:700;font-size:0.9rem;color:#f8fafc;">Intent Routing</span>
+            <span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Accuracy Pct</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">100.0</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Correct</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">6</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Total</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">6</span></div>
+        </div>
+        <div style="background:#0f172a;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:10px;padding:18px;flex:1;min-width:220px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:700;font-size:0.9rem;color:#f8fafc;">Geo Validity Gate</span>
+            <span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Precision Pct</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">100.0</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Valid Pass</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">True</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Invalid Rejection</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">True</span></div>
+        </div>
+        <div style="background:#0f172a;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:10px;padding:18px;flex:1;min-width:220px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:700;font-size:0.9rem;color:#f8fafc;">Land Cover Vqa</span>
+            <span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Detection Rate Pct</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">100.0</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Mean Confidence</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">0.7496</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Latency P50 Ms</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">11.79</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Latency P95 Ms</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">12.56</span></div>
+        </div>
+        <div style="background:#0f172a;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:10px;padding:18px;flex:1;min-width:220px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:700;font-size:0.9rem;color:#f8fafc;">Change Detection</span>
+            <span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Cross Patch Severity</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">High</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Self Similarity Score</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">1.0</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Invariance Pass</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">True</span></div>
+        </div>
+        <div style="background:#0f172a;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:10px;padding:18px;flex:1;min-width:220px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:700;font-size:0.9rem;color:#f8fafc;">Sar Encoder</span>
+            <span style="background:#10b98122;color:#10b981;border:1px solid #10b98144;border-radius:4px;padding:2px 8px;font-size:0.8rem;font-weight:700;">PASS</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Max Norm Deviation</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">0.0</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;font-size:0.85rem;">Unit Norm Stable</span><span style="color:#f8fafc;font-family:monospace;font-size:0.85rem;">True</span></div>
+        </div></div>
+
+<footer>
+  SatQuery AI v1.0 — Smart India Hackathon 2025 | Generated 2026-09-08T01:05:20 | All rights reserved.
+</footer>
+</body>
+</html>

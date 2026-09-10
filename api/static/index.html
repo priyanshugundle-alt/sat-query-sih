@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SatQuery AI — Agentic Earth Observation & Multi-Specialist Remote Sensing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- TOP NAVIGATION BAR -->
+    <header class="navbar">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" stroke="#38bdf8"/>
+            <path d="M12 3a9 9 0 0 1 9 9" stroke="#818cf8"/>
+            <circle cx="12" cy="12" r="3" fill="#38bdf8"/>
+            <path d="M12 15v6M12 3v3M3 12h3M18 12h3" stroke="#94a3b8" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">SatQuery <span class="badge-ai">AI</span></div>
+          <div class="brand-subtitle">Autonomous Earth Observation Agent • SIH 26167</div>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="vqa" id="tab-btn-vqa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          EO Visual Query & Land Cover
+        </button>
+        <button class="nav-tab" data-tab="change" id="tab-btn-change">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L20.2 3.8M21 16v5h-5M15 15l5.1 5.1M4 4l5 5"/></svg>
+          Bi-Temporal Change Studio
+        </button>
+        <button class="nav-tab" data-tab="embeddings" id="tab-btn-embeddings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          512-dim Feature Encoder
+        </button>
+        <button class="nav-tab" data-tab="receipts" id="tab-btn-receipts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Audit Trace Ledger
+        </button>
+        <button class="nav-tab" data-tab="multimodal" id="tab-btn-multimodal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          Multi-Modal Fusion
+        </button>
+        <button class="nav-tab" data-tab="benchmark" id="tab-btn-benchmark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          Automated Benchmark
+        </button>
+        <button class="nav-tab" data-tab="search" id="tab-btn-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Semantic Geo-Search
+        </button>
+        <button class="nav-tab" data-tab="gis" id="tab-btn-gis">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          GIS Map & GeoJSON
+        </button>
+        <button class="nav-tab" data-tab="disaster" id="tab-btn-disaster">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Disaster & Flood
+        </button>
+        <button class="nav-tab" data-tab="mosaic" id="tab-btn-mosaic">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          AOI Mosaic & Edge
+        </button>
+        <button class="nav-tab" data-tab="timeseries" id="tab-btn-timeseries">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Temporal & STAC
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="model-mode-selector" id="model-mode-selector" title="Active AI Specialist Routing Mode">
+          <span class="mode-label">Mode:</span>
+          <select id="select-routing-mode" class="select-mode-dropdown">
+            <option value="joint_fusion" selected>Joint Fusion (SAR+Optical)</option>
+            <option value="sar_only">Model A (SAR Solo)</option>
+            <option value="optical_only">Model B (Optical Solo)</option>
+          </select>
+        </div>
+        <a href="/api/export/dossier" class="btn-dossier-export" id="btn-export-dossier" download="SatQuery_SIH_Evaluation_Dossier.zip" title="Consolidate & Download Official SIH Evaluation Package (.zip)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export SIH Dossier</span>
+        </a>
+        <div class="system-status-pill" id="system-status">
+          <span class="status-dot online"></span>
+          <span class="status-text" id="status-text">CUDA Active • RTX 3050</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="main-workspace">
+      
+      <!-- TAB 1: VQA & LAND COVER -->
+      <section class="tab-pane active" id="pane-vqa">
+        <div class="grid-layout">
+          
+          <!-- LEFT: RASTER SELECTION & PREVIEW -->
+          <div class="card glass raster-card">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Sentinel-1 SAR Raster Input
+              </h3>
+              <div class="source-toggle">
+                <button class="toggle-btn active" id="btn-mode-sample">Sample Patches</button>
+                <button class="toggle-btn" id="btn-mode-upload">Custom Upload</button>
+              </div>
+            </div>
+
+            <!-- SAMPLE PATCH SELECTOR -->
+            <div class="input-section" id="section-sample-patches">
+              <label for="sample-patch-select">Select BigEarthNet-S1 Patch:</label>
+              <select id="sample-patch-select" class="custom-select">
+                <option value="">Loading sample patches...</option>
+              </select>
+              <div class="patch-meta" id="sample-patch-meta">
+                <div class="meta-item"><span class="meta-label">Acquisition:</span> <span class="meta-val" id="meta-acq">-</span></div>
+                <div class="meta-item"><span class="meta-label">Ground Truth:</span> <span class="meta-val highlight" id="meta-gt">-</span></div>
+              </div>
+            </div>
+
+            <!-- UPLOAD ZONE -->
+            <div class="input-section hidden" id="section-upload-files">
+              <div class="upload-dropzone" id="dropzone-vh">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="drop-text">Upload <strong>VH Band</strong> (.tif)</div>
+                <input type="file" id="input-vh-file" accept=".tif,.tiff" />
+                <span class="file-name" id="name-vh-file">No file selected</span>
+              </div>
+              <div class="upload-dropzone" id="dropzone-vv">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="drop-text">Upload <strong>VV Band</strong> (.tif)</div>
+                <input type="file" id="input-vv-file" accept=".tif,.tiff" />
+                <span class="file-name" id="name-vv-file">No file selected</span>
+              </div>
+            </div>
+
+            <!-- FALSE-COLOR SAR PREVIEW -->
+            <div class="preview-container">
+              <div class="preview-label">
+                <span>Dual-Polarization False-Color Composite (R=VV, G=VH, B=VV/VH)</span>
+                <span class="badge-tag">10m GSD</span>
+              </div>
+              <div class="preview-wrapper" id="sar-preview-wrapper">
+                <img id="sar-preview-img" src="" alt="SAR Dual-Pol Preview" class="preview-img" />
+                <img id="sar-saliency-img" src="" alt="Grad-CAM Saliency Overlay" class="preview-img saliency-layer" style="display:none;" />
+                <canvas id="roi-canvas" class="roi-canvas" width="256" height="256"></canvas>
+                <div class="preview-overlay" id="preview-overlay">
+                  <div class="spinner"></div>
+                  <span>Rendering SAR Raster...</span>
+                </div>
+              </div>
+              <div class="preview-footer">
+                <div class="geo-badge valid" id="geo-status-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Geo-Validity Gate: VALID
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn-sm btn-outline" id="btn-toggle-saliency" title="Toggle Grad-CAM explainability heatmap">🔥 Saliency Heatmap</button>
+                  <button class="btn-sm btn-outline" id="btn-inspect-geo">Inspect Metadata</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ROI SUB-PATCH BIOPHYSICS INSPECTOR (PHASE 10) -->
+            <div class="card-inner glass roi-inspector-card" id="roi-inspector-card">
+              <div class="roi-inspector-header">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+                  <span style="font-weight: 600; font-size: 0.82rem; color: #e2e8f0;">Geospatial ROI Biophysics</span>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <span class="roi-coord-pill" id="roi-coords-display">Drag on image to select</span>
+                  <button type="button" class="btn-xs-clear" id="btn-clear-roi" style="display: none;" title="Clear ROI">✕</button>
+                </div>
+              </div>
+              <div class="roi-metrics-grid" id="roi-metrics-grid" style="display: none;">
+                <div class="roi-metric-item">
+                  <span class="roi-metric-label">Area (10m Res)</span>
+                  <span class="roi-metric-val" id="roi-area-val">--</span>
+                </div>
+                <div class="roi-metric-item">
+                  <span class="roi-metric-label">Mean σ° VH</span>
+                  <span class="roi-metric-val" id="roi-vh-val">--</span>
+                </div>
+                <div class="roi-metric-item">
+                  <span class="roi-metric-label">Mean σ° VV</span>
+                  <span class="roi-metric-val" id="roi-vv-val">--</span>
+                </div>
+                <div class="roi-metric-item">
+                  <span class="roi-metric-label">Cross-Pol Ratio</span>
+                  <span class="roi-metric-val" id="roi-cpr-val">--</span>
+                </div>
+                <div class="roi-metric-full">
+                  <span class="roi-metric-label">Surface Roughness Regime</span>
+                  <span class="roi-metric-val highlight" id="roi-roughness-val">--</span>
+                  <span class="roi-metric-sub" id="roi-roughness-sub">--</span>
+                </div>
+                <div class="roi-metric-full">
+                  <span class="roi-metric-label">Dielectric / Soil Moisture Proxy</span>
+                  <span class="roi-metric-val highlight" id="roi-moisture-val">--</span>
+                  <span class="roi-metric-sub" id="roi-moisture-sub">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER: INTERACTIVE VQA & CHAT TERMINAL -->
+          <div class="card glass chat-card">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                AI Reasoning & Specialist Terminal
+              </h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="session-badge" id="session-badge" title="Multi-Turn Session Context Active">
+                  <span class="session-dot"></span>
+                  <span id="session-id-display">Session: Active</span>
+                  <button type="button" class="btn-xs-reset" id="btn-reset-session" title="Reset Session Context">↺ New</button>
+                </div>
+                <div class="agent-routing-indicator" id="agent-routing-indicator">
+                  <span class="route-label">Active Tool:</span>
+                  <span class="route-val" id="active-tool-name">Model-A-ResNet18-SAR</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CHAT LOG / AGENT STREAM -->
+            <div class="chat-stream" id="chat-stream">
+              <div class="message assistant welcome-msg">
+                <div class="msg-avatar">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                </div>
+                <div class="msg-content">
+                  <div class="msg-author">SatQuery Central Agent</div>
+                  <div class="msg-body">
+                    Welcome to <strong>SatQuery AI</strong>. I am ready to process Sentinel-1 SAR dual-polarization rasters. Select a patch or upload GeoTIFFs, then ask any visual question or query regarding land-cover classification and geospatial characteristics.
+                  </div>
+                  <div class="quick-prompts">
+                    <button class="quick-btn" data-query="Identify the primary land-cover categories and terrain in this SAR patch.">Land Cover Analysis</button>
+                    <button class="quick-btn" data-query="Are there water bodies or wetlands detected?">Detect Water/Wetlands</button>
+                    <button class="quick-btn" data-query="Validate geospatial metadata, dimensions, and decibel bounds.">Validate Geo Gate</button>
+                    <button class="quick-btn" data-query="Extract the 512-dimensional semantic feature vector.">Extract Embeddings</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- QUERY INPUT FORM -->
+            <form class="chat-input-form" id="vqa-form">
+              <input type="text" id="query-input" placeholder="Ask a question about this satellite raster (e.g. 'Classify vegetation and urban areas')..." autocomplete="off" required />
+              <button type="submit" class="btn-primary" id="btn-submit-query">
+                <span>Send Query</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </form>
+          </div>
+
+          <!-- RIGHT: LAND COVER CONFIDENCE & EVIDENCE -->
+          <div class="card glass results-card">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Multi-Label Predictions & Evidence
+              </h3>
+              <div class="uncertainty-pill" id="uncertainty-badge">Verified</div>
+            </div>
+
+            <div class="results-body">
+              <div class="confidence-overview">
+                <div class="stat-box">
+                  <div class="stat-number" id="primary-confidence">0.78</div>
+                  <div class="stat-label">Model Confidence</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number" id="latency-stat">28ms</div>
+                  <div class="stat-label">Agent Latency</div>
+                </div>
+              </div>
+
+              <!-- DETECTED CLASSES BARS -->
+              <div class="classes-container">
+                <div class="section-title">Detected CORINE Land Cover (Top Probabilities)</div>
+                <div class="class-bars" id="class-bars-list">
+                  <div class="empty-hint">Run a query to view detected land-cover distributions.</div>
+                </div>
+              </div>
+
+              <!-- GROUND TRUTH EVIDENCE CLAIMS -->
+              <div class="evidence-container">
+                <div class="section-title">Physical Sensor Proof & Claims</div>
+                <div class="claims-list" id="claims-list">
+                  <div class="empty-hint">Physical backscatter facts will appear here.</div>
+                </div>
+              </div>
+
+              <!-- RECEIPT ID FOOTER -->
+              <div class="receipt-action-box" id="receipt-box" style="display:none;">
+                <div class="receipt-id-text">Receipt: <span id="latest-receipt-id">SQ-20260907-XXXXXX</span></div>
+                <button class="btn-sm btn-secondary" id="btn-view-receipt-modal">Inspect Receipt Audit</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 2: BI-TEMPORAL CHANGE DETECTION STUDIO -->
+      <section class="tab-pane" id="pane-change">
+        <div class="change-studio-layout">
+          <div class="card glass change-control-card">
+            <h3>Bi-Temporal SAR Pair Selection</h3>
+            <div class="pair-pickers">
+              <div class="picker-column">
+                <h4>Acquisition $T_1$ (Pre-Event)</h4>
+                <select id="change-t1-select" class="custom-select"></select>
+                <div class="mini-preview" id="t1-mini-preview"></div>
+              </div>
+              <div class="picker-column">
+                <h4>Acquisition $T_2$ (Post-Event)</h4>
+                <select id="change-t2-select" class="custom-select"></select>
+                <div class="mini-preview" id="t2-mini-preview"></div>
+              </div>
+            </div>
+            <button class="btn-primary full-width" id="btn-run-change-detect">
+              Run Bi-Temporal Change Detection
+            </button>
+          </div>
+
+          <div class="card glass change-results-card">
+            <h3>Change Detection Analytics</h3>
+            <div class="change-metrics-grid" id="change-metrics" style="display:none;">
+              <div class="metric-tile">
+                <div class="metric-val" id="metric-sim">0.6905</div>
+                <div class="metric-label">Semantic Similarity (Cosine)</div>
+              </div>
+              <div class="metric-tile">
+                <div class="metric-val" id="metric-changed-surface">78.53%</div>
+                <div class="metric-label">Changed Surface Area</div>
+              </div>
+              <div class="metric-tile">
+                <div class="metric-val" id="metric-delta-db">4.32 dB</div>
+                <div class="metric-label">Mean Amplitude Delta (ΔdB)</div>
+              </div>
+              <div class="metric-tile">
+                <div class="metric-val highlight" id="metric-severity">High</div>
+                <div class="metric-label">Change Severity</div>
+              </div>
+            </div>
+            <div class="change-explanation-box" id="change-explanation">
+              Select two temporal SAR acquisitions to compute cosine embedding similarity and backscatter amplitude changes.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: 512-DIM FEATURE ENCODER -->
+      <section class="tab-pane" id="pane-embeddings">
+        <div class="card glass">
+          <h3>SAR Feature Vector Explorer (512-Dimensional Latent Space)</h3>
+          <p class="section-desc">Extracts deep normalized feature vectors for nearest-neighbor spatial retrieval, clustering, and bi-temporal indexing.</p>
+          <div class="encoder-actions">
+            <button class="btn-primary" id="btn-extract-active-vector">Extract Vector for Active Patch</button>
+            <span class="norm-status" id="vector-norm-status">L2-Norm: - | Dim: 512</span>
+          </div>
+          <div class="vector-grid" id="vector-grid-display"></div>
+        </div>
+      </section>
+
+      <!-- TAB 4: AUDIT TRACE LEDGER -->
+      <section class="tab-pane" id="pane-receipts">
+        <div class="card glass">
+          <div class="card-header">
+            <h3>Immutable Execution Receipts Ledger</h3>
+            <button class="btn-sm btn-outline" id="btn-refresh-receipts">Refresh Ledger</button>
+          </div>
+          <div class="table-container">
+            <table class="receipts-table">
+              <thead>
+                <tr>
+                  <th>Receipt ID</th>
+                  <th>Timestamp</th>
+                  <th>Task Intent</th>
+                  <th>Routed Specialist</th>
+                  <th>Evidence Level</th>
+                  <th>Confidence</th>
+                  <th>Latency</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="receipts-table-body">
+                <tr><td colspan="8" class="text-center">Loading audit receipts...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: MULTI-MODAL OPTICAL + SAR FUSION STUDIO -->
+      <section class="tab-pane" id="pane-multimodal">
+        <!-- Judge Showcase Presets Bar -->
+        <div class="card glass presets-card" id="presets-card">
+          <div class="presets-header">
+            <div>
+              <h3>⚡ Judge Showcase Presets</h3>
+              <p class="section-desc">One-click demonstration scenarios curated for ISRO / SIH evaluation. Select any preset to instantly configure and run the full pipeline.</p>
+            </div>
+            <button class="btn-sm btn-primary" id="btn-load-presets" onclick="loadDemoPresets()">Load Presets</button>
+          </div>
+          <div class="presets-grid" id="presets-grid">
+            <div class="preset-loading-msg">Click "Load Presets" to fetch curated demonstration scenarios from the API.</div>
+          </div>
+        </div>
+
+      <!-- TAB 5: MULTIMODAL S1+S2 FUSION & QWEN 2.5-VL 3B STUDIO (PHASE 15) -->
+      <section class="tab-pane" id="pane-multimodal">
+        <div class="card glass multimodal-header-card">
+          <div class="multimodal-header-content">
+            <div class="multimodal-title-wrap">
+              <div class="multimodal-badge">Phase 15 • Multimodal Remote Sensing & VLM Bridge</div>
+              <h2>Sentinel-1 (SAR) + Sentinel-2 (Optical) Joint Fusion &amp; Qwen 2.5-VL 3B</h2>
+              <p class="multimodal-desc">
+                Cross-modal representation learning integrating Sentinel-1 C-band physical radar backscatter with Sentinel-2 multispectral optical reflectance.
+                Synthesizes a unified 1024-dimensional joint latent representation via bidirectional cross-attention, compensates for cloud obstruction dynamically,
+                and projects visual prefix tokens into the Qwen 2.5-VL 3B Vision-Language Model with QLoRA visual grounding.
+              </p>
+            </div>
+            <div class="multimodal-header-actions">
+              <a href="/api/fusion/download-bundle" class="btn-primary" id="btn-download-s1-bundle" download="satquery_s1_integration_bundle.zip">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download S1 Bundle (.zip)</span>
+              </a>
+              <button class="btn-outline" id="btn-view-s1-contract" onclick="fetchAndDisplayS1Contract()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>View S1 Contract</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FUSION CONFIGURATION & RUNNER -->
+        <div class="multimodal-grid-layout">
+          <!-- LEFT: INPUTS & CONTROLS -->
+          <div class="card glass mm-control-card">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg>
+                Cross-Modal Fusion Parameters
+              </h3>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Sentinel-1 SAR Patch ID:</label>
+              <select id="mm-patch-select" class="patch-select">
+                <option value="">Loading SAR patches...</option>
+              </select>
+            </div>
+
+            <div class="input-group" style="margin-top:14px;">
+              <label class="input-label">Fusion Strategy:</label>
+              <select id="mm-fusion-strategy" class="patch-select">
+                <option value="cross_attention" selected>Bidirectional Multi-Head Cross-Attention (1024-dim)</option>
+                <option value="concatenation">L2-Normalized Concatenation (1024-dim)</option>
+                <option value="hadamard_gated">Hadamard Gated Multiplicative Interaction (1024-dim)</option>
+              </select>
+            </div>
+
+            <div class="input-group" style="margin-top:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label class="input-label">Optical Cloud Obstruction:</label>
+                <span class="highlight-val" id="val-cloud-slider">15% Cloud Haze</span>
+              </div>
+              <input type="range" id="slider-cloud-cover" min="0" max="100" value="15" step="5" class="custom-range" oninput="updateCloudLabel(this.value)" />
+              <small class="hint-text">Simulates atmospheric occlusion; dynamically shifts weight to SAR penetration.</small>
+            </div>
+
+            <div class="input-group" style="margin-top:14px;">
+              <label class="input-label">VLM Instruction / Visual Grounding Query:</label>
+              <textarea id="mm-query-input" class="query-textarea" rows="3">Cross-validate optical vegetation vitality with SAR polarimetric volume scattering to confirm true canopy density vs seasonal drought.</textarea>
+            </div>
+
+            <button class="btn-primary btn-run" id="btn-run-fusion" style="margin-top:16px; width:100%; justify-content:center;" onclick="executeS1S2Fusion()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Execute S1+S2 Multimodal Fusion</span>
+            </button>
+          </div>
+
+          <!-- RIGHT: DUAL SENSOR COMPARISON CARDS -->
+          <div class="mm-dual-sensor-container">
+            <!-- S1 SAR CARD -->
+            <div class="card glass sensor-spec-card s1-card">
+              <div class="sensor-header s1-hdr">
+                <span class="sensor-chip s1-chip">Sentinel-1 C-Band SAR</span>
+                <h4>Model A (ResNet-18 SAR)</h4>
+              </div>
+              <div class="sensor-telemetry-grid">
+                <div class="tele-item"><span class="tele-lbl">Mean VV Backscatter:</span> <span class="tele-val" id="mm-tele-vv">-12.48 dB</span></div>
+                <div class="tele-item"><span class="tele-lbl">Mean VH Backscatter:</span> <span class="tele-val" id="mm-tele-vh">-18.23 dB</span></div>
+                <div class="tele-item"><span class="tele-lbl">Radar Vegetation Index (RVI):</span> <span class="tele-val highlight" id="mm-tele-rvi">0.742</span></div>
+                <div class="tele-item"><span class="tele-lbl">Embedding Dimension:</span> <span class="tele-val">512-dim (Unit L2)</span></div>
+                <div class="tele-item"><span class="tele-lbl">Physical Advantage:</span> <span class="tele-val">100% Cloud Penetration</span></div>
+              </div>
+            </div>
+
+            <!-- S2 OPTICAL CARD -->
+            <div class="card glass sensor-spec-card s2-card">
+              <div class="sensor-header s2-hdr">
+                <span class="sensor-chip s2-chip">Sentinel-2 Multi-Spectral</span>
+                <h4>Model B Specialist (Optical)</h4>
+              </div>
+              <div class="sensor-telemetry-grid">
+                <div class="tele-item"><span class="tele-lbl">Estimated NDVI (Vegetation):</span> <span class="tele-val highlight" id="mm-tele-ndvi">0.584</span></div>
+                <div class="tele-item"><span class="tele-lbl">Estimated NDWI (Water):</span> <span class="tele-val" id="mm-tele-ndwi">-0.210</span></div>
+                <div class="tele-item"><span class="tele-lbl">Atmospheric Cloud Cover:</span> <span class="tele-val" id="mm-tele-cloud">15.0%</span></div>
+                <div class="tele-item"><span class="tele-lbl">Embedding Dimension:</span> <span class="tele-val">512-dim (Unit L2)</span></div>
+                <div class="tele-item"><span class="tele-lbl">Physical Advantage:</span> <span class="tele-val">Fine Spectral Reflectance</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FUSED REPRESENTATION & CROSS-ATTENTION METRICS -->
+        <div class="card glass mm-metrics-card" id="mm-metrics-panel" style="margin-top:16px;">
+          <div class="card-header">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Cross-Modal Latent Alignment &amp; Dynamic Decision Weights
+            </h3>
+            <div class="badge-dim-1024" id="mm-badge-dim">Unified 1024-dim Latent Space</div>
+          </div>
+
+          <div class="alignment-kpis-grid">
+            <div class="kpi-block">
+              <span class="kpi-title">Cross-Sensor Cosine Similarity</span>
+              <span class="kpi-number" id="kpi-cosine-sim">+0.6842</span>
+              <span class="kpi-sub">Radar-Optical structural harmony</span>
+            </div>
+            <div class="kpi-block">
+              <span class="kpi-title">SAR &rarr; Optical Attention</span>
+              <span class="kpi-number" id="kpi-attn-s1">0.7215</span>
+              <span class="kpi-sub">Radar attending to multispectral cues</span>
+            </div>
+            <div class="kpi-block">
+              <span class="kpi-title">Optical &rarr; SAR Attention</span>
+              <span class="kpi-number" id="kpi-attn-s2">0.6840</span>
+              <span class="kpi-sub">Optical attending to dielectric structure</span>
+            </div>
+            <div class="kpi-block">
+              <span class="kpi-title">Dynamic Sensor Weighting</span>
+              <div class="weights-split-bar" style="margin-top:6px;">
+                <div class="weight-fill sar-fill" id="weight-bar-sar" style="width: 58%;">SAR 58%</div>
+                <div class="weight-fill opt-fill" id="weight-bar-opt" style="width: 42%;">Opt 42%</div>
+              </div>
+              <span class="kpi-sub" id="weight-rationale">Compensating for 15% cloud cover</span>
+            </div>
+          </div>
+
+          <!-- FUSED CLASS PREDICTIONS & EVIDENCE -->
+          <div class="fused-results-grid" style="margin-top:16px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="fused-preds-col">
+              <h4 style="margin-bottom:8px; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8;">Top Fused Land-Cover Classes</h4>
+              <div class="fused-class-list" id="mm-fused-class-list">
+                <div class="fused-class-row"><span class="cls-name">Broad-leaved forest</span><span class="cls-prob">88.4%</span><span class="cls-src">Joint S1+S2</span></div>
+                <div class="fused-class-row"><span class="cls-name">Mixed forest</span><span class="cls-prob">74.2%</span><span class="cls-src">Joint S1+S2</span></div>
+                <div class="fused-class-row"><span class="cls-name">Pastures</span><span class="cls-prob">42.1%</span><span class="cls-src">Optical</span></div>
+              </div>
+            </div>
+            <div class="fused-evidence-col">
+              <h4 style="margin-bottom:8px; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8;">Cross-Sensor Corroboration Proof</h4>
+              <div class="evidence-list-container" id="mm-evidence-container">
+                <div class="evidence-item-card">
+                  <strong>Volumetric Canopy Verification:</strong> Optical NDVI (0.58) corroborated by SAR cross-polarization (VH = -18.2 dB, RVI = 0.74), verifying dense woody biomass.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QWEN 2.5-VL 3B MULTIMODAL ADAPTER TERMINAL -->
+        <div class="card glass vlm-adapter-card" style="margin-top:16px;">
+          <div class="card-header">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Qwen 2.5-VL 3B Multimodal Prefix Tokens &amp; VLM Prompt
+            </h3>
+            <button class="btn-sm btn-outline" onclick="copyVLMPromptToClipboard()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copy Formatted Prompt</span>
+            </button>
+          </div>
+
+          <div class="vlm-prefix-info">
+            <div class="vlm-pill">Target: Qwen/Qwen2.5-VL-3B-Instruct</div>
+            <div class="vlm-pill">Prefix Tokens: <span id="vlm-tokens-shape">[4, 2048]</span></div>
+            <div class="vlm-pill">Token Energy Norm: <span id="vlm-token-norm">128.45</span></div>
+            <div class="vlm-pill">Grounding Tags: &lt;sar_penetration&gt;, &lt;optical_reflectance&gt;</div>
+          </div>
+
+          <pre class="vlm-prompt-terminal" id="vlm-prompt-display">
+Loading multimodal VLM prompt payload...
+          </pre>
+        </div>
+      </section>
+      
+      <!-- TAB 6: AUTOMATED BENCHMARK SUITE -->
+      <section class="tab-pane" id="pane-benchmark">
+        <div class="card glass benchmark-header-card">
+          <div class="benchmark-header-content">
+            <div class="benchmark-title-wrap">
+              <div class="benchmark-badge">SIH 26167 Validation Suite</div>
+              <h2>Automated End-to-End System Benchmark</h2>
+              <p class="benchmark-desc">
+                Comprehensive automated verification running across real BigEarthNet-S1 GeoTIFF patches.
+                Validates intent classification, Geo-Validity metadata verification, ResNet-18 VQA land-cover latency,
+                bi-temporal change detection, and SAR encoder unit-norm stability.
+              </p>
+            </div>
+            
+            <div class="benchmark-action-panel">
+              <div class="benchmark-ctrl-group">
+                <label for="bm-patches-count">Test Patches:</label>
+                <input type="number" id="bm-patches-count" value="15" min="5" max="50" class="input-number" />
+              </div>
+              <button class="btn-primary" id="btn-run-benchmark">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Run Live Benchmark</span>
+              </button>
+              <a href="/api/benchmark/report" target="_blank" class="btn-outline" id="btn-open-report-tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <span>Open Full HTML</span>
+              </a>
+            </div>
+          </div>
+          
+          <div class="benchmark-progress-bar-wrap" id="bm-progress-wrap" style="display:none;">
+            <div class="benchmark-progress-bar" id="bm-progress-bar"></div>
+            <div class="benchmark-progress-label" id="bm-progress-label">Running benchmark tests across BigEarthNet-S1 rasters...</div>
+          </div>
+        </div>
+
+        <!-- KPI SUMMARY GRID -->
+        <div class="benchmark-kpis-grid" id="bm-kpis-grid">
+          <div class="card glass bm-kpi-card">
+            <div class="bm-kpi-icon" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">🎯</div>
+            <div class="bm-kpi-label">Intent Routing Accuracy</div>
+            <div class="bm-kpi-val" id="bm-kpi-intent">—</div>
+            <div class="bm-kpi-status" id="bm-kpi-intent-status"><span class="badge-status ok">Ready</span></div>
+          </div>
+          <div class="card glass bm-kpi-card">
+            <div class="bm-kpi-icon" style="background: rgba(52, 211, 153, 0.12); color: #34d399;">🛡️</div>
+            <div class="bm-kpi-label">Geo-Validity Gate</div>
+            <div class="bm-kpi-val" id="bm-kpi-geogate">100.0%</div>
+            <div class="bm-kpi-status" id="bm-kpi-geogate-status"><span class="badge-status ok">PASS</span></div>
+          </div>
+          <div class="card glass bm-kpi-card">
+            <div class="bm-kpi-icon" style="background: rgba(129, 140, 248, 0.12); color: #818cf8;">🛰️</div>
+            <div class="bm-kpi-label">VQA Land-Cover Rate</div>
+            <div class="bm-kpi-val" id="bm-kpi-vqa">—</div>
+            <div class="bm-kpi-status" id="bm-kpi-vqa-status"><span class="badge-status ok">Ready</span></div>
+          </div>
+          <div class="card glass bm-kpi-card">
+            <div class="bm-kpi-icon" style="background: rgba(244, 114, 182, 0.12); color: #f472b6;">⚡</div>
+            <div class="bm-kpi-label">Inference Latency (P50)</div>
+            <div class="bm-kpi-val" id="bm-kpi-latency">—</div>
+            <div class="bm-kpi-status" id="bm-kpi-latency-status"><span class="badge-status ok">&lt; 100ms</span></div>
+          </div>
+          <div class="card glass bm-kpi-card">
+            <div class="bm-kpi-icon" style="background: rgba(251, 191, 36, 0.12); color: #fbbf24;">📐</div>
+            <div class="bm-kpi-label">SAR Encoder Norm Stability</div>
+            <div class="bm-kpi-val" id="bm-kpi-norm">—</div>
+            <div class="bm-kpi-status" id="bm-kpi-norm-status"><span class="badge-status ok">Unit Norm</span></div>
+          </div>
+          <div class="card glass bm-kpi-card">
+            <div class="bm-kpi-icon" style="background: rgba(167, 139, 250, 0.12); color: #a78bfa;">⏱️</div>
+            <div class="bm-kpi-label">Total Execution Time</div>
+            <div class="bm-kpi-val" id="bm-kpi-duration">—</div>
+            <div class="bm-kpi-status" id="bm-kpi-duration-status"><span class="badge-status ok">All Tests</span></div>
+          </div>
+        </div>
+
+        <!-- EMBEDDED REPORT PREVIEW -->
+        <div class="card glass benchmark-frame-card">
+          <div class="card-header">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              Live Official HTML Benchmark Report
+            </h3>
+            <div class="bm-run-meta" id="bm-run-meta">
+              <span id="bm-run-id">Report Status: Ready to Run</span>
+            </div>
+          </div>
+          <iframe id="bm-report-frame" src="/api/benchmark/report" title="SatQuery Benchmark Report" class="benchmark-iframe"></iframe>
+        </div>
+      </section>
+
+      <!-- TAB 7: SEMANTIC GEO-SEARCH & DENSE RETRIEVAL STUDIO (PHASE 9) -->
+      <section class="tab-pane" id="pane-search">
+        <div class="card glass search-header-card">
+          <div class="search-header-content">
+            <div class="search-title-wrap">
+              <div class="search-badge">Dense Vector Retrieval Engine</div>
+              <h2>Semantic Geo-Search &amp; Catalog Discovery</h2>
+              <p class="search-desc">
+                Sub-millisecond nearest neighbor search over 512-dimensional normalized unit-sphere embeddings.
+                Discover semantically equivalent radar scenes, flood-risk zones, and land-cover signatures across the BigEarthNet-S1 catalog.
+              </p>
+            </div>
+            
+            <div class="search-ctrls-bar">
+              <div class="search-field-group">
+                <label for="search-patch-select">Query Patch:</label>
+                <select id="search-patch-select" class="select-field"><option value="">Loading patches...</option></select>
+              </div>
+              <div class="search-field-group">
+                <label for="search-topk-select">Top-K Results:</label>
+                <select id="search-topk-select" class="select-field" style="width: 80px;">
+                  <option value="4">4</option>
+                  <option value="6" selected>6</option>
+                  <option value="8">8</option>
+                  <option value="12">12</option>
+                </select>
+              </div>
+              <button class="btn-primary" id="btn-run-vector-search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Find Similar Scenes</span>
+              </button>
+              <div class="search-stats-pill" id="search-stats-pill">
+                <span class="status-dot online"></span>
+                <span id="search-stats-text">Index: Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEARCH RESULTS CONTAINER -->
+        <div class="search-results-section">
+          <div class="search-results-header">
+            <h3 id="search-results-title">Nearest Neighbors Catalog</h3>
+            <span class="results-meta-pill" id="search-results-meta">Select a patch and click Find Similar Scenes</span>
+          </div>
+          <div class="search-results-grid" id="search-results-grid">
+            <div class="search-placeholder-msg">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M11 8v6M8 11h6" stroke-dasharray="2 2"/></svg>
+              <div>Select a satellite patch above and click <strong>Find Similar Scenes</strong> to query the 512-dim embedding matrix.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: GIS GEOSPATIAL MAP & GEOJSON VECTOR STUDIO -->
+      <section class="tab-pane" id="pane-gis">
+        <div class="grid-layout gis-layout">
+          
+          <!-- LEFT: LEAFLET INTERACTIVE SATELLITE MAP -->
+          <div class="card glass gis-map-card">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                Interactive Earth Observation GIS Map
+              </h3>
+              <div class="gis-map-controls">
+                <span class="gis-crs-pill" id="gis-crs-display">EPSG:4326 (WGS 84)</span>
+                <button class="btn-sm btn-outline" id="btn-recenter-map" title="Recenter on Active Patch">🎯 Recenter</button>
+              </div>
+            </div>
+            <div class="gis-map-container">
+              <div id="gis-leaflet-map" class="gis-leaflet-map"></div>
+            </div>
+            <div class="gis-map-footer">
+              <div class="gis-coord-stat">
+                <span class="stat-lbl">Centroid:</span>
+                <span class="stat-val" id="gis-centroid-display">Lat --, Lon --</span>
+              </div>
+              <div class="gis-coord-stat">
+                <span class="stat-lbl">Footprint:</span>
+                <span class="stat-val" id="gis-footprint-display">1.2 km × 1.2 km (1.44 km²)</span>
+              </div>
+              <div class="gis-coord-stat">
+                <span class="stat-lbl">Target Portals:</span>
+                <span class="stat-val highlight">ISRO Bhuvan • QGIS • ArcGIS</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: RFC 7946 GEOJSON VECTOR EXPORTER -->
+          <div class="card glass gis-geojson-card">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                RFC 7946 GeoJSON Vector Layer
+              </h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-sm btn-outline" id="btn-copy-geojson">Copy JSON</button>
+                <a href="#" class="btn-sm btn-primary" id="btn-download-geojson" download="patch.geojson">Download .geojson</a>
+              </div>
+            </div>
+            <div class="geojson-viewer-wrap">
+              <pre class="geojson-code-block"><code id="geojson-code-content">Select a patch or navigate to GIS Map to view vector layer...</code></pre>
+            </div>
+            <div class="gis-info-banner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>This vector file can be dragged directly into <strong>QGIS</strong>, <strong>Google Earth</strong>, or loaded into <strong>ISRO's Bhuvan Geoportal</strong> with exact geodetic alignment and biophysical attributes.</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 9: RAPID DISASTER & FLOOD INUNDATION STUDIO -->
+      <section class="tab-pane" id="pane-disaster" style="display:none;">
+        <div class="studio-header">
+          <div>
+            <h2>Studio 9: Rapid Disaster & Flood Inundation Engine</h2>
+            <p class="section-desc">Automated microwave specular water segmentation, flood delta mapping, and ISRO Bhuvan emergency report generator</p>
+          </div>
+          <div class="studio-actions">
+            <button class="btn-sm btn-outline" id="btn-disaster-export-geojson" title="Export GeoJSON with Flood Attributes for ISRO Bhuvan">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Bhuvan Flood GeoJSON</span>
+            </button>
+            <button class="btn-sm btn-secondary" id="btn-disaster-export-pdf" title="Download Official ISRO SAC Flood Assessment PDF">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Emergency PDF Report</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- DISASTER CONTROLS BAR -->
+        <div class="disaster-controls-bar glass">
+          <div class="control-field">
+            <label for="disaster-select-patch">Target (Crisis Tile):</label>
+            <select id="disaster-select-patch" class="select-dropdown">
+              <option value="">Loading patches...</option>
+            </select>
+          </div>
+
+          <div class="control-field">
+            <label for="disaster-select-pre-patch">Baseline (Pre-Event T1 - Optional):</label>
+            <select id="disaster-select-pre-patch" class="select-dropdown">
+              <option value="">(None - Single Tile Assessment)</option>
+            </select>
+          </div>
+
+          <div class="control-field threshold-field">
+            <label for="slider-flood-threshold">
+              Water Cutoff: <span id="val-flood-threshold" class="metric-val-highlight">-18.0 dB</span>
+            </label>
+            <input type="range" id="slider-flood-threshold" min="-26" max="-12" step="0.5" value="-18" class="range-slider">
+          </div>
+
+          <button class="btn-primary" id="btn-run-flood-analysis">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Run Flood Mapping</span>
+          </button>
+        </div>
+
+        <!-- DISASTER MAIN LAYOUT -->
+        <div class="disaster-layout-grid">
+          
+          <!-- LEFT: VISUAL DUAL-LAYER VIEWER -->
+          <div class="disaster-card-panel glass">
+            <div class="panel-header-row">
+              <h3 class="panel-title">Radar Inundation Layer</h3>
+              <div class="layer-view-toggles" id="flood-layer-toggles">
+                <button class="btn-toggle active" data-layer="blend">Blended Overlay</button>
+                <button class="btn-toggle" data-layer="sar">Raw SAR</button>
+                <button class="btn-toggle" data-layer="mask">Water Mask</button>
+              </div>
+            </div>
+
+            <div class="flood-preview-container" id="flood-preview-wrap">
+              <img id="img-flood-sar" src="" alt="SAR Image" class="flood-layer-img">
+              <img id="img-flood-mask" src="" alt="Flood Mask" class="flood-layer-mask">
+              <div class="flood-legend">
+                <span class="legend-item"><span class="legend-box neon-cyan"></span> Newly Flooded</span>
+                <span class="legend-item"><span class="legend-box deep-blue"></span> Permanent Water</span>
+                <span class="legend-item"><span class="legend-box grey-dim"></span> Dry Ground</span>
+              </div>
+            </div>
+
+            <div class="water-radiometrics-bar" id="flood-radiometrics">
+              <div class="rad-col">
+                <span class="rad-label">Water Mean VV:</span>
+                <span class="rad-val" id="val-water-vv">-- dB</span>
+              </div>
+              <div class="rad-col">
+                <span class="rad-label">Dry Land Mean VV:</span>
+                <span class="rad-val" id="val-dry-vv">-- dB</span>
+              </div>
+              <div class="rad-col">
+                <span class="rad-label">Radiometric Contrast:</span>
+                <span class="rad-val text-cyan" id="val-rad-contrast">-- dB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: CRISIS KPIS & DAMAGE REPORT -->
+          <div class="disaster-card-panel glass">
+            <div class="panel-header-row">
+              <h3 class="panel-title">Disaster Impact & Exposure</h3>
+              <span class="disaster-severity-badge" id="badge-disaster-severity">IDLE</span>
+            </div>
+
+            <div class="dsi-meter-card">
+              <div class="dsi-header">
+                <span>Disaster Severity Index (DSI)</span>
+                <span class="dsi-num" id="val-dsi-score">0.0 / 100</span>
+              </div>
+              <div class="dsi-progress-bar">
+                <div class="dsi-fill" id="dsi-fill" style="width: 0%;"></div>
+              </div>
+              <p class="dsi-recommendation" id="val-dsi-recommendation">Select a crisis patch to evaluate emergency protocol.</p>
+            </div>
+
+            <div class="disaster-kpi-grid">
+              <div class="d-kpi-card">
+                <span class="d-kpi-label">Total Submerged Area</span>
+                <span class="d-kpi-val" id="val-total-water-ha">-- ha</span>
+                <span class="d-kpi-sub" id="val-total-water-pct">--% of tile</span>
+              </div>
+
+              <div class="d-kpi-card highlight-cyan">
+                <span class="d-kpi-label">Newly Inundated Land</span>
+                <span class="d-kpi-val" id="val-new-flood-ha">-- ha</span>
+                <span class="d-kpi-sub" id="val-new-flood-km2">-- km² fresh water</span>
+              </div>
+
+              <div class="d-kpi-card">
+                <span class="d-kpi-label">Agricultural Submergence</span>
+                <span class="d-kpi-val text-amber" id="val-agri-submerged">-- ha</span>
+                <span class="d-kpi-sub" id="val-crop-damage-risk">Risk: Pending</span>
+              </div>
+
+              <div class="d-kpi-card">
+                <span class="d-kpi-label">Urban Settlement Risk</span>
+                <span class="d-kpi-val text-red" id="val-urban-submerged">-- ha</span>
+                <span class="d-kpi-sub" id="val-urban-threat-level">Threat: Pending</span>
+              </div>
+            </div>
+
+            <div class="disaster-tactical-notes">
+              <h4>ISRO NDEM Tactical Guidance</h4>
+              <ul>
+                <li><strong>All-Weather Microwave Penetration:</strong> C-band SAR radar accurately delineates surface water through heavy monsoonal cloud decks.</li>
+                <li><strong>Specular Water Scattering:</strong> Water reflects microwave pulses away from antenna, producing clear backscatter drop below <span id="val-guidance-cutoff">-18 dB</span>.</li>
+                <li><strong>Interoperable Response:</strong> Instant GeoJSON export enables direct dispatch to field rescue personnel and state disaster response forces (NDRF/SDRF).</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 10: AOI STRIP MOSAIC & EDGE OPTIMIZER -->
+      <section class="tab-pane" id="pane-mosaic" style="display:none;">
+        <div class="studio-header">
+          <div>
+            <h2>Studio 10: Large-Area AOI Strip Mosaic & Edge Engine</h2>
+            <p class="section-desc">Multi-tile orbital swath stitching, regional aggregated land-cover statistics, and INT8 edge quantization benchmark</p>
+          </div>
+          <div class="studio-actions">
+            <button class="btn-sm btn-outline" id="btn-mosaic-export-geojson" title="Export Composite Multi-Tile GeoJSON">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              <span>Mosaic GeoJSON</span>
+            </button>
+            <button class="btn-sm btn-secondary" id="btn-run-edge-benchmark" title="Execute Live FP32 vs Quantized INT8 Latency Benchmark">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Run Edge Benchmark</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MOSAIC CONTROLS BAR -->
+        <div class="mosaic-controls-bar glass">
+          <div class="control-field" style="flex: 1;">
+            <label>Select Adjacent Tiles to Stitch (2 to 6 Patches):</label>
+            <div class="mosaic-tiles-selector" id="mosaic-tiles-checklist">
+              <!-- Dynamically populated checkbox chips -->
+              <span class="text-dim" style="font-size: 0.8rem;">Loading indexed tiles...</span>
+            </div>
+          </div>
+          <div class="mosaic-actions-col">
+            <button class="btn-primary" id="btn-build-mosaic">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>Stitch Swath Mosaic</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MOSAIC MAIN LAYOUT -->
+        <div class="mosaic-layout-grid">
+          
+          <!-- LEFT: COMPOSITE STITCHED VIEWER -->
+          <div class="mosaic-card-panel glass">
+            <div class="panel-header-row">
+              <h3 class="panel-title">Composite Stitched Scene</h3>
+              <span class="mosaic-tiles-badge" id="badge-mosaic-tiles-count">0 Tiles</span>
+            </div>
+
+            <div class="mosaic-preview-container" id="mosaic-preview-wrap">
+              <img id="img-mosaic-preview" src="" alt="Stitched Mosaic Preview" class="mosaic-preview-img">
+              <div class="mosaic-overlay-info" id="mosaic-overlay-info">
+                <span id="mosaic-dimensions-text">Select tiles and click 'Stitch Swath Mosaic' to assemble scene</span>
+              </div>
+            </div>
+
+            <div class="mosaic-swath-metrics" id="mosaic-swath-metrics">
+              <div class="swath-metric-col">
+                <span class="swath-label">Grid Layout:</span>
+                <span class="swath-val" id="val-mosaic-layout">--</span>
+              </div>
+              <div class="swath-metric-col">
+                <span class="swath-label">Ground Footprint:</span>
+                <span class="swath-val" id="val-mosaic-ground-dim">-- m x -- m</span>
+              </div>
+              <div class="swath-metric-col">
+                <span class="swath-label">Total AOI Area:</span>
+                <span class="swath-val text-cyan" id="val-mosaic-total-area">-- ha (-- km²)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: REGIONAL ANALYTICS & EDGE BENCHMARK -->
+          <div class="mosaic-card-panel glass">
+            
+            <!-- REGIONAL LAND-COVER BREAKDOWN -->
+            <div class="regional-analytics-section">
+              <div class="panel-header-row">
+                <h3 class="panel-title">Regional Land-Cover Breakdown</h3>
+                <span class="dominant-class-badge" id="badge-dominant-class">--</span>
+              </div>
+
+              <div class="regional-class-table-wrap">
+                <table class="regional-class-table" id="regional-class-table">
+                  <thead>
+                    <tr>
+                      <th>CORINE Land-Cover Class</th>
+                      <th>Coverage</th>
+                      <th>Est. Hectares</th>
+                    </tr>
+                  </thead>
+                  <tbody id="regional-class-tbody">
+                    <tr>
+                      <td colspan="3" class="text-center text-dim">Stitch an AOI mosaic to inspect regional land-cover distribution.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- EDGE OPTIMIZATION BENCHMARK CARD -->
+            <div class="edge-benchmark-section">
+              <div class="panel-header-row">
+                <h3 class="panel-title">Ground Terminal Edge Quantization</h3>
+                <span class="edge-status-badge" id="badge-edge-status">INT8 Dynamic</span>
+              </div>
+
+              <div class="edge-kpi-grid">
+                <div class="edge-kpi-card">
+                  <span class="edge-label">FP32 Native Model</span>
+                  <span class="edge-val" id="val-edge-fp32-size">44.8 MB</span>
+                  <span class="edge-sub" id="val-edge-fp32-latency">Latency: ~18.2 ms</span>
+                </div>
+                <div class="edge-kpi-card highlight-cyan">
+                  <span class="edge-label">Quantized INT8 Model</span>
+                  <span class="edge-val text-cyan" id="val-edge-int8-size">12.2 MB</span>
+                  <span class="edge-sub text-cyan" id="val-edge-int8-latency">Latency: ~4.5 ms</span>
+                </div>
+              </div>
+
+              <div class="edge-savings-row">
+                <div class="savings-pill">
+                  <span>Memory Savings:</span>
+                  <strong class="text-emerald" id="val-edge-mem-savings">72.8% (3.7x reduction)</strong>
+                </div>
+                <div class="savings-pill">
+                  <span>Inference Acceleration:</span>
+                  <strong class="text-cyan" id="val-edge-speedup">2.5x - 4.0x Speedup</strong>
+                </div>
+              </div>
+
+              <div class="edge-target-banner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span><strong>Edge Deployment Targets:</strong> Low-power UAV payload pods, tactical field terminals, and NVIDIA Jetson Orin with open ONNX/TensorRT export.</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 11: MULTI-TEMPORAL TIME-SERIES & STAC MISSION INTELLIGENCE -->
+      <section class="tab-pane" id="pane-timeseries">
+        <div class="grid-layout">
+
+          <!-- LEFT: SEQUENCE SELECTOR & MISSION ALERT CARD -->
+          <div class="card glass">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Temporal Sequence & Mission Alerts
+              </h3>
+              <span class="badge-tag">ISRO Mission Grade</span>
+            </div>
+
+            <div class="input-section">
+              <label for="select-ts-patch">Target Satellite Corridor / Patch:</label>
+              <select id="select-ts-patch" class="custom-select">
+                <option value="">Loading candidate patches...</option>
+              </select>
+            </div>
+
+            <div class="quick-swaths-row">
+              <span class="swath-label">Temporal Scenarios:</span>
+              <button class="btn-xs btn-outline" id="btn-ts-preset-pheno">Seasonal Phenology</button>
+              <button class="btn-xs btn-outline" id="btn-ts-preset-flood">Flood Surge</button>
+              <button class="btn-xs btn-outline" id="btn-ts-preset-deforest">Canopy Loss</button>
+            </div>
+
+            <div class="action-btn-row">
+              <button class="btn-primary w-full" id="btn-run-timeseries">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Analyze Polarimetric Trajectory
+              </button>
+            </div>
+
+            <!-- MISSION ALERT CARD -->
+            <div class="mission-alert-card" id="mission-alert-card">
+              <div class="panel-header-row">
+                <h4 class="alert-card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  ISRO Mission Alert Bulletin
+                </h4>
+                <span class="alert-status-pill routine" id="badge-alert-status">ROUTINE</span>
+              </div>
+
+              <div class="alert-bulletin-body" id="alert-bulletin-body">
+                <div class="alert-header-meta">
+                  <span class="alert-id" id="alert-bulletin-id">ISRO-SAC-SQ-2026-NOMINAL</span>
+                  <span class="alert-time" id="alert-bulletin-time">UTC Telemetry Active</span>
+                </div>
+                <h5 class="alert-headline" id="alert-bulletin-headline">Nominal Radar Backscatter Surveillance</h5>
+                <p class="alert-evidence" id="alert-bulletin-evidence">Multi-temporal backscatter trajectory conforms strictly to baseline agricultural and forestry seasonal thresholds. No sudden radar attenuation detected.</p>
+                <div class="alert-directives" id="alert-bulletin-directives">
+                  <strong>Operational Protocol:</strong>
+                  <ul id="alert-directives-list">
+                    <li>Maintain standard 12-day Sentinel-1 orbital surveillance interval.</li>
+                  </ul>
+                </div>
+                <div class="alert-hash-row">
+                  <span class="hash-label">SHA-256 Stamp:</span>
+                  <code class="hash-code" id="alert-verification-hash">8f4c21...verified</code>
+                </div>
+              </div>
+
+              <div class="action-btn-row">
+                <button class="btn-xs btn-outline w-full" id="btn-dispatch-custom-alert">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Evaluate Telemetry & Dispatch Alert
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT: TRAJECTORY PLOTTER & OGC STAC EXPLORER -->
+          <div class="card glass">
+            <div class="card-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Polarimetric Trajectory & STAC v1.0.0 Catalog
+              </h3>
+              <div class="chart-legend-row">
+                <span class="legend-chip legend-vv"><span class="legend-dot dot-blue"></span> VV (dB)</span>
+                <span class="legend-chip legend-vh"><span class="legend-dot dot-green"></span> VH (dB)</span>
+                <span class="legend-chip legend-rvi"><span class="legend-dot dot-gold"></span> RVI (x10)</span>
+              </div>
+            </div>
+
+            <!-- CANVAS CHART CONTAINER -->
+            <div class="timeseries-chart-wrapper">
+              <canvas id="ts-trajectory-canvas" width="600" height="220" class="ts-canvas"></canvas>
+            </div>
+
+            <!-- TRAJECTORY KPI ROW -->
+            <div class="ts-kpi-grid">
+              <div class="ts-kpi-card">
+                <span class="ts-kpi-label">Baseline VV (dB)</span>
+                <span class="ts-kpi-val" id="val-ts-vv">-11.4 dB</span>
+                <span class="ts-kpi-sub">Surface Roughness</span>
+              </div>
+              <div class="ts-kpi-card">
+                <span class="ts-kpi-label">Baseline VH (dB)</span>
+                <span class="ts-kpi-val text-emerald" id="val-ts-vh">-17.8 dB</span>
+                <span class="ts-kpi-sub">Volume Scatter</span>
+              </div>
+              <div class="ts-kpi-card">
+                <span class="ts-kpi-label">Radar Veg. Index</span>
+                <span class="ts-kpi-val text-gold" id="val-ts-rvi">0.684</span>
+                <span class="ts-kpi-sub">Biomass Density</span>
+              </div>
+              <div class="ts-kpi-card">
+                <span class="ts-kpi-label">Disturbance Score</span>
+                <span class="ts-kpi-val text-cyan" id="val-ts-trend">STABLE</span>
+                <span class="ts-kpi-sub" id="val-ts-prob">Prob: 5%</span>
+              </div>
+            </div>
+
+            <!-- STAC CATALOG SECTION -->
+            <div class="stac-explorer-section">
+              <div class="panel-header-row">
+                <h4 class="panel-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  OGC STAC v1.0.0 Catalog Service
+                </h4>
+                <div class="stac-actions">
+                  <button class="btn-xs btn-outline" id="btn-stac-root">Root Catalog</button>
+                  <button class="btn-xs btn-outline" id="btn-stac-copy">Copy STAC JSON</button>
+                </div>
+              </div>
+
+              <div class="stac-search-bar">
+                <input type="text" id="input-stac-query" class="stac-input" placeholder="Search by land-cover or patch ID (e.g. Forest, Water, Agriculture)..." />
+                <button class="btn-sm btn-primary" id="btn-search-stac">Search STAC</button>
+              </div>
+
+              <div class="stac-json-preview">
+                <pre id="stac-json-output" class="stac-code-block">{
+  "stac_version": "1.0.0",
+  "type": "FeatureCollection",
+  "id": "sentinel1-grd-sar",
+  "description": "Ready to query OGC STAC API. Click 'Search STAC' or 'Root Catalog'."
+}</pre>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- MODAL: AUDIT RECEIPT JSON INSPECTOR -->
+    <div class="modal-backdrop" id="receipt-modal" style="display:none;">
+      <div class="modal-card glass">
+        <div class="modal-header">
+          <h3 id="modal-receipt-title">Audit Receipt Details</h3>
+          <button class="modal-close" id="btn-close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <pre id="modal-receipt-json">Loading...</pre>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-sm btn-outline" id="btn-copy-receipt-json">Copy JSON</button>
+          <button class="btn-sm btn-secondary" id="btn-download-receipt-pdf">Download Official PDF</button>
+          <button class="btn-sm btn-primary" id="btn-done-modal">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 5: MULTI-MODAL OPTICAL + SAR FUSION STUDIO -->
+  <!-- Inserted outside app-container so it stretches full-width within main -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

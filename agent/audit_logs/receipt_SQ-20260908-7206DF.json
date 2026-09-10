@@ -1,0 +1,107 @@
+{
+  "receipt_id": "SQ-20260908-7206DF",
+  "timestamp": "2026-09-08 01:05:20",
+  "query": "Classify the primary land cover categories in this Sentinel-1 SAR acquisition.",
+  "intent": "sar_classification",
+  "input_metadata": {
+    "vh": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_40\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_40_VH.tif",
+    "vv": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_40\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_40_VV.tif"
+  },
+  "geo_validity_gate": {
+    "status": "VALID",
+    "passed_checks": [
+      "File Existence",
+      "Spatial Dimension Matching",
+      "Data Integrity & NaN Tolerance (<20%)",
+      "SAR Decibel Range Sanity Check"
+    ]
+  },
+  "specialist_routing": {
+    "selected_tool": "Model-A-ResNet18-SAR",
+    "model_version": "1.0.0",
+    "processing_time_ms": 10.41
+  },
+  "evidence_and_uncertainty": {
+    "uncertainty_level": "Likely",
+    "confidence_score": 0.6699,
+    "claims": [
+      {
+        "claim": "Presence of Urban fabric",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.515)"
+      },
+      {
+        "claim": "Presence of Permanent crops",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.477)"
+      },
+      {
+        "claim": "Presence of Pastures",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.565)"
+      },
+      {
+        "claim": "Presence of Complex cultivation patterns",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.589)"
+      },
+      {
+        "claim": "Presence of Land principally occupied by agriculture, with significant areas of natural vegetation",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.427)"
+      },
+      {
+        "claim": "Presence of Agro-forestry areas",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.556)"
+      },
+      {
+        "claim": "Presence of Broad-leaved forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.574)"
+      },
+      {
+        "claim": "Presence of Coniferous forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.460)"
+      },
+      {
+        "claim": "Presence of Mixed forest",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.408)"
+      },
+      {
+        "claim": "Presence of Natural grassland and sparsely vegetated areas",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.670)"
+      },
+      {
+        "claim": "Presence of Transitional woodland, shrub",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.500)"
+      },
+      {
+        "claim": "Presence of Inland wetlands",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.498)"
+      },
+      {
+        "claim": "Presence of Coastal wetlands",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.554)"
+      },
+      {
+        "claim": "Presence of Inland waters",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.573)"
+      },
+      {
+        "claim": "Presence of Marine waters",
+        "status": "LIKELY",
+        "evidence": "Sentinel-1 SAR dual-pol backscatter response (prob: 0.517)"
+      }
+    ]
+  },
+  "final_answer": "Based on Sentinel-1 SAR analysis, the primary land-cover categories detected are: Urban fabric, Permanent crops, Pastures, Complex cultivation patterns, Land principally occupied by agriculture, with significant areas of natural vegetation, Agro-forestry areas, Broad-leaved forest, Coniferous forest, Mixed forest, Natural grassland and sparsely vegetated areas, Transitional woodland, shrub, Inland wetlands, Coastal wetlands, Inland waters, Marine waters (Confidence: 0.67).",
+  "total_latency_ms": 10.41
+}

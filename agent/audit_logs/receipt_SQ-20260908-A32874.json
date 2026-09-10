@@ -1,0 +1,32 @@
+{
+  "receipt_id": "SQ-20260908-A32874",
+  "timestamp": "2026-09-08 00:29:51",
+  "query": "Cross-analyze optical NDVI and SAR backscatter for vegetation.",
+  "intent": "multimodal_optical_sar_fusion",
+  "input_metadata": {
+    "vh": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39_VH.tif",
+    "vv": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39_VV.tif",
+    "patch_id": "S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39"
+  },
+  "geo_validity_gate": {
+    "status": "VALID",
+    "passed_checks": []
+  },
+  "specialist_routing": {
+    "selected_tool": "MultiModal-A+B-Fusion",
+    "model_version": "1.0.0",
+    "processing_time_ms": 377.2296905517578
+  },
+  "evidence_and_uncertainty": {
+    "uncertainty_level": "Verified",
+    "confidence_score": 0.88,
+    "claims": [
+      {
+        "sensor_advantage": "Structural & Spectral Correlation",
+        "proof": "Optical spectral reflectance and SAR polarimetric backscatter exhibit consistent structural agreement."
+      }
+    ]
+  },
+  "final_answer": "Multi-Modal Joint Analysis: Sentinel-1 SAR highlights physical structure (Urban fabric, Arable land) while Optical imagery reveals spectral reflectance (Sparse Vegetation, Dense Forest).",
+  "total_latency_ms": 377.23
+}

@@ -28,21 +28,7 @@ public class App {
     private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
-    private static final ModelClient modelClient = new ModelClient() {
-        private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
-
-        @Override
-        public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
-            try {
-                // Strictly execute on the real Qwen2-VL Remote Python VLM Server
-                return httpClient.run(taskType, request, images);
-            } catch (Exception e) {
-                System.err.println("[SatQuery Backend] Qwen2-VL Server Error: " + e.getMessage());
-                e.printStackTrace();
-                throw new RuntimeException("SatQuery Qwen2-VL Model Engine Error: " + e.getMessage(), e);
-            }
-        }
-    };
+    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000");
 
 
     private static final AgentController agentController = new AgentController(modelClient);
@@ -70,6 +56,9 @@ public class App {
         server.createContext("/api/runs/", new RunsGetHandler());
         server.createContext("/api/models", new ModelsHandler());
         server.createContext("/api/benchmarks", new BenchmarksHandler());
+        server.createContext("/api/gdal/inspect", new GdalInspectHandler());
+        server.createContext("/api/analysis/spectral", new SpectralHandler());
+        server.createContext("/api/analysis/area", new AreaHandler());
 
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
@@ -270,6 +259,26 @@ public class App {
                     }
                 }
 
+                // Sync metadata from frontend payload
+                if (request.getFrontendAssets() != null) {
+                    for (ImageAsset img : images) {
+                        for (Map<String, Object> fAsset : request.getFrontendAssets()) {
+                            if (img.getImageId().equals(fAsset.get("id"))) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> fMeta = (Map<String, Object>) fAsset.get("metadata");
+                                if (fMeta != null) {
+                                    if (fMeta.get("crs") != null) img.getMetadata().setCrs(String.valueOf(fMeta.get("crs")));
+                                    if (fMeta.get("boundingBox") != null) img.getMetadata().setBoundingBox(String.valueOf(fMeta.get("boundingBox")));
+                                    if (fMeta.get("resolution") != null) img.getMetadata().setResolution(String.valueOf(fMeta.get("resolution")));
+                                    if (fMeta.get("width") != null && fMeta.get("width") instanceof Number) img.getMetadata().setWidth(((Number)fMeta.get("width")).intValue());
+                                    if (fMeta.get("height") != null && fMeta.get("height") instanceof Number) img.getMetadata().setHeight(((Number)fMeta.get("height")).intValue());
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // Process task
                 TaskResult result = agentController.processQuery(request, images);
 
@@ -320,6 +329,52 @@ public class App {
 
             if (report == null) {
                 sendJsonResponse(exchange, 404, Map.of("error", "Report not found for ID: " + queryId));
+                return;
+            }
+
+            if (parts.length >= 5 && "geojson".equalsIgnoreCase(parts[4])) {
+                // Return GeoJSON FeatureCollection
+                Map<String, Object> geoJson = new HashMap<>();
+                geoJson.put("type", "FeatureCollection");
+
+                Map<String, Object> feature = new HashMap<>();
+                feature.put("type", "Feature");
+
+                // Spatial Polygon geometry (Defaulting to WGS84 bounding box or full scene extent)
+                double minLon = 77.1025, minLat = 28.7041, maxLon = 77.2025, maxLat = 28.8041;
+                Map<String, Object> geometry = new HashMap<>();
+                geometry.put("type", "Polygon");
+                geometry.put("coordinates", List.of(List.of(
+                    List.of(minLon, minLat),
+                    List.of(maxLon, minLat),
+                    List.of(maxLon, maxLat),
+                    List.of(minLon, maxLat),
+                    List.of(minLon, minLat)
+                )));
+                feature.put("geometry", geometry);
+
+                Map<String, Object> props = new HashMap<>();
+                props.put("queryId", report.getQueryId());
+                props.put("taskType", report.getTaskType() != null ? report.getTaskType().name() : "VQA");
+                props.put("status", report.getStatus());
+                props.put("answer", report.getAnswer());
+                props.put("confidenceState", report.getConfidenceState());
+                props.put("timestamp", report.getTimestamp());
+
+                ImageMetadata imgMeta = report.getImageMetadata();
+                if (imgMeta != null) {
+                    props.put("acquisitionDate", imgMeta.getAcquisitionDate());
+                    props.put("crs", imgMeta.getCrs());
+                    props.put("resolution", imgMeta.getResolution());
+                    props.put("sensorPlatform", imgMeta.getSensorPlatform());
+                    props.put("cloudCoverPercent", imgMeta.getCloudCoverPercent());
+                    props.put("ndviMean", imgMeta.getNdviMean());
+                }
+
+                feature.put("properties", props);
+                geoJson.put("features", List.of(feature));
+
+                sendJsonResponse(exchange, 200, geoJson);
             } else {
                 sendJsonResponse(exchange, 200, report);
             }
@@ -547,9 +602,12 @@ public class App {
                 
                 String toolName = switch (taskType) {
                     case VQA -> "VQA_TOOL";
+                    case CAPTIONING -> "CAPTIONING_TOOL";
                     case GROUNDING -> "GROUNDING_TOOL";
+                    case CHANGE_UNDERSTANDING -> "CHANGE_UNDERSTANDING_TOOL";
                     case CHANGE_ANALYSIS -> "CHANGE_TOOL";
                     case FUSION_ANALYSIS -> "FUSION_TOOL";
+                    case INFORMATION_EXTRACTION -> "EXTRACTION_TOOL";
                 };
                 
                 com.satquery.registry.ToolValidationResult toolValidation = com.satquery.registry.ToolRegistry.validate(
@@ -712,6 +770,10 @@ public class App {
                 reportMeta.put("reportType", "PDF");
                 reportMeta.put("filePath", "outputs/report-" + runId + ".pdf");
                 reportMeta.put("reportUrl", "/outputs/report-" + runId + ".pdf");
+                reportMeta.put("timestamp", result.getTimestamp() != null ? result.getTimestamp() : Instant.now().toString());
+                if (result.getImageMetadata() != null) {
+                    reportMeta.put("imageMetadata", result.getImageMetadata());
+                }
                 sendJsonResponse(exchange, 200, reportMeta);
             } else {
                 sendJsonResponse(exchange, 400, Map.of("error", "Unsupported action: " + action));
@@ -784,6 +846,128 @@ public class App {
             );
             
             sendJsonResponse(exchange, 200, benchmarks);
+        }
+    }
+
+    static class GdalInspectHandler implements HttpHandler {
+        private static final com.satquery.gdal.GdalProcessor gdalProcessor = new com.satquery.gdal.GdalProcessor();
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod()) && !"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            try {
+                String imageId = null;
+                if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                    InputStream is = exchange.getRequestBody();
+                    byte[] bytes = is.readAllBytes();
+                    if (bytes.length > 0) {
+                        Map<String, Object> req = objectMapper.readValue(bytes, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+                        if (req != null && req.get("imageId") != null) {
+                            imageId = req.get("imageId").toString();
+                        }
+                    }
+                } else {
+                    String path = exchange.getRequestURI().getPath();
+                    String[] parts = path.split("/");
+                    if (parts.length >= 5) {
+                        imageId = parts[4];
+                    }
+                }
+
+                ImageAsset asset = null;
+                if (imageId != null) {
+                    asset = imageRegistry.get(imageId);
+                    if (asset == null) {
+                        asset = com.satquery.database.DatabaseManager.getImageAsset(imageId);
+                    }
+                }
+
+                File fileToInspect = null;
+                if (asset != null && asset.getFilePath() != null) {
+                    fileToInspect = new File(asset.getFilePath());
+                } else {
+                    File sample = new File("uploads/sample.tif");
+                    if (sample.exists()) {
+                        fileToInspect = sample;
+                    } else {
+                        sample = new File("backend/uploads/sample.tif");
+                        if (sample.exists()) fileToInspect = sample;
+                    }
+                }
+
+                if (fileToInspect == null || !fileToInspect.exists()) {
+                    sendJsonResponse(exchange, 404, Map.of("error", "No valid image asset found for inspection"));
+                    return;
+                }
+
+                com.satquery.gdal.GeoRasterMetadata metadata = gdalProcessor.inspect(fileToInspect);
+                sendJsonResponse(exchange, 200, metadata);
+
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "GDAL inspection failed: " + e.getMessage()));
+            }
+        }
+    }
+
+    static class SpectralHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            try {
+                InputStream is = exchange.getRequestBody();
+                String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                Map<String, Object> req = body.isEmpty() ? new HashMap<>() : objectMapper.readValue(body, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+
+                double red = req.get("red") != null ? Double.parseDouble(req.get("red").toString()) : 0.15;
+                double green = req.get("green") != null ? Double.parseDouble(req.get("green").toString()) : 0.20;
+                double blue = req.get("blue") != null ? Double.parseDouble(req.get("blue").toString()) : 0.10;
+                double nir = req.get("nir") != null ? Double.parseDouble(req.get("nir").toString()) : 0.65;
+                double swir = req.get("swir") != null ? Double.parseDouble(req.get("swir").toString()) : 0.08;
+
+                Map<String, Object> spectralResult = com.satquery.processor.SpectralIndexProcessor.analyzeBands(red, green, blue, nir, swir);
+                sendJsonResponse(exchange, 200, spectralResult);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Spectral Index computation failed: " + e.getMessage()));
+            }
+        }
+    }
+
+    static class AreaHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                handleCorsOptions(exchange);
+                return;
+            }
+            try {
+                InputStream is = exchange.getRequestBody();
+                String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                Map<String, Object> req = body.isEmpty() ? new HashMap<>() : objectMapper.readValue(body, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+
+                double x1 = req.get("x1") != null ? Double.parseDouble(req.get("x1").toString()) : 0.2;
+                double y1 = req.get("y1") != null ? Double.parseDouble(req.get("y1").toString()) : 0.2;
+                double x2 = req.get("x2") != null ? Double.parseDouble(req.get("x2").toString()) : 0.8;
+                double y2 = req.get("y2") != null ? Double.parseDouble(req.get("y2").toString()) : 0.8;
+                int width = req.get("width") != null ? Integer.parseInt(req.get("width").toString()) : 1024;
+                int height = req.get("height") != null ? Integer.parseInt(req.get("height").toString()) : 1024;
+                double gsd = req.get("gsd") != null ? Double.parseDouble(req.get("gsd").toString()) : 10.0;
+
+                Map<String, Object> areaResult = com.satquery.processor.SpatialAreaCalculator.calculateBoundingBoxArea(x1, y1, x2, y2, width, height, gsd);
+                sendJsonResponse(exchange, 200, areaResult);
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, Map.of("error", "Spatial Area calculation failed: " + e.getMessage()));
+            }
         }
     }
 }

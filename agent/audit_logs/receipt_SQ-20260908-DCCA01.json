@@ -1,0 +1,32 @@
+{
+  "receipt_id": "SQ-20260908-DCCA01",
+  "timestamp": "2026-09-08 00:07:02",
+  "query": "Compare these two dates and detect if any land use change occurred.",
+  "intent": "change_detection",
+  "input_metadata": {
+    "vh": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39_VH.tif",
+    "vv": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39_VV.tif"
+  },
+  "geo_validity_gate": {
+    "status": "VALID",
+    "passed_checks": []
+  },
+  "specialist_routing": {
+    "selected_tool": "SARChangeDetector",
+    "model_version": "1.0.0",
+    "processing_time_ms": 27.77552604675293
+  },
+  "evidence_and_uncertainty": {
+    "uncertainty_level": "Likely",
+    "confidence_score": 0.69,
+    "claims": [
+      {
+        "claim": "Bi-temporal surface change: High",
+        "status": "VERIFIED",
+        "evidence": "Mean backscatter delta: 6.69 dB, changed area: 78.53%"
+      }
+    ]
+  },
+  "final_answer": "Bi-Temporal Change Analysis: Significant structural/environmental change detected between T1 and T2. (Semantic Similarity: 0.6905, Changed Area: 78.53%, Severity: High).",
+  "total_latency_ms": 27.78
+}

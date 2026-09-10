@@ -1,0 +1,90 @@
+{
+  "run_id": "BM-20260908-010520",
+  "timestamp": "2026-09-08T01:05:20",
+  "sih_problem_statement": "26167 (ISRO / SAC)",
+  "num_patches_evaluated": 5,
+  "total_duration_sec": 0.53,
+  "passed": true,
+  "category_results": {
+    "intent_routing": {
+      "accuracy_pct": 100.0,
+      "correct": 6,
+      "total": 6,
+      "status": "PASS"
+    },
+    "geo_validity_gate": {
+      "precision_pct": 100.0,
+      "valid_pass": true,
+      "invalid_rejection": true,
+      "status": "PASS"
+    },
+    "land_cover_vqa": {
+      "detection_rate_pct": 100.0,
+      "mean_confidence": 0.7496,
+      "latency_p50_ms": 11.79,
+      "latency_p95_ms": 12.56,
+      "status": "PASS"
+    },
+    "change_detection": {
+      "cross_patch_severity": "High",
+      "self_similarity_score": 1.0,
+      "invariance_pass": true,
+      "status": "PASS"
+    },
+    "sar_encoder": {
+      "max_norm_deviation": 0.0,
+      "unit_norm_stable": true,
+      "status": "PASS"
+    }
+  },
+  "metrics": [
+    {
+      "name": "Intent Routing Accuracy",
+      "value": 100.0,
+      "unit": "%",
+      "status": "ok"
+    },
+    {
+      "name": "Geo-Validity Precision",
+      "value": 100.0,
+      "unit": "%",
+      "status": "ok"
+    },
+    {
+      "name": "VQA Detection Rate",
+      "value": 100.0,
+      "unit": "%",
+      "status": "ok"
+    },
+    {
+      "name": "Mean Confidence",
+      "value": 0.7496,
+      "unit": "",
+      "status": "ok"
+    },
+    {
+      "name": "Latency p50",
+      "value": 11.79,
+      "unit": "ms",
+      "status": "ok"
+    },
+    {
+      "name": "Latency p95",
+      "value": 12.56,
+      "unit": "ms",
+      "status": "ok"
+    },
+    {
+      "name": "Encoder Norm Deviation",
+      "value": 0.0,
+      "unit": "",
+      "status": "ok"
+    },
+    {
+      "name": "Total Duration",
+      "value": 0.53,
+      "unit": "sec",
+      "status": "ok"
+    }
+  ]
+}

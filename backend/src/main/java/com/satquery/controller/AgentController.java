@@ -9,6 +9,8 @@ import com.satquery.validation.InputValidator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AgentController {
     private final InputValidator validator;
@@ -67,6 +69,10 @@ public class AgentController {
             failedResult.setStatus("VALIDATION_FAILED");
             failedResult.setMode("REAL_MODE");
             failedResult.setReportUrl("/api/report/" + failedResult.getQueryId());
+            failedResult.setTimestamp(ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")));
+            if (images != null && !images.isEmpty() && images.get(0).getMetadata() != null) {
+                failedResult.setImageMetadata(images.get(0).getMetadata());
+            }
             failedResult.setEvidenceSummary("No dynamic features extracted.");
             
             String answerText = "Validation Error: " + errorMsg;
@@ -88,9 +94,12 @@ public class AgentController {
         // 3b. Registry Tool & Parameter validation
         String toolName = switch (taskType) {
             case VQA -> "VQA_TOOL";
+            case CAPTIONING -> "CAPTIONING_TOOL";
             case GROUNDING -> "GROUNDING_TOOL";
+            case CHANGE_UNDERSTANDING -> "CHANGE_UNDERSTANDING_TOOL";
             case CHANGE_ANALYSIS -> "CHANGE_TOOL";
             case FUSION_ANALYSIS -> "FUSION_TOOL";
+            case INFORMATION_EXTRACTION -> "EXTRACTION_TOOL";
         };
 
         com.satquery.registry.ToolValidationResult toolValidation = com.satquery.registry.ToolRegistry.validate(
@@ -143,8 +152,8 @@ public class AgentController {
         TaskResult result;
         try {
             ModelClient adaptedClient = switch (taskType) {
-                case VQA, GROUNDING -> new com.satquery.client.UniRSAdapter(modelClient);
-                case CHANGE_ANALYSIS -> new com.satquery.client.ChangeQaAdapter(modelClient);
+                case VQA, GROUNDING, CAPTIONING, INFORMATION_EXTRACTION -> new com.satquery.client.UniRSAdapter(modelClient);
+                case CHANGE_ANALYSIS, CHANGE_UNDERSTANDING -> new com.satquery.client.ChangeQaAdapter(modelClient);
                 case FUSION_ANALYSIS -> new com.satquery.client.EarthGptAdapter(modelClient);
             };
             result = taskHandler.execute(request, images, adaptedClient);
@@ -202,6 +211,11 @@ public class AgentController {
 
         result.setMode("REAL_MODE");
         result.setReportUrl("/api/report/" + result.getQueryId());
+        String formattedTimestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"));
+        result.setTimestamp(formattedTimestamp);
+        if (images != null && !images.isEmpty() && images.get(0).getMetadata() != null) {
+            result.setImageMetadata(images.get(0).getMetadata());
+        }
         if (result.getEvidence() != null && !result.getEvidence().isEmpty()) {
             result.setEvidenceSummary(result.getEvidence().get(0).getDescription());
         } else {

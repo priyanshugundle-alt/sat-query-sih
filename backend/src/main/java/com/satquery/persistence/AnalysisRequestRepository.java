@@ -14,6 +14,7 @@ public class AnalysisRequestRepository {
     private final TraceEventRepository traceRepo = new TraceEventRepository();
     private final EvidenceRepository evidenceRepo = new EvidenceRepository();
     private final ReportRepository reportRepo = new ReportRepository();
+    private final ImageAssetRepository imageRepo = new ImageAssetRepository();
 
     public void save(TaskResult result) {
         String sqlQueryInsert = "INSERT OR REPLACE INTO analysis_requests (query_id, query_text, dataset_context, " +
@@ -101,6 +102,11 @@ public class AnalysisRequestRepository {
                     result.setStatus(rs.getString("status"));
                     result.setAnswer(rs.getString("answer_text"));
                     result.setConfidenceState(rs.getString("confidence_state"));
+                    
+                    String createdAtStr = rs.getString("created_at");
+                    if (createdAtStr != null) {
+                        result.setTimestamp(createdAtStr);
+                    }
 
                     // Load limitations
                     String limsJson = rs.getString("limitations_json");
@@ -116,6 +122,12 @@ public class AnalysisRequestRepository {
                         } catch (Exception e) {
                             System.err.println("Error deserializing investigator report: " + e.getMessage());
                         }
+                    }
+
+                    // Load image metadata
+                    ImageAsset imgAsset = imageRepo.findByQueryId(queryId);
+                    if (imgAsset != null && imgAsset.getMetadata() != null) {
+                        result.setImageMetadata(imgAsset.getMetadata());
                     }
 
 

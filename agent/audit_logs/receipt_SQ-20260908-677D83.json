@@ -1,0 +1,26 @@
+{
+  "receipt_id": "SQ-20260908-677D83",
+  "timestamp": "2026-09-08 00:07:02",
+  "query": "Classify this image",
+  "intent": "sar_classification",
+  "input_metadata": {
+    "vh": "D:\\SIH\\non_existent_band.tif",
+    "vv": "D:\\SIH\\BigEarthNet-S1\\S1A_IW_GRDH_1SDV_20170613T165043\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39\\S1A_IW_GRDH_1SDV_20170613T165043_33UUP_61_39_VV.tif"
+  },
+  "geo_validity_gate": {
+    "status": "INVALID",
+    "passed_checks": []
+  },
+  "specialist_routing": {
+    "selected_tool": "GeoValidityGate",
+    "model_version": "1.0.0",
+    "processing_time_ms": 5.2585601806640625
+  },
+  "evidence_and_uncertainty": {
+    "uncertainty_level": "Insufficient Evidence",
+    "confidence_score": 0.0,
+    "claims": []
+  },
+  "final_answer": "Query rejected by Geo-Validity Gate. Reason: File does not exist: D:\\SIH\\non_existent_band.tif",
+  "total_latency_ms": 5.26
+}

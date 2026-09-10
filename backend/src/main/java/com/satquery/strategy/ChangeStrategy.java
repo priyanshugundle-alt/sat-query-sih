@@ -23,15 +23,20 @@ public class ChangeStrategy implements TaskStrategy {
             String date2 = (images.size() > 1 && images.get(1).getMetadata().getAcquisitionDate() != null) ? images.get(1).getMetadata().getAcquisitionDate() : "T2";
             String location = (images.size() > 0 && images.get(0).getMetadata().getBoundingBox() != null) ? "Mumbai " + images.get(0).getMetadata().getBoundingBox() : "Mumbai region";
 
-            String explanation = ChangeExplanationGenerator.generate(
-                    location,
-                    "Increased (expansion detected)",
-                    date1,
-                    date2,
-                    "Built-up Area",
-                    "REVIEW_RECOMMENDED",
-                    "Registration quality limits and minor cloud shadow variances"
-            );
+            String explanation;
+            if (response != null && response.getAnswer() != null && !response.getAnswer().isEmpty()) {
+                explanation = response.getAnswer();
+            } else {
+                explanation = ChangeExplanationGenerator.generate(
+                        location,
+                        "Increased (expansion detected)",
+                        date1,
+                        date2,
+                        "Built-up Area",
+                        "REVIEW_RECOMMENDED",
+                        "Registration quality limits and minor cloud shadow variances"
+                );
+            }
 
             TaskResult result = new TaskResult(
                     request.getQueryId(),
@@ -41,8 +46,8 @@ public class ChangeStrategy implements TaskStrategy {
                     "SUCCESS",
                     explanation,
                     "REVIEW_RECOMMENDED",
-                    response.getEvidence(),
-                    response.getLimitations(),
+                    response != null ? response.getEvidence() : null,
+                    response != null ? response.getLimitations() : null,
                     TraceLogger.getThreadTrace()
             );
             TraceLogger.logEvent("STRATEGY_END", "Change Detection analysis complete", "ChangeStrategy", "SUCCESS");

@@ -18,6 +18,8 @@ public class TaskResult {
     private String mode;
     private String evidenceSummary;
     private String reportUrl;
+    private String timestamp;
+    private ImageMetadata imageMetadata;
 
     public TaskResult() {}
 
@@ -96,5 +98,11 @@ public class TaskResult {
 
     public String getReportUrl() { return reportUrl; }
     public void setReportUrl(String reportUrl) { this.reportUrl = reportUrl; }
+
+    public String getTimestamp() { return timestamp; }
+    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+
+    public ImageMetadata getImageMetadata() { return imageMetadata; }
+    public void setImageMetadata(ImageMetadata imageMetadata) { this.imageMetadata = imageMetadata; }
 }
 

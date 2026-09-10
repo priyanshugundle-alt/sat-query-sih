@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-SatQuery AI — Dataset Formatter for Qwen2-VL Fine-Tuning.
+SatQuery AI — Dataset Formatter for Remote Sensing VLM Fine-Tuning.
 
 Converts benchmark datasets (VRSBench, RSVQA, CDVQA, BigEarthNet-v2.0)
-from sample-data into Qwen2-VL Instruction-Tuning JSONL format.
+from sample-data into VLM Instruction-Tuning JSONL format.
 """
 
 import json
