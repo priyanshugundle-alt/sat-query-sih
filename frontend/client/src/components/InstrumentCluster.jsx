@@ -15,7 +15,6 @@ import { useState, useEffect } from "react";
 export function InstrumentCluster({ 
   analysisCount = 0, 
   isSystemLive = true,
-  isDemoMode = false,
   variant = "hero" // "hero" | "header"
 }) {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -29,17 +28,9 @@ export function InstrumentCluster({
     return () => clearInterval(timer);
   }, []);
 
-  // Simulate slow counter increment in demo mode
   useEffect(() => {
-    if (isDemoMode && variant === "hero") {
-      const incrementTimer = setInterval(() => {
-        setDisplayCount(prev => prev + 1);
-      }, 5000); // increment every 5 seconds for visual effect
-      return () => clearInterval(incrementTimer);
-    } else {
-      setDisplayCount(analysisCount);
-    }
-  }, [analysisCount, isDemoMode, variant]);
+    setDisplayCount(analysisCount);
+  }, [analysisCount]);
 
   const formatUTC = (date) => {
     const hours = String(date.getUTCHours()).padStart(2, '0');
@@ -136,8 +127,8 @@ export function InstrumentCluster({
         {/* Mode Indicator */}
         <div className="instrument-item">
           <div className="instrument-label">Mode</div>
-          <div className={`font-mono text-sm font-bold ${isDemoMode ? 'text-[#9a8f7a]' : 'text-[#ffb84d]'}`}>
-            {isDemoMode ? 'DEMO' : 'BACKEND'}
+          <div className="font-mono text-sm font-bold text-[#ffb84d]">
+            LIVE BACKEND
           </div>
         </div>
       </div>

@@ -120,45 +120,8 @@ function formatTraceTimestamp(ts) {
   return ts;
 }
 
-// Initial benchmark cases for demonstration / fallback history
-const INITIAL_DEMO_CASES = [
-  {
-    id: "demo-q1",
-    scenarioId: "vqa",
-    taskType: "VQA",
-    query: "What land cover is visible in this image?",
-    result: "Built-up residential grid, water channel, and mixed agricultural fields are visible in the scene.",
-    confidence: "HIGH (94%)",
-    confidenceValue: 94,
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    evidenceCount: 1,
-    status: "VERIFIED",
-  },
-  {
-    id: "demo-q2",
-    scenarioId: "change",
-    taskType: "CHANGE",
-    query: "What changed between these two dates, and where did the change occur?",
-    result: "Agricultural expansion and shoreline recession identified along the eastern sector covering ~14.5% of the scene.",
-    confidence: "MEDIUM (78%)",
-    confidenceValue: 78,
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-    evidenceCount: 2,
-    status: "PARTIALLY VERIFIED",
-  },
-  {
-    id: "demo-q3",
-    scenarioId: "fusion",
-    taskType: "FUSION",
-    query: "Use the optical and SAR images together to identify built-up and water-covered regions",
-    result: "SAR backscatter successfully resolved geometric building clusters while optical channels confirmed coastal boundaries.",
-    confidence: "HIGH (91%)",
-    confidenceValue: 91,
-    createdAt: new Date(Date.now() - 14400000).toISOString(),
-    evidenceCount: 2,
-    status: "VERIFIED",
-  },
-];
+// Initial query history (empty on clean start, filled by live queries)
+const INITIAL_HISTORY = [];
 
 export default function Home() {
   const [view, setView] = useState("board"); // 'board' | 'evidence' | 'history'
@@ -168,7 +131,6 @@ export default function Home() {
   const [stagedAssets, setStagedAssets] = useState([]);
 
   // Execution & Backend states
-  const [isDemoMode, setIsDemoMode] = useState(false);
   const [jvmHealth, setJvmHealth] = useState("TESTING...");
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
@@ -183,9 +145,9 @@ export default function Home() {
   const [history, setHistory] = useState(() => {
     try {
       const saved = localStorage.getItem("satquery-query-history");
-      return saved ? JSON.parse(saved) : INITIAL_DEMO_CASES;
+      return saved ? JSON.parse(saved) : INITIAL_HISTORY;
     } catch {
-      return INITIAL_DEMO_CASES;
+      return INITIAL_HISTORY;
     }
   });
 
@@ -201,10 +163,8 @@ export default function Home() {
     const health = await checkJvmHealth();
     if (health.connected) {
       setJvmHealth("JVM CONNECTED");
-      setIsDemoMode(false);
     } else {
       setJvmHealth("JVM OFFLINE");
-      setIsDemoMode(true);
     }
   };
 
@@ -364,26 +324,24 @@ export default function Home() {
           file,
         };
 
-        // 2. Upload to Java Backend if online
-        if (!isDemoMode) {
-          try {
-            const uploaded = await uploadAsset(file);
-            assetEntry.id = uploaded.imageId;
-            assetEntry.filePath = uploaded.filePath;
-            // Always keep localBlob/parsed previewUrl if valid, fallback to clean uploaded.previewUrl
-            if (!assetEntry.previewUrl && uploaded.previewUrl) {
-              assetEntry.previewUrl = uploaded.previewUrl;
-            }
-            if (uploaded.metadata) {
-              assetEntry.metadata = { ...assetEntry.metadata, ...uploaded.metadata };
-              if (uploaded.metadata.modality) {
-                assetEntry.modality = uploaded.metadata.modality.toUpperCase();
-                assetEntry.kind = uploaded.metadata.modality.toUpperCase();
-              }
-            }
-          } catch (uploadErr) {
-            console.warn("Backend upload failed, keeping client staged asset:", uploadErr);
+        // 2. Upload to Java Backend
+        try {
+          const uploaded = await uploadAsset(file);
+          assetEntry.id = uploaded.imageId;
+          assetEntry.filePath = uploaded.filePath;
+          // Always keep localBlob/parsed previewUrl if valid, fallback to clean uploaded.previewUrl
+          if (!assetEntry.previewUrl && uploaded.previewUrl) {
+            assetEntry.previewUrl = uploaded.previewUrl;
           }
+          if (uploaded.metadata) {
+            assetEntry.metadata = { ...assetEntry.metadata, ...uploaded.metadata };
+            if (uploaded.metadata.modality) {
+              assetEntry.modality = uploaded.metadata.modality.toUpperCase();
+              assetEntry.kind = uploaded.metadata.modality.toUpperCase();
+            }
+          }
+        } catch (uploadErr) {
+          console.warn("Backend upload warning, keeping client staged asset:", uploadErr);
         }
 
         newAssets.push(assetEntry);
@@ -420,109 +378,7 @@ export default function Home() {
 
     const startTime = Date.now();
 
-    if (isDemoMode) {
-      // Demo mock execution
-      setTimeout(() => {
-        const queryId = `q-demo-${Math.random().toString(36).substr(2, 7)}`;
-        const latency = Date.now() - startTime;
-
-        let demoAnswer = "";
-        let demoEvidence = [];
-        let demoFeatures = [];
-        let demoBoxes = [];
-
-        if (activeTaskTab === "VQA") {
-          demoAnswer = "Local JVM VQA analysis indicates high-density urban residential area flanked by a major water reservoir channel and sparse agricultural fields on the periphery.";
-          demoFeatures = [
-            { detail: "Urban built-up area mapped in grid sector", source: "Multispectral B4/B3/B2", pass: true },
-            { detail: "Surface water absorption signature verified", source: "MNDWI Calculation", pass: true },
-          ];
-        } else if (activeTaskTab === "CHANGE") {
-          demoAnswer = "Multi-temporal change analysis detects agricultural expansion and vegetation index increase (+22%) along the eastern riverbank between T1 and T2.";
-          demoFeatures = [
-            { detail: "Vegetation index increase mapped along riverbank", source: "NDVI Difference Mask", pass: true },
-            { detail: "14.5% total scene land-cover shift confirmed", source: "Siamese Pixel Diff", pass: true },
-          ];
-        } else if (activeTaskTab === "FUSION") {
-          demoAnswer = "Cross-modal sensor fusion completed. Optical channels identified high-density road structures, while SAR microwave radar penetrated atmospheric scatter to delineate building footprints.";
-          demoFeatures = [
-            { detail: "SAR backscatter double-bounce resolved building structures", source: "C-Band Co-polarization", pass: true },
-            { detail: "Optical spectral bands mapped vegetative canopy", source: "Sentinel-2 MSI", pass: true },
-          ];
-        } else if (activeTaskTab === "GROUNDING") {
-          demoAnswer = "Spatial feature grounding successful. Bounding box coordinates localized around the target water channel.";
-          demoBoxes = [{ x1: 0.35, y1: 0.28, x2: 0.72, y2: 0.62, label: "Target Water Body (94%)" }];
-          demoFeatures = [
-            { detail: "Target water body localized within bounding coordinates [0.35, 0.28, 0.72, 0.62]", source: "GroundingDINO RS", pass: true },
-          ];
-        }
-
-        const normalizedResult = {
-          queryId,
-          status: "SUCCESS",
-          isFailed: false,
-          answer: demoAnswer,
-          confidence: activeTaskTab === "CHANGE" ? 78 : 94,
-          confidenceState: activeTaskTab === "CHANGE" ? "MEDIUM" : "HIGH",
-          confidenceLabel: activeTaskTab === "CHANGE" ? "MEDIUM (78%)" : "HIGH (94%)",
-          boundingBoxes: demoBoxes,
-          changeMask: activeTaskTab === "CHANGE" ? (activeStagedAssets[0]?.previewUrl || null) : null,
-          resultImageUrl: activeStagedAssets[0]?.previewUrl || null,
-          evidence: demoEvidence,
-          limitations: [
-            "VLM inference limits are calibrated against benchmark training datasets.",
-            "Sub-pixel classification errors might exist around vegetative boundaries.",
-          ],
-          investigatorReport: {
-            hypothesis: "Spatial query matches multispectral profile.",
-            verdict: "Strongly supported",
-            nextBestEvidence: currentTask.nextStepSuggestion,
-          },
-          reportUrl: `/outputs/report-${queryId}.pdf`,
-          executionTrace: {
-            taskClassified: activeTaskTab,
-            modelUsed: currentTask.targetEngine,
-            params: { threshold: 0.85, modality: activeTaskTab },
-            steps: [
-              { name: "Query Received", detail: `Query "${queryText.substring(0, 40)}..." parsed and tokenized.`, status: "SUCCESS", time: "0ms" },
-              { name: "Metadata Extract", detail: `Projection EPSG:32644 verified for ${activeStagedAssets.length} asset(s).`, status: "SUCCESS", time: "14ms" },
-              { name: "Model Routing", detail: `Dispatched to ${currentTask.targetEngine}.`, status: "SUCCESS", time: "28ms" },
-              { name: "Model Inference", detail: "Polymorphic deep learning vision transformer executed.", status: "SUCCESS", time: `${latency}ms` },
-              { name: "Report Compilation", detail: "Serialized output logs and telemetry receipt.", status: "SUCCESS", time: `${latency + 15}ms` },
-            ],
-            latencyMs: latency,
-          },
-        };
-
-        setAnalysisResult(normalizedResult);
-        setExecutionTrace(normalizedResult.executionTrace.steps);
-        setActiveQueryId(queryId);
-        setIsRunning(false);
-        setIsComplete(true);
-
-        const newRecord = {
-          id: queryId,
-          taskType: activeTaskTab,
-          scenarioId: activeTaskTab.toLowerCase(),
-          query: queryText.trim(),
-          result: demoAnswer,
-          confidence: normalizedResult.confidenceLabel,
-          confidenceValue: normalizedResult.confidence,
-          createdAt: new Date().toISOString(),
-          evidenceCount: activeStagedAssets.length,
-          status: "VERIFIED",
-        };
-        const updatedHistory = [newRecord, ...history].slice(0, 20);
-        setHistory(updatedHistory);
-        try {
-          localStorage.setItem("satquery-query-history", JSON.stringify(updatedHistory));
-        } catch {}
-        toast.success("Analysis complete");
-      }, 700);
-      return;
-    }
-
-    // Java Spring Boot Backend Mode Execution
+    // Live Java Spring Boot Backend Execution
     try {
       const response = await runQuery({
         imageIds: activeStagedAssets.map(a => a.id),
@@ -573,7 +429,7 @@ export default function Home() {
       setIsRunning(false);
       setValidationError(err.message || "Failed to execute query on Java backend");
       toast.error("Query Execution Failed", {
-        description: err.message || "Please check JVM connection or switch to Demo Mode.",
+        description: err.message || "Please check JVM backend and Python model server connection.",
       });
     }
   };
@@ -660,7 +516,7 @@ export default function Home() {
       product: "SatQuery AI",
       queryId: activeQueryId || `q-${Date.now()}`,
       taskType: activeTaskTab,
-      mode: isDemoMode ? "DEMO MODE" : "JAVA BACKEND MODE",
+      mode: "JAVA BACKEND MODE",
       timestamp: analysisResult?.timestamp || new Date().toISOString(),
       generatedAt: new Date().toISOString(),
       question: queryText,
@@ -757,34 +613,13 @@ export default function Home() {
           ))}
         </nav>
 
-        {/* Right: Mode Switcher & JVM Health */}
+        {/* Right: Backend Status & JVM Health */}
         <div className="flex items-center gap-2 md:gap-3">
-          <button
-            onClick={() => {
-              const nextMode = !isDemoMode;
-              setIsDemoMode(nextMode);
-              toast.info(
-                nextMode
-                  ? "Switched to Demo Mode (Mock Client)"
-                  : "Switched to Java Backend Mode"
-              );
-            }}
-            className={`mode-badge inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg border transition ${
-              isDemoMode
-                ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]"
-                : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
-            }`}
-          >
-            <span
-              className={`h-2 w-2 rounded-full ${
-                isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"
-              }`}
-            />
-            <span className="hidden sm:inline">
-              {isDemoMode ? "DEMO MODE" : "JAVA BACKEND MODE"}
-            </span>
-            <span className="sm:hidden">{isDemoMode ? "DEMO" : "JAVA"}</span>
-          </button>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg border bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8]">
+            <span className="h-2 w-2 rounded-full bg-[#4d791f]" />
+            <span className="hidden sm:inline">JAVA BACKEND MODE</span>
+            <span className="sm:hidden">LIVE</span>
+          </div>
 
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#f6f9fe] border border-[#e1ebfa] rounded-lg">
             <span
@@ -877,29 +712,10 @@ export default function Home() {
 
             {/* Drawer Footer */}
             <div className="space-y-3 pt-4 border-t border-[#edf1fb]">
-              <button
-                onClick={() => {
-                  const nextMode = !isDemoMode;
-                  setIsDemoMode(nextMode);
-                  toast.info(
-                    nextMode
-                      ? "Switched to Demo Mode (Mock Client)"
-                      : "Switched to Java Backend Mode"
-                  );
-                }}
-                className={`w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold transition rounded-lg border cursor-pointer ${
-                  isDemoMode
-                    ? "bg-[#fff2f0] text-[#ff6c5c] border-[#ffe0dc] hover:bg-[#ffe5e0]"
-                    : "bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8] hover:bg-[#e9ffbe]"
-                }`}
-              >
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    isDemoMode ? "bg-[#ff6c5c]" : "bg-[#4d791f]"
-                  }`}
-                />
-                {isDemoMode ? "DEMO MODE (MOCK)" : "JAVA BACKEND MODE"}
-              </button>
+              <div className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border bg-[#f4ffd9] text-[#4d791f] border-[#e2f9b8]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#4d791f]" />
+                JAVA BACKEND MODE
+              </div>
 
               <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#7082aa]">
                 <span
@@ -948,7 +764,6 @@ export default function Home() {
               analysisResult={analysisResult}
               executionTrace={executionTrace}
               validationError={validationError}
-              isDemoMode={isDemoMode}
               currentTask={currentTask}
             />
           )}
@@ -987,7 +802,6 @@ export default function Home() {
           onDownloadJson={handleDownloadJson}
           onDownloadGeoJson={handleDownloadGeoJson}
           analysisResult={analysisResult}
-          isDemoMode={isDemoMode}
           queryId={activeQueryId}
         />
       )}
@@ -1019,7 +833,6 @@ function WorkstationBoard({
   analysisResult,
   executionTrace,
   validationError,
-  isDemoMode,
   currentTask,
 }) {
   const [activeMediaTab, setActiveMediaTab] = useState("image"); // 'image' | 'split' | 'map'
@@ -1616,7 +1429,7 @@ function WorkstationBoard({
           </div>
         </div>
         <span className="font-mono text-[8px] font-bold text-[#1179FF] uppercase bg-[#EDF5FF] px-2 py-0.5 rounded border border-[#d2e3fc]">
-          {isDemoMode ? "DEMO" : "JVM"}
+          JVM AGENT
         </span>
       </div>
 
@@ -1977,7 +1790,7 @@ function WorkstationBoard({
               </h2>
             </div>
             <span className="font-mono text-[8px] font-bold text-[#1179FF] uppercase bg-[#EDF5FF] px-2.5 py-0.5 rounded border border-[#d2e3fc]">
-              {isDemoMode ? "DEMO MODE" : "JVM MODEL RUNTIME"}
+              JVM MODEL RUNTIME
             </span>
           </div>
 
@@ -2299,7 +2112,6 @@ function ReportModal({
   onDownloadJson,
   onDownloadGeoJson,
   analysisResult,
-  isDemoMode,
   queryId,
 }) {
   const primaryMeta = stagedAssets.length > 0 ? stagedAssets[0].metadata : analysisResult?.imageMetadata;
@@ -2402,7 +2214,7 @@ function ReportModal({
                 <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Runtime:</span>
                   <span className="font-mono font-bold text-[#7846D7]">
-                    {isDemoMode ? "DEMO (LOCAL)" : "JVM PROXIED"}
+                    JVM PROXIED
                   </span>
                 </div>
               </div>

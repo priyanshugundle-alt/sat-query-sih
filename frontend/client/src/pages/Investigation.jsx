@@ -234,7 +234,6 @@ export default function Investigation() {
 
   // ── Backend Health Check ──────────────────────────────────────────
   const [systemStatus, setSystemStatus] = useState("CHECKING");
-  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -242,14 +241,11 @@ export default function Investigation() {
         const h = await checkJvmHealth();
         if (h.connected) {
           setSystemStatus("ONLINE");
-          setIsDemoMode(false);
         } else {
-          setSystemStatus("DEMO MODE");
-          setIsDemoMode(true);
+          setSystemStatus("OFFLINE");
         }
       } catch {
-        setSystemStatus("DEMO MODE");
-        setIsDemoMode(true);
+        setSystemStatus("OFFLINE");
       }
     })();
   }, []);

@@ -2,8 +2,12 @@
 echo Starting SatQuery AI (Java Backend ^& Vite Frontend)...
 
 REM Set JAVA_HOME automatically to installed JDK 26 or 21
-if exist "C:\Program Files\Java\jdk-26.0.1" (
+if exist "%USERPROFILE%\.java\jdk-26.0.1" (
+    set "JAVA_HOME=%USERPROFILE%\.java\jdk-26.0.1"
+) else if exist "C:\Program Files\Java\jdk-26.0.1" (
     set "JAVA_HOME=C:\Program Files\Java\jdk-26.0.1"
+) else if exist "C:\Program Files\Java\jdk-26.0.2" (
+    set "JAVA_HOME=C:\Program Files\Java\jdk-26.0.2"
 ) else if exist "C:\Program Files\Java\jdk-21.0.12.1" (
     set "JAVA_HOME=C:\Program Files\Java\jdk-21.0.12.1"
 ) else if exist "%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64" (
