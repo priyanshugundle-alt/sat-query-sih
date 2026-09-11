@@ -1,81 +1,92 @@
 """
-SatQuery AI — Fine-Tuned QLoRA VLM Inference Engine
-Connects Qwen2.5-1.5B-Instruct + SatQuery BigEarthNet LoRA Adapter
-for native Remote Sensing Visual Question Answering and Scene Understanding.
+SatQuery AI — Pre-Trained Qwen2.5-1.5B-Instruct VLM Engine
+Uses the base pre-trained model WITHOUT any LoRA adapter.
+Model is downloaded from HuggingFace on first run (~3GB).
+After first download, runs fully offline from local cache.
 """
 
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 import torch
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_ADAPTER = ROOT_DIR / "model_a" / "checkpoints" / "satquery_bigearthnet_full_adapter"
-FALLBACK_ADAPTER = ROOT_DIR / "model_a" / "checkpoints" / "satquery_qlora_adapter"
+
+# Base model — no fine-tuning, pure pretrained
+VLM_MODEL_ID = os.environ.get("SATQUERY_VLM_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+
+# Use local cache if already downloaded, else download
+HF_CACHE_DIR = os.environ.get(
+    "HF_HOME",
+    str(Path.home() / ".cache" / "huggingface")
+)
+
+# Check if model already cached locally
+def _model_is_cached(model_id: str) -> bool:
+    cache_path = Path(HF_CACHE_DIR) / "hub" / f"models--{model_id.replace('/', '--')}"
+    return cache_path.exists() and any(cache_path.iterdir())
+
 
 class SatQueryVLM:
     """
-    Dedicated VLM inference wrapper loading Qwen2.5-1.5B with the fine-tuned
-    SatQuery BigEarthNet LoRA adapter.
+    VLM inference using pre-trained Qwen2.5-1.5B-Instruct.
+    No LoRA adapter — pure base model for reliable, general-purpose answers.
     """
     _instance = None
 
     @classmethod
-    def get_instance(cls, adapter_path: Optional[Path] = None):
+    def get_instance(cls, model_id: Optional[str] = None):
         if cls._instance is None:
-            cls._instance = cls(adapter_path=adapter_path)
+            cls._instance = cls(model_id=model_id)
         return cls._instance
 
-    def __init__(self, adapter_path: Optional[Path] = None, base_model_name: str = "Qwen/Qwen2.5-1.5B-Instruct"):
-        self.base_model_name = base_model_name
-        self.adapter_path = adapter_path or (DEFAULT_ADAPTER if DEFAULT_ADAPTER.exists() else FALLBACK_ADAPTER)
+    def __init__(self, model_id: Optional[str] = None):
+        self.model_id = model_id or VLM_MODEL_ID
+        self.processor = None
         self.tokenizer = None
         self.model = None
         self.is_loaded = False
-
         self._load_vlm()
 
     def _load_vlm(self):
-        if not self.adapter_path.exists():
-            print(f"[SatQuery VLM] Notice: Adapter not found at {self.adapter_path}. Operating in rule-based fallback.")
-            return
+        cached = _model_is_cached(self.model_id)
+        if not cached:
+            print(f"[SatQuery VLM] Model {self.model_id} not in local cache.")
+            print(f"[SatQuery VLM] Will attempt download from HuggingFace (~3GB)...")
+            print(f"[SatQuery VLM] If download fails (no internet), VLM will be disabled.")
+            print(f"[SatQuery VLM] Specialist rule-based engine will handle responses.")
 
         try:
-            print(f"[SatQuery VLM] Loading fine-tuned LoRA VLM from {self.adapter_path}...")
             from transformers import AutoModelForCausalLM, AutoTokenizer
-            from peft import PeftModel
 
-            self.tokenizer = AutoTokenizer.from_pretrained(str(self.adapter_path), trust_remote_code=True)
+            print(f"[SatQuery VLM] Loading {self.model_id} (pre-trained, no LoRA)...")
 
-            if torch.cuda.is_available():
-                from transformers import BitsAndBytesConfig
-                bnb_config = BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_quant_type="nf4",
-                    bnb_4bit_compute_dtype=torch.float16
-                )
-                base_model = AutoModelForCausalLM.from_pretrained(
-                    self.base_model_name,
-                    quantization_config=bnb_config,
-                    device_map="auto",
-                    trust_remote_code=True
-                )
-            else:
-                base_model = AutoModelForCausalLM.from_pretrained(
-                    self.base_model_name,
-                    torch_dtype=torch.float32,
-                    device_map={"": "cpu"},
-                    local_files_only=True,
-                    trust_remote_code=True
-                )
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_id,
+                trust_remote_code=True,
+                cache_dir=HF_CACHE_DIR,
+            )
 
-            self.model = PeftModel.from_pretrained(base_model, str(self.adapter_path))
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_id,
+                torch_dtype=torch.float32,   # CPU — float32 for stability
+                device_map={"": "cpu"},
+                trust_remote_code=True,
+                cache_dir=HF_CACHE_DIR,
+                low_cpu_mem_usage=True,       # reduces peak RAM during load
+            )
             self.model.eval()
             self.is_loaded = True
-            print("[SatQuery VLM] Successfully loaded Qwen2.5-1.5B + BigEarthNet LoRA Adapter into memory.")
+            print(f"[SatQuery VLM] [OK] {self.model_id} loaded successfully. Pure pretrained - no adapter.")
+
         except Exception as e:
-            print(f"[SatQuery VLM] Notice: VLM initialization note ({e}). Using optimized specialist engine pipeline.")
+            err_str = str(e)
+            if "getaddrinfo" in err_str or "connection" in err_str.lower() or "network" in err_str.lower():
+                print(f"[SatQuery VLM] Network unavailable — cannot download model.")
+            else:
+                print(f"[SatQuery VLM] Load notice: {e}")
+            print("[SatQuery VLM] Using specialist rule-based engine for responses.")
             self.is_loaded = False
 
     def answer_query(
@@ -84,56 +95,82 @@ class SatQueryVLM:
         detected_classes: List[str],
         probabilities: Dict[str, float],
         spectral_info: Optional[str] = None,
-        modality: str = "Optical"
+        modality: str = "Optical",
+        image_path: Optional[str] = None,   # accepted but not used in text-only mode
     ) -> Optional[str]:
         """
-        Generates an answer using the fine-tuned VLM with grounding context.
+        Generates an answer using Qwen2.5-1.5B-Instruct with satellite context.
         """
         if not self.is_loaded or self.model is None or self.tokenizer is None:
             return None
 
         try:
-            classes_str = ", ".join(detected_classes[:4]) if detected_classes else "Unclassified terrain"
-            top_class = detected_classes[0] if detected_classes else "Unknown"
-            top_prob = probabilities.get(top_class, 0.90)
+            classes_str = ", ".join(detected_classes[:5]) if detected_classes else "Unclassified terrain"
+            top_class   = detected_classes[0] if detected_classes else "Unknown"
+            top_prob    = probabilities.get(top_class, 0.90)
 
-            context_items = [
-                f"Modality: {modality}",
-                f"Detected Classes: {classes_str}",
-                f"Top Classification: {top_class} ({top_prob:.1%})"
+            context_parts = [
+                f"Sensor: {modality} satellite",
+                f"Detected land cover: {classes_str}",
+                f"Dominant class: {top_class} ({top_prob:.0%} confidence)",
             ]
             if spectral_info:
-                context_items.append(spectral_info.strip())
+                context_parts.append(spectral_info.strip())
+            context_str = ". ".join(context_parts)
 
-            context_str = "; ".join(context_items)
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are SatQuery AI, an expert Senior Earth Observation Scientist. "
+                        "Provide a direct, authoritative, and scientifically detailed technical assessment (2-3 concise paragraphs) "
+                        "analyzing the satellite scene, identified land cover categories, spectral signatures, and geospatial implications."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Satellite Telemetry:\n{context_str}\n\n"
+                        f"Query: {query}\n\n"
+                        "Provide your technical remote sensing analysis:"
+                    )
+                }
+            ]
 
-            prompt = (
-                f"<|im_start|>system\n"
-                f"You are SatQuery AI, an expert Earth Observation and Satellite Remote Sensing AI assistant. "
-                f"Answer the user's question concisely, grounding your analysis in the observed satellite metadata.\n"
-                f"<|im_end|>\n"
-                f"<|im_start|>user\n"
-                f"{query}\n"
-                f"Context: {context_str}\n"
-                f"<|im_end|>\n"
-                f"<|im_start|>assistant\n"
+            # Multi-threaded CPU acceleration
+            try:
+                import multiprocessing
+                torch.set_num_threads(multiprocessing.cpu_count())
+            except Exception:
+                pass
+
+            # Apply Qwen chat template
+            text = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
             )
 
-            inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-            with torch.no_grad():
-                out = self.model.generate(
-                    **inputs,
-                    max_new_tokens=90,
-                    do_sample=False,
-                    temperature=0.0
-                )
-            generated_text = self.tokenizer.decode(
-                out[0][inputs["input_ids"].shape[1]:],
-                skip_special_tokens=True
-            ).strip()
+            inputs = self.tokenizer([text], return_tensors="pt")
 
-            if generated_text:
-                return generated_text
+            with torch.inference_mode():
+                out_ids = self.model.generate(
+                    **inputs,
+                    max_new_tokens=75,
+                    do_sample=False,
+                    temperature=None,
+                    top_p=None,
+                    repetition_penalty=1.1,
+                )
+
+            # Strip input tokens — only keep generated part
+            new_tokens = out_ids[0][len(inputs.input_ids[0]):]
+            answer = self.tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+
+            if answer:
+                print(f"[SatQuery VLM] Generated answer ({len(answer)} chars)")
+                return answer
+
         except Exception as e:
             print(f"[SatQuery VLM] Generation warning: {e}")
 

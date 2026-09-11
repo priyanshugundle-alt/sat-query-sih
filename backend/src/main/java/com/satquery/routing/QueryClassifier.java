@@ -8,13 +8,19 @@ import java.util.List;
 public class QueryClassifier {
 
     public TaskType classify(QueryRequest request, List<ImageAsset> images) {
-        String text = request.getQueryText() != null ? request.getQueryText().toLowerCase() : "";
+        if (request != null && request.getRequestedTask() != null && !request.getRequestedTask().isBlank()) {
+            try {
+                return TaskType.valueOf(request.getRequestedTask().toUpperCase());
+            } catch (Exception ignored) {}
+        }
 
-        if (images.size() == 2) {
+        String text = (request != null && request.getQueryText() != null) ? request.getQueryText().toLowerCase() : "";
+
+        if (images != null && images.size() == 2) {
             boolean hasOptical = false;
             boolean hasSar = false;
             for (ImageAsset img : images) {
-                String mod = img.getMetadata().getModality();
+                String mod = (img.getMetadata() != null) ? img.getMetadata().getModality() : "OPTICAL";
                 if ("OPTICAL".equalsIgnoreCase(mod)) hasOptical = true;
                 if ("SAR".equalsIgnoreCase(mod)) hasSar = true;
             }
@@ -25,8 +31,12 @@ public class QueryClassifier {
             return TaskType.CHANGE_ANALYSIS;
         }
 
-        if (text.contains("where") || text.contains("highlight") || text.contains("locate")) {
+        if (text.contains("where") || text.contains("highlight") || text.contains("locate") || text.contains("box") || text.contains("bounding")) {
             return TaskType.GROUNDING;
+        }
+
+        if (text.contains("caption") || text.contains("describe") || text.contains("overview") || text.contains("summary")) {
+            return TaskType.CAPTIONING;
         }
 
         return TaskType.VQA;

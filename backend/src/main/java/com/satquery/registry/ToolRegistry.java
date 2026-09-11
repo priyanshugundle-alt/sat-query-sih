@@ -45,7 +45,7 @@ public class ToolRegistry {
                 "FUSION_TOOL",
                 "Cross-modal Optical-SAR joint sensor fusion reasoning",
                 List.of("OPTICAL", "SAR", "MULTISPECTRAL"),
-                List.of("TIFF", "GEOTIFF"),
+                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
                 2,
                 List.of(new ParameterRule("alignmentMode", "STRING", 2, 20))
         ));

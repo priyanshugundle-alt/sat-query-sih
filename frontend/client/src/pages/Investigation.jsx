@@ -119,10 +119,11 @@ function classifyQueryIntent(queryText) {
   if (/sar|radar|cloud|penetrat|corroborat|all-weather|microwav/i.test(q)) {
     return "OPTICAL + SAR";
   }
-  if (/what type|describe|how many|land cover|classif|agricultur|vegetat/i.test(q)) {
-    return "VQA";
+  if (/where|locate|highlight|box|bounding|find the|point out|show where/i.test(q)) {
+    return "GROUNDING";
   }
-  return "GROUNDING";
+  // Default to VQA (Vision-Language Answering & Comprehensive Analysis)
+  return "VQA";
 }
 
 // Automatic title generator from first query
@@ -656,6 +657,7 @@ export default function Investigation() {
         taskType: backendTaskType,
         queryText: queryToSend,
         datasetContext: "NORMAL_SATELLITE",
+        frontendAssets: targetChat.stagedAssets || (currentAssetForQuery ? [currentAssetForQuery] : []),
       });
 
       setRoutingStage("ANSWER");

@@ -1,46 +1,69 @@
 @echo off
-echo Starting SatQuery AI (Java Backend ^& Vite Frontend)...
-
-REM Set JAVA_HOME automatically to installed JDK 26 or 21
-if exist "%USERPROFILE%\.java\jdk-26.0.1" (
-    set "JAVA_HOME=%USERPROFILE%\.java\jdk-26.0.1"
-) else if exist "C:\Program Files\Java\jdk-26.0.1" (
-    set "JAVA_HOME=C:\Program Files\Java\jdk-26.0.1"
-) else if exist "C:\Program Files\Java\jdk-26.0.2" (
-    set "JAVA_HOME=C:\Program Files\Java\jdk-26.0.2"
-) else if exist "C:\Program Files\Java\jdk-21.0.12.1" (
-    set "JAVA_HOME=C:\Program Files\Java\jdk-21.0.12.1"
-) else if exist "%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64" (
-    set "JAVA_HOME=%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64"
-) else if exist "%APPDATA%\Code\User\globalStorage\pleiades.java-extension-pack-jdk\java\21" (
-    set "JAVA_HOME=%APPDATA%\Code\User\globalStorage\pleiades.java-extension-pack-jdk\java\21"
-)
-
-if defined JAVA_HOME set "PATH=%JAVA_HOME%\bin;%PATH%"
-
-echo SatQuery AI (Java Backend ^& Vite Frontend) started successfully!
-
-REM Check if Java Backend on Port 8080 is already running
-netstat -ano | findstr :8080 >nul
-if %errorlevel% neq 0 (
-    echo Launching Java Backend on Port 8080...
-    start "SatQuery Backend (Port 8080)" cmd /k "set JAVA_HOME=C:\Program Files\Java\jdk-26.0.1&& cd /d %~dp0backend && mvnw.cmd exec:java"
-) else (
-    echo Java Backend is already active on Port 8080.
-)
-
-REM Check if React Frontend on Port 5173 is already running
-netstat -ano | findstr :5173 >nul
-if %errorlevel% neq 0 (
-    echo Launching React Frontend on Port 5173...
-    start "SatQuery Frontend (Port 5173)" cmd /k "cd /d %~dp0frontend && pnpm run dev"
-) else (
-    echo React Frontend UI is already active on Port 5173.
-)
+setlocal enabledelayedexpansion
+title SatQuery AI - Launcher
 
 echo =========================================================
-echo All SatQuery AI Services Are Active and Online!
-echo Frontend: http://localhost:5173/
-echo Java Backend: http://localhost:8080/
-echo Model Server: http://localhost:5000/
+echo       SatQuery AI - Full System Launcher
 echo =========================================================
+echo.
+
+REM Detect and set JAVA_HOME automatically
+set "DETECTED_JAVA="
+if exist "%USERPROFILE%\.java\jdk-26.0.1\bin\javac.exe" (
+    set "DETECTED_JAVA=%USERPROFILE%\.java\jdk-26.0.1"
+) else if exist "C:\Program Files\Java\jdk-26.0.2\bin\javac.exe" (
+    set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.2"
+) else if exist "C:\Program Files\Java\jdk-21.0.12.1\bin\javac.exe" (
+    set "DETECTED_JAVA=C:\Program Files\Java\jdk-21.0.12.1"
+) else if exist "%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64\bin\javac.exe" (
+    set "DETECTED_JAVA=%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64"
+)
+
+if "%DETECTED_JAVA%"=="" (
+    echo [ERROR] No valid JDK installation found!
+    echo Please ensure Java 21 or Java 26 is installed.
+    pause
+    exit /b 1
+)
+
+set "JAVA_HOME=%DETECTED_JAVA%"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+echo [OK] JAVA_HOME set to: %JAVA_HOME%
+echo.
+
+REM 1. Check and start Python Model Server on Port 5000
+netstat -ano | findstr /C:":5000 " | findstr /I "LISTENING" >nul
+if %errorlevel% neq 0 (
+    echo [1/3] Starting Python Model Server on Port 5000...
+    start "SatQuery Model Server" cmd /k "cd /d %~dp0model_server && .\venv\Scripts\python.exe main.py"
+) else (
+    echo [1/3] Python Model Server is already active on Port 5000.
+)
+
+REM 2. Check and start Java Backend on Port 8080
+netstat -ano | findstr /C:":8080 " | findstr /I "LISTENING" >nul
+if %errorlevel% neq 0 (
+    echo [2/3] Starting Java Backend on Port 8080...
+    start "SatQuery Java Backend" cmd /k "set JAVA_HOME=%JAVA_HOME%&& cd /d %~dp0backend && .\mvnw.cmd exec:java"
+) else (
+    echo [2/3] Java Backend is already active on Port 8080.
+)
+
+REM 3. Check and start React Frontend on Port 5173
+netstat -ano | findstr /C:":5173 " | findstr /I "LISTENING" >nul
+if %errorlevel% neq 0 (
+    echo [3/3] Starting React Frontend on Port 5173...
+    start "SatQuery Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
+) else (
+    echo [3/3] React Frontend UI is already active on Port 5173.
+)
+
+echo.
+echo =========================================================
+echo All SatQuery AI Services Launched!
+echo   Frontend Web UI : http://localhost:5173/
+echo   Java Backend API: http://localhost:8080/
+echo   Model Server API: http://localhost:5000/
+echo =========================================================
+echo.
+ping -n 3 127.0.0.1 >nul

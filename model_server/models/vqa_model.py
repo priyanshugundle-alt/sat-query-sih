@@ -64,7 +64,8 @@ class RemoteSensingVQAModel(nn.Module):
                 detected_classes=detected_classes,
                 probabilities=probabilities,
                 spectral_info=spectral_info,
-                modality=modality
+                modality=modality,
+                image_path=img_path,  # Pass actual image for vision inference
             )
 
         # 4. Fallback to physical SceneCaptioner if VLM didn't answer
@@ -91,6 +92,10 @@ class RemoteSensingVQAModel(nn.Module):
 
         return {
             "answer": ans,
+            "detected_classes": detected_classes,
+            "probabilities": probabilities,
+            "confidence": pred_data.get("confidence", 0.85),
+            "modality": modality,
             "evidence": [{
                 "evidenceType": "IMAGE",
                 "type": "IMAGE",

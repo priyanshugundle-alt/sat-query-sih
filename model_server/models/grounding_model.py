@@ -64,7 +64,7 @@ class GroundingModel(nn.Module):
 
         bbox_coords = [ymin, xmin, ymax, xmax]
         bbox_str = f"[{ymin}, {xmin}, {ymax}, {xmax}]"
-        ans_text = f"Spatial feature '{query}' localized dynamically in {width}x{height} raster scene. Computed bounding box coordinates: {bbox_str}."
+        ans_text = f"Primary salient terrain feature ({detected_label}) localized at pixel coordinates: {bbox_str} ({width}x{height} resolution)."
 
         return {
             "answer": ans_text,

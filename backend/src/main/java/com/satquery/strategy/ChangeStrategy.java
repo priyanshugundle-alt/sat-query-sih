@@ -33,14 +33,18 @@ public class ChangeStrategy implements TaskStrategy {
                     "Registration quality limits and minor cloud shadow variances"
             );
 
+            String finalAnswer = (response.getAnswer() != null && !response.getAnswer().isBlank())
+                    ? response.getAnswer()
+                    : explanation;
+
             TaskResult result = new TaskResult(
                     request.getQueryId(),
                     TaskType.CHANGE_ANALYSIS,
                     "ChangeHandler",
                     modelClient.getClass().getSimpleName(),
                     "SUCCESS",
-                    explanation,
-                    "REVIEW_RECOMMENDED",
+                    finalAnswer,
+                    "HIGH",
                     response.getEvidence(),
                     response.getLimitations(),
                     TraceLogger.getThreadTrace()

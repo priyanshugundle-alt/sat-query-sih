@@ -388,6 +388,7 @@ export default function Home() {
           taskType: activeTaskTab,
           modalities: activeStagedAssets.map(a => a.modality),
         },
+        frontendAssets: activeStagedAssets,
       });
 
       if (response.isFailed) {

@@ -8,6 +8,7 @@ public class Evidence {
     private String filePath;
     private String label;
     private String description;
+    private java.util.List<Number> coordinates;
 
     public Evidence() {}
 
@@ -29,4 +30,7 @@ public class Evidence {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public java.util.List<Number> getCoordinates() { return coordinates; }
+    public void setCoordinates(java.util.List<Number> coordinates) { this.coordinates = coordinates; }
 }

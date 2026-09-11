@@ -45,9 +45,15 @@ public class AnalysisRequestRepository {
                 }
 
 
-                // 2. Clear old children to overwrite cleanly
-                traceRepo.deleteByQueryId(result.getQueryId());
-                evidenceRepo.deleteByQueryId(result.getQueryId());
+                // 2. Clear old children using same conn
+                try (PreparedStatement delTrace = conn.prepareStatement("DELETE FROM trace_events WHERE query_id = ?")) {
+                    delTrace.setString(1, result.getQueryId());
+                    delTrace.executeUpdate();
+                }
+                try (PreparedStatement delEv = conn.prepareStatement("DELETE FROM evidence_items WHERE query_id = ?")) {
+                    delEv.setString(1, result.getQueryId());
+                    delEv.executeUpdate();
+                }
 
                 // 3. Update uploaded images to point to this query_id instead of UNASSIGNED
                 if (result.getTraceRecord() != null && result.getTraceRecord().getInputFiles() != null) {
@@ -60,15 +66,57 @@ public class AnalysisRequestRepository {
                     }
                 }
 
-                // 4. Save trace events
-                traceRepo.saveAll(result.getQueryId(), result.getTrace());
+                // 4. Save trace events using same conn
+                if (result.getTrace() != null && !result.getTrace().isEmpty()) {
+                    String sqlTrace = "INSERT INTO trace_events (trace_id, query_id, event_order, event_name, detail, tool_name, parameter_summary, event_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    try (PreparedStatement pstmt = conn.prepareStatement(sqlTrace)) {
+                        int order = 1;
+                        for (TraceEvent event : result.getTrace()) {
+                            pstmt.setString(1, java.util.UUID.randomUUID().toString().substring(0, 8));
+                            pstmt.setString(2, result.getQueryId());
+                            pstmt.setInt(3, order++);
+                            pstmt.setString(4, event.getEventName());
+                            pstmt.setString(5, event.getDetail());
+                            pstmt.setString(6, event.getToolName());
+                            pstmt.setString(7, "{}");
+                            pstmt.setString(8, event.getStatus());
+                            pstmt.setString(9, Instant.now().toString());
+                            pstmt.addBatch();
+                        }
+                        pstmt.executeBatch();
+                    }
+                }
 
-                // 5. Save evidence
-                evidenceRepo.saveAll(result.getQueryId(), result.getEvidence());
+                // 5. Save evidence using same conn
+                if (result.getEvidence() != null && !result.getEvidence().isEmpty()) {
+                    String sqlEvidence = "INSERT INTO evidence_items (evidence_id, query_id, evidence_type, file_path, label, description, source_modality, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    try (PreparedStatement pstmt = conn.prepareStatement(sqlEvidence)) {
+                        for (Evidence item : result.getEvidence()) {
+                            pstmt.setString(1, java.util.UUID.randomUUID().toString().substring(0, 8));
+                            pstmt.setString(2, result.getQueryId());
+                            pstmt.setString(3, item.getEvidenceType());
+                            pstmt.setString(4, item.getFilePath());
+                            pstmt.setString(5, item.getLabel());
+                            pstmt.setString(6, item.getDescription());
+                            pstmt.setString(7, "OPTICAL");
+                            pstmt.setString(8, Instant.now().toString());
+                            pstmt.addBatch();
+                        }
+                        pstmt.executeBatch();
+                    }
+                }
 
-                // 6. Save report record
+                // 6. Save report record using same conn
                 if ("SUCCESS".equalsIgnoreCase(result.getStatus())) {
-                    reportRepo.save(result.getQueryId(), "PDF", "outputs/report-" + result.getQueryId() + ".pdf");
+                    String sqlReport = "INSERT OR REPLACE INTO reports (report_id, query_id, report_type, file_path, generated_at) VALUES (?, ?, ?, ?, ?)";
+                    try (PreparedStatement pstmt = conn.prepareStatement(sqlReport)) {
+                        pstmt.setString(1, "rep-" + result.getQueryId());
+                        pstmt.setString(2, result.getQueryId());
+                        pstmt.setString(3, "PDF");
+                        pstmt.setString(4, "outputs/report-" + result.getQueryId() + ".pdf");
+                        pstmt.setString(5, Instant.now().toString());
+                        pstmt.executeUpdate();
+                    }
                 }
 
                 conn.commit();

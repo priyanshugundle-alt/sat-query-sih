@@ -10,7 +10,8 @@ registry = ModelRegistry()
 class QueryRequest(BaseModel):
     task: Optional[str] = None
     query: Optional[str] = ""
-    images: Optional[List[str]] = []
+    images: Optional[List[str]] = None
+    image_paths: Optional[List[str]] = None
     parameters: Optional[dict] = None
 
 @app.post("/analyze")
@@ -40,11 +41,13 @@ async def analyze_query(request: QueryRequest, req: Request):
         specialized_model = registry.get_model(task)
         
         # 2. Execute Model Inference
+        target_images = request.images or request.image_paths or []
         result = specialized_model.run(
             query=request.query or "",
-            image_paths=request.images or [],
+            image_paths=target_images,
             params=request.parameters or {}
         )
+
         
         # Ensure evidence objects have evidenceType for com.satquery.model.Evidence compatibility
         if "evidence" in result and isinstance(result["evidence"], list):

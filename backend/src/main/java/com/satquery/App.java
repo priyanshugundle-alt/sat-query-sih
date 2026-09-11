@@ -1027,15 +1027,44 @@ public class App {
         if (request != null && request.getFrontendAssets() != null) {
             for (Map<String, Object> fAsset : request.getFrontendAssets()) {
                 String fId = fAsset.containsKey("id") ? String.valueOf(fAsset.get("id")) : "";
-                String fName = fAsset.containsKey("name") ? String.valueOf(fAsset.get("name")) : "";
-                if (id.equals(fId) || (!fName.isEmpty() && id.contains(fName))) {
+                String fName = fAsset.containsKey("name") ? String.valueOf(fAsset.get("name")) 
+                             : fAsset.containsKey("fileName") ? String.valueOf(fAsset.get("fileName")) : "";
+                // Match by ID or by filename substring
+                boolean idMatch = id.equals(fId) || fId.equals(id);
+                boolean nameMatch = !fName.isEmpty() && (
+                    id.contains(fName.replaceAll("\\.[^.]+$", "").toLowerCase())
+                    || fName.toLowerCase().contains(id.toLowerCase())
+                );
+                if (idMatch || nameMatch) {
                     String targetName = fName.isEmpty() ? "airport_sample.jpg" : fName;
                     Path candidate = Paths.get("uploads", targetName);
                     if (!Files.exists(candidate)) {
-                        candidate = Paths.get("uploads", "airport_sample.jpg");
+                        // Try partial name match in uploads dir
+                        try {
+                            Path innerUploadsDir = Paths.get("uploads");
+                            if (Files.exists(innerUploadsDir)) {
+                                final String baseTarget = fName.replaceAll("\\.[^.]+$", "").toLowerCase();
+                                List<Path> fuzzy = Files.list(innerUploadsDir).filter(p -> {
+                                    String fn = p.getFileName().toString().toLowerCase();
+                                    return fn.contains(baseTarget) || baseTarget.contains(fn.replaceAll("\\.[^.]+$", ""));
+                                }).toList();
+                                if (!fuzzy.isEmpty()) candidate = fuzzy.get(0);
+                            }
+                        } catch (Exception ignored2) {}
                     }
                     if (Files.exists(candidate)) {
                         ImageMetadata meta = metadataReader.read(candidate);
+                        // Apply modality from frontendAssets metadata
+                        if (fAsset.containsKey("metadata")) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> fMeta = (Map<String, Object>) fAsset.get("metadata");
+                            if (fMeta != null && fMeta.get("modality") != null) {
+                                meta.setModality(String.valueOf(fMeta.get("modality")).toUpperCase());
+                            }
+                            if (fMeta != null && fMeta.get("acquisitionDate") != null) {
+                                meta.setAcquisitionDate(String.valueOf(fMeta.get("acquisitionDate")));
+                            }
+                        }
                         asset = new ImageAsset(id, candidate.getFileName().toString(), candidate.toAbsolutePath().toString(), meta);
                         imageRegistry.put(id, asset);
                         com.satquery.database.DatabaseManager.saveImageAsset(asset);

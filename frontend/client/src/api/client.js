@@ -123,6 +123,7 @@ export async function runQuery({
   queryText = "",
   parameters = {},
   datasetContext = "NORMAL_SATELLITE",
+  frontendAssets = [],
 }) {
   const payload = {
     queryText: queryText.trim(),
@@ -137,6 +138,25 @@ export async function runQuery({
     },
     datasetContext,
     timestamp: new Date().toISOString(),
+    // Send staged asset metadata so backend can resolve images by filename
+    // even if imageRegistry was cleared after server restart
+    frontendAssets: frontendAssets.map(a => ({
+      id: a.id,
+      imageId: a.id,
+      name: a.name || a.fileName,
+      fileName: a.name || a.fileName,
+      filePath: a.filePath || `uploads/${a.name || a.fileName}`,
+      modality: a.modality || "OPTICAL",
+      metadata: {
+        modality: (a.modality || "OPTICAL").toUpperCase(),
+        acquisitionDate: a.date || a.metadata?.acquisitionDate || new Date().toISOString().slice(0, 10),
+        crs: a.metadata?.crs || "EPSG:4326 (WGS 84)",
+        georeferenced: a.metadata?.georeferenced ?? true,
+        width: a.metadata?.width || null,
+        height: a.metadata?.height || null,
+        format: a.metadata?.format || "JPG",
+      },
+    })),
   };
 
   // Try /api/query first, fallback to /api/analyze if needed
