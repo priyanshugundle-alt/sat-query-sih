@@ -72,7 +72,7 @@ class QwenBrain:
         Sends an image and a specific prompt to the fine-tuned Qwen Brain.
         images: List of local file paths (PNG/JPEG) or raw bytes.
         """
-        if not self.is_loaded or self.model is None:
+        if not getattr(self, "is_loaded", False) or getattr(self, "model", None) is None or getattr(self, "processor", None) is None:
             return "Error: Qwen-VL model is not loaded. Cannot process complex NLP query."
 
         try:
@@ -115,7 +115,7 @@ class QwenBrain:
             inputs = inputs.to(self.model.device)
 
             # Generate Answer
-            generated_ids = self.model.generate(**inputs, max_new_tokens=150)
+            generated_ids = self.model.generate(**inputs, max_new_tokens=150)  # type: ignore
             generated_ids_trimmed = [
                 out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
             ]

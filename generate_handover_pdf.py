@@ -6,14 +6,14 @@ Compiles the complete master handover report into a styled, publication-quality 
 from pathlib import Path
 import time
 
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.platypus import (
+from reportlab.lib.pagesizes import letter  # type: ignore
+from reportlab.lib.units import inch  # type: ignore
+from reportlab.lib import colors  # type: ignore
+from reportlab.platypus import (  # type: ignore
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
 )
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.pdfgen import canvas
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # type: ignore
+from reportlab.pdfgen import canvas  # type: ignore
 
 
 class NumberedCanvas(canvas.Canvas):
@@ -26,7 +26,7 @@ class NumberedCanvas(canvas.Canvas):
 
     def showPage(self):
         self._saved_page_states.append(dict(self.__dict__))
-        self._startPage()
+        self._startPage()  # type: ignore
 
     def save(self):
         num_pages = len(self._saved_page_states)
@@ -42,14 +42,14 @@ class NumberedCanvas(canvas.Canvas):
         self.setFillColor(colors.HexColor("#64748B"))
         
         # Header (pages > 1)
-        if self._pageNumber > 1:
+        if getattr(self, "_pageNumber", 1) > 1:
             self.drawString(54, 750, "SatQuery AI — Master Development Handover & Architecture Blueprint")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(54, 742, 558, 742)
 
         # Footer (all pages)
-        page_text = f"Page {self._pageNumber} of {page_count}"
+        page_text = f"Page {getattr(self, '_pageNumber', 1)} of {page_count}"
         self.drawRightString(558, 36, page_text)
         self.drawString(54, 36, "CONFIDENTIAL & PROPRIETARY — SATQUERY AI DEVELOPMENT TEAM")
         self.setStrokeColor(colors.HexColor("#CBD5E1"))

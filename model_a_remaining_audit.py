@@ -32,6 +32,11 @@ PASS = []
 WARN = []
 FAIL = []
 
+supervised = {"train": [], "val": [], "test": []}
+split_ids = {}
+model = None
+x = None
+checkpoint = {}
 
 def section(title):
     print("\n" + "=" * 80)
@@ -569,7 +574,7 @@ except Exception as e:
 
 section("7. LABEL / CLASS ORDER CONSISTENCY")
 
-checkpoint = None
+# checkpoint already initialized to {}
 
 try:
     import torch
@@ -747,6 +752,9 @@ section("9. ACTUAL SALIENCY / GRADIENT PATH TEST")
 
 try:
     import torch
+
+    if model is None or x is None:
+        raise RuntimeError("model or x not initialized in previous step")
 
     # Reuse model/x if available
     model.eval()

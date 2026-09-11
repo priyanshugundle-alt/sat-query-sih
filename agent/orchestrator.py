@@ -125,9 +125,9 @@ class SatQueryAgent:
 
         # Step 1: Geo-Validity Gate
         if has_temporal:
-            geo_check = self.geo_gate.validate_temporal_pair((vh_path, vv_path), (t2_vh_path, t2_vv_path))
+            geo_check = self.geo_gate.validate_temporal_pair((vh_path, vv_path), (t2_vh_path, t2_vv_path))  # type: ignore
         else:
-            geo_check = self.geo_gate.validate_sar_pair(vh_path, vv_path)
+            geo_check = self.geo_gate.validate_sar_pair(vh_path, vv_path)  # type: ignore
 
         # Reject corrupted data immediately
         if geo_check["status"] == "INVALID":

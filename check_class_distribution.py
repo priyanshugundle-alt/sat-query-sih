@@ -210,6 +210,7 @@ def calculate_counts(ids):
 
 
 results = {}
+invalid_labels = []
 
 for split_name, ids in [
     ("TRAIN", train_ids),
@@ -219,6 +220,7 @@ for split_name, ids in [
     counts, sample_count, invalid, empty = calculate_counts(ids)
 
     results[split_name] = counts
+    invalid_labels.extend(invalid)
 
     print("\n" + "=" * 78)
     print(f"{split_name} — OFFICIAL LABELS ONLY")
