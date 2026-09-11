@@ -75,12 +75,8 @@ export function CinematicLanding({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLaunchWorkstation = (preset = {}) => {
-    onStartInvestigation({
-      query: preset.query || "What type of land cover dominates this region?",
-      mode: preset.mode || "GROUNDING",
-      sampleImage: preset.sampleImage || "/assets/imagery/mumbai_proba.jpg",
-    });
+  const handleLaunchWorkstation = (preset = null) => {
+    onStartInvestigation(preset);
   };
 
   const scrollToSection = (id) => {
