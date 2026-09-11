@@ -327,7 +327,12 @@ export default function Investigation() {
       const saved = localStorage.getItem("satquery_conversations");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const valid = parsed.filter(
+            (c) => c && c.messages && c.messages.length > 0 && c.title !== "New Chat"
+          );
+          if (valid.length > 0) return valid;
+        }
       }
     } catch (e) {
       console.warn("Could not load stored conversations", e);
@@ -497,24 +502,13 @@ export default function Investigation() {
   // ACTION HANDLERS: NEW CHAT, SELECT CHAT, UPLOAD, RUN QUERY
   // ─────────────────────────────────────────────────────────────────
 
-  // "+ NEW CHAT" — ALWAYS creates a clean conversation with NO preloaded demo data
+  // "+ NEW CHAT" — Clears active conversation to empty state; does NOT add to history until user sends first input
   const handleNewChat = () => {
-    const newId = `chat-${Date.now()}`;
-    const newChat = {
-      id: newId,
-      title: "New Chat",
-      createdAt: new Date().toISOString(),
-      messages: [],
-      stagedAssets: [],
-      projectId: null,
-    };
-    setConversations((prev) => [newChat, ...prev]);
-    setActiveChatId(newId);
+    setActiveChatId(null);
     setStagedAsset(null);
     setQueryText("");
     setIsAnalyzing(false);
     setRoutingStage(null);
-    toast.info("Created new investigation chat");
   };
 
   // Switch to specific conversation
@@ -916,35 +910,12 @@ export default function Investigation() {
   };
 
   // ─────────────────────────────────────────────────────────────────
-  // GROUP QUERY HISTORY: TODAY, YESTERDAY, PREVIOUS 7 DAYS, OLDER
+  // QUERY HISTORY (FLAT LIST OF ACTIVE CONVERSATIONS — NO TODAY/YESTERDAY)
   // ─────────────────────────────────────────────────────────────────
-  const groupedHistory = useMemo(() => {
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const startOfYesterday = startOfToday - 24 * 3600 * 1000;
-    const startOf7Days = startOfToday - 7 * 24 * 3600 * 1000;
-
-    const groups = {
-      TODAY: [],
-      YESTERDAY: [],
-      "PREVIOUS 7 DAYS": [],
-      OLDER: [],
-    };
-
-    conversations.forEach((conv) => {
-      const convTime = new Date(conv.createdAt).getTime();
-      if (convTime >= startOfToday) {
-        groups.TODAY.push(conv);
-      } else if (convTime >= startOfYesterday) {
-        groups.YESTERDAY.push(conv);
-      } else if (convTime >= startOf7Days) {
-        groups["PREVIOUS 7 DAYS"].push(conv);
-      } else {
-        groups.OLDER.push(conv);
-      }
-    });
-
-    return groups;
+  const historyChats = useMemo(() => {
+    return conversations.filter(
+      (c) => c && c.messages && c.messages.length > 0 && c.title !== "New Chat"
+    );
   }, [conversations]);
 
   // ─────────────────────────────────────────────────────────────────
@@ -1128,41 +1099,37 @@ export default function Investigation() {
                       TAB A: CHATS / QUERY HISTORY (Today, Yesterday, etc.)
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "chats" && (
-                    <div className="space-y-4">
-                      {Object.entries(groupedHistory).map(([period, items]) => {
-                        if (items.length === 0) return null;
-                        return (
-                          <div key={period} className="space-y-1">
-                            <div className="text-[9px] font-bold text-[#9A9A90] uppercase tracking-widest px-2 py-1">
-                              {period}
+                    <div className="space-y-1">
+                      {historyChats.length === 0 ? (
+                        <div className="px-3 py-6 text-center text-[#9A9A90] text-xs font-sans">
+                          No query history yet. Start a new investigation above.
+                        </div>
+                      ) : (
+                        historyChats.map((conv) => {
+                          const isActive = conv.id === activeChatId;
+                          return (
+                            <div
+                              key={conv.id}
+                              onClick={() => handleSelectChat(conv.id)}
+                              className={`group px-2.5 py-2 cursor-pointer text-xs truncate flex items-center justify-between transition-colors ${
+                                isActive
+                                  ? "bg-[#151817] text-[#D49A3A] font-bold border-l-2 border-[#D49A3A]"
+                                  : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#151817]/60"
+                              }`}
+                              title={conv.title}
+                            >
+                              <span className="truncate">{conv.title}</span>
+                              <button
+                                onClick={(e) => handleDeleteChat(e, conv.id)}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-[#9A9A90] hover:text-[#B9654D] transition-opacity cursor-pointer flex-shrink-0 ml-2"
+                                title="Delete conversation"
+                              >
+                                <Trash2 size={12} />
+                              </button>
                             </div>
-                            {items.map((conv) => {
-                              const isActive = conv.id === activeChatId;
-                              return (
-                                <div
-                                  key={conv.id}
-                                  onClick={() => handleSelectChat(conv.id)}
-                                  className={`group px-2 py-1.5 cursor-pointer text-xs truncate flex items-center justify-between transition-colors ${
-                                    isActive
-                                      ? "bg-[#151817] text-[#D49A3A] font-bold border-l-2 border-[#D49A3A]"
-                                      : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#151817]/60"
-                                  }`}
-                                  title={conv.title}
-                                >
-                                  <span className="truncate">{conv.title}</span>
-                                  <button
-                                    onClick={(e) => handleDeleteChat(e, conv.id)}
-                                    className="opacity-0 group-hover:opacity-100 p-0.5 text-[#9A9A90] hover:text-[#B9654D] transition-opacity cursor-pointer"
-                                    title="Delete conversation"
-                                  >
-                                    <Trash2 size={11} />
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
                   )}
 
