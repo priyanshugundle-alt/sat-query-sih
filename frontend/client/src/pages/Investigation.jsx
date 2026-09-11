@@ -343,6 +343,11 @@ export default function Investigation() {
     return conversations.find((c) => c.id === activeChatId) || null;
   }, [conversations, activeChatId]);
 
+  // EMPTY CHAT vs ACTIVE CHAT state determination
+  const isEmptyChat = useMemo(() => {
+    return !activeConversation || !activeConversation.messages || activeConversation.messages.length === 0;
+  }, [activeConversation]);
+
   // Persist conversations
   useEffect(() => {
     try {
@@ -569,21 +574,53 @@ export default function Investigation() {
       // Set as staged asset in composer & active conversation
       setStagedAsset(assetEntry);
 
-      // If no active chat, create one now
+      // If current chat is empty, treat chat as ACTIVE and make uploaded image the first conversation content
+      const isCurrentlyEmpty = !activeConversation || !activeConversation.messages || activeConversation.messages.length === 0;
+
       let currentId = activeChatId;
       if (!currentId) {
         currentId = `chat-${Date.now()}`;
+        const imageMsg = {
+          id: `msg-img-${Date.now()}`,
+          role: "user",
+          text: "",
+          timestamp: formattedDate.split(" · ")[1] || "12:31 PM",
+          attachedAsset: assetEntry,
+        };
         const newChat = {
           id: currentId,
           title: file.name.replace(/\.[^/.]+$/, ""),
           createdAt: new Date().toISOString(),
-          messages: [],
+          messages: [imageMsg],
           stagedAssets: [assetEntry],
           projectId: "proj-earth-obs",
         };
         setConversations((prev) => [newChat, ...prev]);
         setActiveChatId(currentId);
+        setStagedAsset(null);
+      } else if (isCurrentlyEmpty) {
+        const imageMsg = {
+          id: `msg-img-${Date.now()}`,
+          role: "user",
+          text: "",
+          timestamp: formattedDate.split(" · ")[1] || "12:31 PM",
+          attachedAsset: assetEntry,
+        };
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === currentId
+              ? {
+                  ...c,
+                  title: c.title === "New Chat" ? file.name.replace(/\.[^/.]+$/, "") : c.title,
+                  messages: [imageMsg],
+                  stagedAssets: [...(c.stagedAssets || []), assetEntry],
+                }
+              : c
+          )
+        );
+        setStagedAsset(null);
       } else {
+        setStagedAsset(assetEntry);
         setConversations((prev) =>
           prev.map((c) =>
             c.id === currentId
@@ -623,23 +660,52 @@ export default function Investigation() {
       },
     };
 
-    setStagedAsset(assetEntry);
+    const isCurrentlyEmpty = !activeConversation || !activeConversation.messages || activeConversation.messages.length === 0;
 
-    // If no active chat, create one now
     let currentId = activeChatId;
     if (!currentId) {
       currentId = `chat-${Date.now()}`;
+      const imageMsg = {
+        id: `msg-img-${Date.now()}`,
+        role: "user",
+        text: "",
+        timestamp: formattedDate.split(" · ")[1] || "12:31 PM",
+        attachedAsset: assetEntry,
+      };
       const newChat = {
         id: currentId,
         title: scene.name,
         createdAt: new Date().toISOString(),
-        messages: [],
+        messages: [imageMsg],
         stagedAssets: [assetEntry],
         projectId: scene.modality === "CHANGE" ? "proj-disaster" : "proj-earth-obs",
       };
       setConversations((prev) => [newChat, ...prev]);
       setActiveChatId(currentId);
+      setStagedAsset(null);
+    } else if (isCurrentlyEmpty) {
+      const imageMsg = {
+        id: `msg-img-${Date.now()}`,
+        role: "user",
+        text: "",
+        timestamp: formattedDate.split(" · ")[1] || "12:31 PM",
+        attachedAsset: assetEntry,
+      };
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === currentId
+            ? {
+                ...c,
+                title: c.title === "New Chat" ? scene.name : c.title,
+                messages: [imageMsg],
+                stagedAssets: [...(c.stagedAssets || []), assetEntry],
+              }
+            : c
+        )
+      );
+      setStagedAsset(null);
     } else {
+      setStagedAsset(assetEntry);
       setConversations((prev) =>
         prev.map((c) =>
           c.id === currentId
@@ -1417,15 +1483,35 @@ export default function Investigation() {
                 </header>
 
                 {/* ── Conversational Stream Area ── */}
-                <div className="flex-1 overflow-y-auto px-4 py-6">
-                  <div className="max-w-3xl mx-auto space-y-6 pb-48 md:pb-52">
-                    {/* ────────────────────────────────────────────────
-                        EMPTY CONVERSATION STATE (Requirement 4)
-                        ──────────────────────────────────────────────── */}
-                    {(!activeConversation || activeConversation.messages.length === 0) && (
-                      <div className="min-h-[50vh] flex flex-col justify-center items-center text-center space-y-6 pt-12">
-                        {/* Heading */}
-                        <div className="space-y-2">
+                <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col">
+                  <AnimatePresence mode="wait">
+                    {isEmptyChat ? (
+                      /* ────────────────────────────────────────────────
+                          STATE 1: EMPTY CHAT / WELCOME SCREEN
+                          Welcome heading + spacer for centered composer + quick suggestions
+                          ──────────────────────────────────────────────── */
+                      <motion.div
+                        key="empty-welcome-screen"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{
+                          opacity: 0,
+                          transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                        }}
+                        className="flex-1 flex flex-col justify-center items-center my-auto w-full max-w-3xl mx-auto py-6"
+                      >
+                        {/* Welcome Heading (positioned above centered composer) */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{
+                            opacity: 0,
+                            y: -24,
+                            transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                          }}
+                          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                          className="text-center space-y-2 mb-3"
+                        >
                           <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#151817] border border-[#2A2E2B] font-mono text-[10px] text-[#D49A3A] uppercase tracking-wider">
                             <span className="w-1.5 h-1.5 bg-[#D49A3A]" />
                             <span>EARTH OBSERVATION AGENTIC WORKSTATION</span>
@@ -1436,10 +1522,23 @@ export default function Investigation() {
                           <p className="font-sans text-sm sm:text-base text-[#9A9A90] max-w-md mx-auto leading-relaxed">
                             Understand Earth-observation imagery through natural language.
                           </p>
-                        </div>
+                        </motion.div>
 
-                        {/* 4 Suggested Query Prompt Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl text-left font-sans">
+                        {/* Physical spacer that reserves the exact visual footprint of the centered composer */}
+                        <div className="h-[60px] w-full my-2 pointer-events-none" />
+
+                        {/* Quick-Query Suggestions (positioned below centered composer) */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{
+                            opacity: 0,
+                            y: 24,
+                            transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                          }}
+                          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full mt-3 text-left font-sans"
+                        >
                           {[
                             {
                               title: "Land Cover Analysis",
@@ -1480,166 +1579,186 @@ export default function Investigation() {
                               </div>
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    )}
+                        </motion.div>
+                      </motion.div>
+                    ) : (
+                      /* ────────────────────────────────────────────────
+                          STATE 2: ACTIVE CONVERSATION STREAM
+                          ──────────────────────────────────────────────── */
+                      <motion.div
+                        key="active-conversation-stream"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.15 }}
+                        className="max-w-3xl mx-auto space-y-6 pb-36 w-full"
+                      >
+                        {activeConversation &&
+                          activeConversation.messages.map((msg, idx) => (
+                            <div key={msg.id} className="space-y-4">
+                              {/* 1. If user message and contains attached asset, show image directly inside chat */}
+                              {msg.attachedAsset && (
+                                <div
+                                  id={`asset-${msg.attachedAsset.id}`}
+                                  className="p-3.5 bg-[#151817] border border-[#2A2E2B] space-y-3 font-mono text-xs max-w-xl ml-auto"
+                                >
+                                  <div className="flex items-center justify-between text-[10px] text-[#9A9A90] border-b border-[#2A2E2B] pb-2">
+                                    <span className="font-bold text-[#D49A3A] uppercase tracking-wider flex items-center gap-1.5">
+                                      <ImageIcon size={12} />
+                                      <span>IMAGE</span>
+                                    </span>
+                                    <span>{msg.attachedAsset.date || "11 Sep 2026 · 12:31 PM"}</span>
+                                  </div>
 
-                    {/* ────────────────────────────────────────────────
-                        POPULATED CONVERSATION STREAM (Requirement 5 & 6)
-                        ──────────────────────────────────────────────── */}
-                    {activeConversation &&
-                      activeConversation.messages.map((msg, idx) => (
-                        <div key={msg.id} className="space-y-4">
-                          {/* 1. If user message and contains attached asset, show image directly inside chat */}
-                          {msg.attachedAsset && (
-                            <div
-                              id={`asset-${msg.attachedAsset.id}`}
-                              className="p-3.5 bg-[#151817] border border-[#2A2E2B] space-y-3 font-mono text-xs max-w-xl ml-auto"
-                            >
-                              <div className="flex items-center justify-between text-[10px] text-[#9A9A90] border-b border-[#2A2E2B] pb-2">
-                                <span className="font-bold text-[#D49A3A] uppercase tracking-wider flex items-center gap-1.5">
-                                  <ImageIcon size={12} />
-                                  <span>IMAGE</span>
-                                </span>
-                                <span>{msg.attachedAsset.date || "11 Sep 2026 · 12:31 PM"}</span>
-                              </div>
+                                  <div>
+                                    <div className="font-sans font-bold text-sm text-[#F3F0E8]">
+                                      {msg.attachedAsset.name}
+                                    </div>
+                                    <div className="text-[10px] text-[#76AEB0] font-mono mt-0.5">
+                                      {msg.attachedAsset.metadata?.coordinates || "19.0760° N, 72.8777° E"}
+                                    </div>
+                                  </div>
 
-                              <div>
-                                <div className="font-sans font-bold text-sm text-[#F3F0E8]">
-                                  {msg.attachedAsset.name}
-                                </div>
-                                <div className="text-[10px] text-[#76AEB0] font-mono mt-0.5">
-                                  {msg.attachedAsset.metadata?.coordinates || "19.0760° N, 72.8777° E"}
-                                </div>
-                              </div>
-
-                              {/* Clickable Image Card Preview */}
-                              <div
-                                onClick={() => handleOpenCanvasInspection(msg.attachedAsset)}
-                                className="relative h-48 sm:h-56 bg-[#0B0D0C] overflow-hidden border border-[#2A2E2B] group cursor-pointer"
-                              >
-                                <img
-                                  src={msg.attachedAsset.previewUrl}
-                                  alt={msg.attachedAsset.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D0C]/80 via-transparent to-transparent flex items-end justify-between p-2.5">
-                                  <span className="text-[10px] text-[#E9E5DA] font-mono bg-[#0B0D0C]/80 px-2 py-0.5 border border-[#2A2E2B]">
-                                    {msg.attachedAsset.metadata?.resolution || "0.5m GSD"} · {msg.attachedAsset.metadata?.format || "GeoTIFF"}
-                                  </span>
-                                  <span className="text-[10px] font-bold text-[#D49A3A] flex items-center gap-1 bg-[#0B0D0C]/90 px-2 py-0.5 border border-[#D49A3A]/40">
-                                    <Maximize2 size={11} />
-                                    <span>INSPECT CANVAS ↗</span>
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 2. User Question Bubble */}
-                          {msg.role === "user" && (
-                            <div className="flex justify-end">
-                              <div className="max-w-xl p-3.5 bg-[#151817] border border-[#2A2E2B] text-[#F3F0E8] font-sans text-sm leading-relaxed">
-                                <div className="flex items-center justify-between text-[9px] font-mono text-[#9A9A90] mb-1">
-                                  <span className="text-[#76AEB0] font-bold">YOU</span>
-                                  <span>{msg.timestamp}</span>
-                                </div>
-                                <div>{msg.text}</div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 3. Assistant Response Block */}
-                          {msg.role === "assistant" && (
-                            <div className="p-4 bg-[#0B0D0C]/90 border border-[#2A2E2B] space-y-3 font-sans max-w-2xl">
-                              {/* Assistant Header */}
-                              <div className="flex items-center justify-between text-xs font-mono border-b border-[#2A2E2B]/70 pb-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 bg-[#D49A3A] shadow-[0_0_6px_#D49A3A]" />
-                                  <span className="font-bold text-[#D49A3A]">SATQUERY AI</span>
-                                  <span className="text-[10px] text-[#9A9A90] font-mono">
-                                    [{SPECIALIST_CONFIG[msg.mode]?.sublabel || "OPTICAL ◉"}]
-                                  </span>
-                                </div>
-                                <span className="text-[10px] text-[#9A9A90] font-mono">{msg.timestamp}</span>
-                              </div>
-
-                              {/* Natural Language Answer */}
-                              <p className="text-sm text-[#E9E5DA] leading-relaxed font-sans">{msg.text}</p>
-
-                              {/* Action Triggers: [VIEW FINDINGS] [SHOW ME WHY] [AUDIT REPORT] */}
-                              <div className="pt-2 border-t border-[#2A2E2B]/60 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                                <div className="text-[10px] text-[#68745C] font-bold">
-                                  {msg.findingsCount || 2} FINDINGS · {msg.confidence || 94.2}% CONFIDENCE
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => handleOpenCanvasInspection(msg.assetRef, msg.evidence)}
-                                    className="px-2.5 py-1 bg-[#151817] hover:bg-[#1D211F] text-[#D49A3A] border border-[#D49A3A]/40 hover:border-[#D49A3A] font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                                  {/* Clickable Image Card Preview */}
+                                  <div
+                                    onClick={() => handleOpenCanvasInspection(msg.attachedAsset)}
+                                    className="relative h-48 sm:h-56 bg-[#0B0D0C] overflow-hidden border border-[#2A2E2B] group cursor-pointer"
                                   >
-                                    <Target size={12} />
-                                    <span>VIEW FINDINGS ↗</span>
-                                  </button>
-
-                                  <button
-                                    onClick={() => {
-                                      setActiveEvidenceResult(msg.queryResult);
-                                      setShowMeWhyOpen(true);
-                                    }}
-                                    className="px-2.5 py-1 bg-[#151817] hover:bg-[#1D211F] text-[#E9E5DA] hover:text-[#D49A3A] border border-[#2A2E2B] text-[11px] transition-colors cursor-pointer flex items-center gap-1"
-                                  >
-                                    <ShieldCheck size={12} />
-                                    <span>SHOW ME WHY ↗</span>
-                                  </button>
+                                    <img
+                                      src={msg.attachedAsset.previewUrl}
+                                      alt={msg.attachedAsset.name}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D0C]/80 via-transparent to-transparent flex items-end justify-between p-2.5">
+                                      <span className="text-[10px] text-[#E9E5DA] font-mono bg-[#0B0D0C]/80 px-2 py-0.5 border border-[#2A2E2B]">
+                                        {msg.attachedAsset.metadata?.resolution || "0.5m GSD"} · {msg.attachedAsset.metadata?.format || "GeoTIFF"}
+                                      </span>
+                                      <span className="text-[10px] font-bold text-[#D49A3A] flex items-center gap-1 bg-[#0B0D0C]/90 px-2 py-0.5 border border-[#D49A3A]/40">
+                                        <Maximize2 size={11} />
+                                        <span>INSPECT CANVAS ↗</span>
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
+
+                              {/* 2. User Question Bubble */}
+                              {msg.role === "user" && msg.text && (
+                                <div className="flex justify-end">
+                                  <div className="max-w-xl p-3.5 bg-[#151817] border border-[#2A2E2B] text-[#F3F0E8] font-sans text-sm leading-relaxed">
+                                    <div className="flex items-center justify-between text-[9px] font-mono text-[#9A9A90] mb-1">
+                                      <span className="text-[#76AEB0] font-bold">YOU</span>
+                                      <span>{msg.timestamp}</span>
+                                    </div>
+                                    <div>{msg.text}</div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* 3. Assistant Response Block */}
+                              {msg.role === "assistant" && (
+                                <div className="p-4 bg-[#0B0D0C]/90 border border-[#2A2E2B] space-y-3 font-sans max-w-2xl">
+                                  {/* Assistant Header */}
+                                  <div className="flex items-center justify-between text-xs font-mono border-b border-[#2A2E2B]/70 pb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-2 h-2 bg-[#D49A3A] shadow-[0_0_6px_#D49A3A]" />
+                                      <span className="font-bold text-[#D49A3A]">SATQUERY AI</span>
+                                      <span className="text-[10px] text-[#9A9A90] font-mono">
+                                        [{SPECIALIST_CONFIG[msg.mode]?.sublabel || "OPTICAL ◉"}]
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] text-[#9A9A90] font-mono">{msg.timestamp}</span>
+                                  </div>
+
+                                  {/* Natural Language Answer */}
+                                  <p className="text-sm text-[#E9E5DA] leading-relaxed font-sans">{msg.text}</p>
+
+                                  {/* Action Triggers: [VIEW FINDINGS] [SHOW ME WHY] [AUDIT REPORT] */}
+                                  <div className="pt-2 border-t border-[#2A2E2B]/60 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                                    <div className="text-[10px] text-[#68745C] font-bold">
+                                      {msg.findingsCount || 2} FINDINGS · {msg.confidence || 94.2}% CONFIDENCE
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => handleOpenCanvasInspection(msg.assetRef, msg.evidence)}
+                                        className="px-2.5 py-1 bg-[#151817] hover:bg-[#1D211F] text-[#D49A3A] border border-[#D49A3A]/40 hover:border-[#D49A3A] font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                                      >
+                                        <Target size={12} />
+                                        <span>VIEW FINDINGS ↗</span>
+                                      </button>
+
+                                      <button
+                                        onClick={() => {
+                                          setActiveEvidenceResult(msg.queryResult);
+                                          setShowMeWhyOpen(true);
+                                        }}
+                                        className="px-2.5 py-1 bg-[#151817] hover:bg-[#1D211F] text-[#E9E5DA] hover:text-[#D49A3A] border border-[#2A2E2B] text-[11px] transition-colors cursor-pointer flex items-center gap-1"
+                                      >
+                                        <ShieldCheck size={12} />
+                                        <span>SHOW ME WHY ↗</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          ))}
 
-                    {/* ────────────────────────────────────────────────
-                        EXECUTION PIPELINE: QUERY → ROUTING → ANALYSIS → ANSWER → FINDINGS
-                        ──────────────────────────────────────────────── */}
-                    {isAnalyzing && (
-                      <div className="p-4 bg-[#151817] border border-[#D49A3A] space-y-3 font-mono text-xs animate-pulse max-w-2xl">
-                        <div className="flex items-center justify-between text-[10px] font-bold">
-                          <span className="text-[#D49A3A] uppercase tracking-wider flex items-center gap-1.5">
-                            <Activity size={12} className="animate-spin" />
-                            <span>PIPELINE EXECUTION IN PROGRESS</span>
-                          </span>
-                          <span className="text-[#E4B65A]">{routingStage}</span>
-                        </div>
+                        {/* ────────────────────────────────────────────────
+                            EXECUTION PIPELINE: QUERY → ROUTING → ANALYSIS → ANSWER → FINDINGS
+                            ──────────────────────────────────────────────── */}
+                        {isAnalyzing && (
+                          <div className="p-4 bg-[#151817] border border-[#D49A3A] space-y-3 font-mono text-xs animate-pulse max-w-2xl">
+                            <div className="flex items-center justify-between text-[10px] font-bold">
+                              <span className="text-[#D49A3A] uppercase tracking-wider flex items-center gap-1.5">
+                                <Activity size={12} className="animate-spin" />
+                                <span>PIPELINE EXECUTION IN PROGRESS</span>
+                              </span>
+                              <span className="text-[#E4B65A]">{routingStage}</span>
+                            </div>
 
-                        {/* Pipeline Stepper Visualization */}
-                        <div className="flex items-center justify-between text-[9px] text-[#9A9A90] border-y border-[#2A2E2B] py-1.5">
-                          <span className={routingStage === "QUERY" ? "text-[#D49A3A] font-bold" : ""}>01 QUERY</span>
-                          <span>→</span>
-                          <span className={routingStage === "ROUTING" ? "text-[#D49A3A] font-bold" : ""}>02 ROUTING</span>
-                          <span>→</span>
-                          <span className={routingStage === "ANALYSIS" ? "text-[#D49A3A] font-bold" : ""}>03 ANALYSIS</span>
-                          <span>→</span>
-                          <span className={routingStage === "ANSWER" ? "text-[#D49A3A] font-bold" : ""}>04 ANSWER</span>
-                          <span>→</span>
-                          <span className={routingStage === "FINDINGS" ? "text-[#D49A3A] font-bold" : ""}>05 FINDINGS</span>
-                        </div>
+                            {/* Pipeline Stepper Visualization */}
+                            <div className="flex items-center justify-between text-[9px] text-[#9A9A90] border-y border-[#2A2E2B] py-1.5">
+                              <span className={routingStage === "QUERY" ? "text-[#D49A3A] font-bold" : ""}>01 QUERY</span>
+                              <span>→</span>
+                              <span className={routingStage === "ROUTING" ? "text-[#D49A3A] font-bold" : ""}>02 ROUTING</span>
+                              <span>→</span>
+                              <span className={routingStage === "ANALYSIS" ? "text-[#D49A3A] font-bold" : ""}>03 ANALYSIS</span>
+                              <span>→</span>
+                              <span className={routingStage === "ANSWER" ? "text-[#D49A3A] font-bold" : ""}>04 ANSWER</span>
+                              <span>→</span>
+                              <span className={routingStage === "FINDINGS" ? "text-[#D49A3A] font-bold" : ""}>05 FINDINGS</span>
+                            </div>
 
-                        <div className="text-[11px] text-[#E9E5DA] font-sans">
-                          {routingDetail}
-                        </div>
-                      </div>
+                            <div className="text-[11px] text-[#E9E5DA] font-sans">
+                              {routingDetail}
+                            </div>
+                          </div>
+                        )}
+
+                        <div ref={chatBottomRef} />
+                      </motion.div>
                     )}
-
-                    <div ref={chatBottomRef} />
-                  </div>
+                  </AnimatePresence>
                 </div>
 
                 {/* ══════════════════════════════════════════════════════════
-                    3. FLOATING BOTTOM COMPOSER (CHATGPT UX REFERENCE)
+                    3. FLOATING / ADAPTIVE COMPOSER (CHATGPT UX REFERENCE)
+                    Empty state: centered in lower-middle viewport
+                    Active state: smoothly glides DOWN to fixed bottom
                     Structure: [ + ] Ask SatQuery... [AUTO ▾] [MIC] [↑]
                     ══════════════════════════════════════════════════════════ */}
-                <div className="absolute bottom-20 md:bottom-24 left-4 right-4 z-40 pointer-events-none">
+                <motion.div
+                  className="absolute left-4 right-4 z-40 pointer-events-none"
+                  initial={false}
+                  animate={{
+                    bottom: isEmptyChat ? "calc(50% - 30px)" : "24px",
+                  }}
+                  transition={{
+                    duration: 0.65,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
                   <div className="max-w-3xl mx-auto pointer-events-auto">
                     {/* Staged Imagery Attachment Pill (if present) */}
                     {stagedAsset && (
@@ -1826,7 +1945,7 @@ export default function Investigation() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </main>
             </motion.div>
           )}
