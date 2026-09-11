@@ -1,7 +1,9 @@
 import sys
+import os
 from pathlib import Path
 import torch
 import torch.nn as nn
+import torchvision.models as models
 
 # Ensure parent directory is on sys.path for importing agent modules
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +22,11 @@ class QwenFeatureExtractor(nn.Module):
     Extracts 512-dimensional semantic feature vectors for input satellite imagery
     using the Sentinel-2 ResNet-18 specialist adapter (SatQuery_S2_FINAL).
     """
-    def __init__(self, device="cpu"):
+    def __init__(self, device="cpu", checkpoint_path="model_training/checkpoints/best_model_fast_s2.pth"):
         super().__init__()
         self.device = device
         self.embedding_dim = 512
+        self.checkpoint_path = Path(checkpoint_path)
         print(f"  -> Initializing Shared Feature Encoder Backbone on {self.device}...")
         
         self.adapter = None
