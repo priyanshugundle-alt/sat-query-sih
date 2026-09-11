@@ -93,7 +93,7 @@ function classifyQueryIntent(queryText) {
 
 export default function Investigation() {
   // ── View Mode: 'landing' vs 'investigation' ────────────────────────
-  const [viewMode, setViewMode] = useState("investigation");  // Start directly in workstation, not landing
+  const [viewMode, setViewMode] = useState("landing"); // Start on the cinematic landing page
 
   // ── Shell layout state ──────────────────────────────────────────
   const [sidebarOpen, setSidebarOpen] = useState(true);

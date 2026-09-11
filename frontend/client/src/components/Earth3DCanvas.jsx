@@ -51,13 +51,13 @@ useEffect(() => {
 const WORLD_RADIUS = 2.25;
 
 
-  // Transform states for smooth damping
-  const currentRotation = useRef({ x: 0.16, y: -0.65 });
-  const targetRotation = useRef({ x: 0.16, y: -0.65 });
-  const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.4));
-  const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.4));
-  const currentEarthPos = useRef(new THREE.Vector3(1.35, 0.05, 0));
-  const targetEarthPos = useRef(new THREE.Vector3(1.35, 0.05, 0));
+  // Transform states for smooth damping - centered on the massive Afro-Eurasian landmass
+  const currentRotation = useRef({ x: 0.20, y: 0.95 });
+  const targetRotation = useRef({ x: 0.20, y: 0.95 });
+  const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
+  const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
+  const currentEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
+  const targetEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
 
   // Convert lat/lon to 3D Cartesian coordinates on sphere
   const latLonToVector3 = useCallback((lat, lon, radius = WORLD_RADIUS) => {
@@ -83,20 +83,15 @@ const WORLD_RADIUS = 2.25;
     const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
     if (stage === "hero") {
-      // Hero: Earth prominently on the right side (occupying ~50–60% of visual area)
-      targetEarthPos.current.set(isMobile ? 0 : 1.35, isMobile ? -0.35 : 0.05, 0);
-      targetCameraPos.current.set(0, 0, 5.3);
-      targetRotation.current = { x: 0.16, y: -0.75 };
+      // Hero: Earth prominently framed on the right side, showing the massive Afro-Eurasian landmass
+      targetEarthPos.current.set(isMobile ? 0 : 1.15, isMobile ? -0.30 : 0.05, 0);
+      targetCameraPos.current.set(0, 0, 5.2);
+      targetRotation.current = { x: 0.20, y: 0.95 };
     } else if (stage === "workstation") {
       // Workstation: Earth visible upper-right, ~20-30% visual presence
-      // DEBUGGING: Increased visibility, centered more to ensure it's visible
-      targetEarthPos.current.set(isMobile ? 0.5 : 1.8, isMobile ? 0.3 : 0.6, 0);
-      targetCameraPos.current.set(0, 0, 6.5);  // Closer camera for larger Earth
-      targetRotation.current = { x: 0.14, y: -0.70 };
-      console.log('Earth3DCanvas: workstation stage configured', {
-        earthPos: targetEarthPos.current,
-        cameraPos: targetCameraPos.current
-      });
+      targetEarthPos.current.set(isMobile ? 0.5 : 1.7, isMobile ? 0.3 : 0.5, 0);
+      targetCameraPos.current.set(0, 0, 6.2);
+      targetRotation.current = { x: 0.20, y: -2.80 };
     } else if (stage === "vqa" || stage === "grounding") {
       // Mumbai: 19.0760° N, 72.8777° E
       focusCoordinates(19.0760, 72.8777, zoomProgress || 0.65);
@@ -137,19 +132,19 @@ const WORLD_RADIUS = 2.25;
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 5.4);
+    camera.position.set(0, 0, 5.2);
     cameraRef.current = camera;
 
     // 2. Renderer with transparent background for atmospheric blending
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: true,  // Enable alpha channel
+      alpha: true,
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.35;
     
     // Transparent background - no flat black rectangle
     renderer.setClearColor(0x000000, 0);
@@ -157,60 +152,57 @@ const WORLD_RADIUS = 2.25;
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 3. Realistic Sunlight & Subtle Ambient Deep Space Fill
-    const ambientLight = new THREE.AmbientLight(0x0e141c, 0.65);
+    // 3. Realistic Sunlight & Ambient Illumination (Land is clear, radiant and rich)
+    const ambientLight = new THREE.AmbientLight(0xdde8f5, 1.2);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ea, 3.4);
-    sunLight.position.set(5.5, 2.8, 4.5);
+    // Sun positioned from the front-top to illuminate the Indian subcontinent & Asia with golden daylit clarity
+    const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.4);
+    sunLight.position.set(-1.0, 3.5, 5.5);
     scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x406080, 0.45);
-    rimLight.position.set(-5, -2, -3);
-    scene.add(rimLight);
+    const fillLight = new THREE.DirectionalLight(0x386b9c, 0.8);
+    fillLight.position.set(4.0, -1.0, 3.0);
+    scene.add(fillLight);
 
     // 4. Earth Root Group
     const earthGroup = new THREE.Group();
     earthGroup.position.copy(currentEarthPos.current);
+    earthGroup.rotation.x = currentRotation.current.x;
+    earthGroup.rotation.y = currentRotation.current.y;
     scene.add(earthGroup);
     earthGroupRef.current = earthGroup;
 
-    // 4a. 3D Atmospheric Sphere around Earth (real geometry, not CSS)
-    const atmosphereGeometry = new THREE.SphereGeometry(WORLD_RADIUS * 1.08, 64, 64);
+    // 4a. 3D Atmospheric Sphere around Earth (smooth Rayleigh scattering limb)
+    const atmosphereGeometry = new THREE.SphereGeometry(WORLD_RADIUS * 1.025, 64, 64);
     const atmosphereMaterial = new THREE.ShaderMaterial({
       transparent: true,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
+      depthWrite: false,
       uniforms: {
-        viewVector: { value: camera.position },
-        c: { value: 0.15 },
-        p: { value: 4.5 }
+        glowColor: { value: new THREE.Color(0x3a88d8) },
       },
       vertexShader: `
-        uniform vec3 viewVector;
-        uniform float c;
-        uniform float p;
-        varying float intensity;
+        varying vec3 vNormal;
         void main() {
-          vec3 vNormal = normalize(normalMatrix * normal);
-          vec3 vNormel = normalize(normalMatrix * viewVector);
-          intensity = pow(c - dot(vNormal, vNormel), p);
+          vNormal = normalize(normalMatrix * normal);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: `
-        uniform float c;
-        uniform float p;
-        varying float intensity;
+        uniform vec3 glowColor;
+        varying vec3 vNormal;
         void main() {
-          vec3 glow = vec3(0.6, 0.7, 0.8) * intensity;  // Subtle blue-gray atmospheric glow
-          gl_FragColor = vec4(glow, intensity * 0.3);
+          float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
+          gl_FragColor = vec4(glowColor, clamp(intensity * 0.75, 0.0, 0.8));
         }
       `
     });
     
     const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
     earthGroup.add(atmosphereMesh);
+
     console.log('✓ Added 3D atmospheric sphere around Earth');
 
     // 5. Pin Root Group
@@ -316,10 +308,12 @@ const WORLD_RADIUS = 2.25;
 
         earthModel.traverse((child) => {
           if (child.isMesh) {
-            child.material.roughness = 0.72;
-            child.material.metalness = 0.12;
+            child.material.roughness = 0.58;
+            child.material.metalness = 0.05;
             if (child.material.map) {
-              child.material.map.anisotropy = 8;
+              child.material.map.anisotropy = 16;
+              child.material.map.colorSpace = THREE.SRGBColorSpace;
+              child.material.map.needsUpdate = true;
             }
           }
         });
@@ -380,12 +374,11 @@ const WORLD_RADIUS = 2.25;
   currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.04;
   currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.04;
 
-  if (stage === "hero" || stage === "final_cta" || stage === "workstation") {
-    targetRotation.current.y += 0.0006;
-  }
+  // Subtle, realistic planetary movement that keeps the landmass centered in view
+  const slowDrift = (stage === "hero" || stage === "final_cta" || stage === "workstation") ? Math.sin(time * 0.15) * 0.08 : 0;
 
   earthGroup.rotation.x = currentRotation.current.x;
-  earthGroup.rotation.y = currentRotation.current.y;
+  earthGroup.rotation.y = currentRotation.current.y + slowDrift;
 
   const satAngle = time * 0.35;
   const satX = Math.cos(satAngle) * 3.1;
