@@ -1,0 +1,520 @@
+import React, { useEffect, useRef, useCallback } from "react";
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
+/**
+ * Earth3DCanvas — Master 3D Earth Observation Engine
+ * 
+ * Capabilities:
+ * - Persistent Three.js Scene, Camera, and Earth
+ * - Normalized GLB loading for /assets/earth/Earth_1_12756.glb
+ * - PBR directional sun lighting, natural day/night terminator, and Rayleigh scattering atmospheric limb
+ * - Reusable spherical coordinate targeting: focusCoordinates(lat, lon, zoom)
+ * - 3D Surface-attached pulsing amber scientific pin
+ * - Orbiting satellite model with observation trajectory
+ * - Reversible, continuous scroll-driven camera physics (lerp & damping)
+ */
+export function Earth3DCanvas({
+  stage = "hero", // 'hero' | 'vqa' | 'grounding' | 'nepal' | 'sar' | 'evidence' | 'final_cta' | 'workstation'
+  targetCoords = null,
+  zoomProgress = 0,
+  className = "",
+  size = "large", // "large" for landing, "small" for workstation background
+  visibilityState = "empty", // empty, imageLoaded, analyzing, findingSelected, showMeWhy
+}) {
+  console.log('Earth3DCanvas RENDER', { stage, size, visibilityState, className });
+  const mountRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const earthGroupRef = useRef(null);
+  const pinGroupRef = useRef(null);
+  const satelliteGroupRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const reduced = useReducedMotion();
+  // Reduced motion and visibility handling
+  const pausedRef = useRef(false);
+
+// Pause animation when tab is hidden
+useEffect(() => {
+  const handleVisibility = () => {
+    pausedRef.current = document.hidden;
+  };
+  document.addEventListener('visibilitychange', handleVisibility);
+  // Set initial state
+  pausedRef.current = document.hidden;
+  return () => document.removeEventListener('visibilitychange', handleVisibility);
+}, []);
+
+// Target world radius
+const WORLD_RADIUS = 2.25;
+
+
+  // Transform states for smooth damping
+  const currentRotation = useRef({ x: 0.16, y: -0.65 });
+  const targetRotation = useRef({ x: 0.16, y: -0.65 });
+  const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.4));
+  const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.4));
+  const currentEarthPos = useRef(new THREE.Vector3(1.35, 0.05, 0));
+  const targetEarthPos = useRef(new THREE.Vector3(1.35, 0.05, 0));
+
+  // Convert lat/lon to 3D Cartesian coordinates on sphere
+  const latLonToVector3 = useCallback((lat, lon, radius = WORLD_RADIUS) => {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lon + 180) * (Math.PI / 180);
+    const x = -(radius * Math.sin(phi) * Math.cos(theta));
+    const z = radius * Math.sin(phi) * Math.sin(theta);
+    const y = radius * Math.cos(phi);
+    return new THREE.Vector3(x, y, z);
+  }, [WORLD_RADIUS]);
+
+  // Rotate Earth to center specific lat/lon toward camera
+  const focusCoordinates = useCallback((lat, lon, zoom = 0) => {
+    const rotY = -((lon + 90) * (Math.PI / 180));
+    const rotX = (lat * (Math.PI / 180)) * 0.45;
+    targetRotation.current = { x: rotX, y: rotY };
+    const dist = 5.4 - zoom * 2.2;
+    targetCameraPos.current.set(0, 0, dist);
+  }, []);
+
+  // Update target transforms based on stage
+  useEffect(() => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+
+    if (stage === "hero") {
+      // Hero: Earth prominently on the right side (occupying ~50–60% of visual area)
+      targetEarthPos.current.set(isMobile ? 0 : 1.35, isMobile ? -0.35 : 0.05, 0);
+      targetCameraPos.current.set(0, 0, 5.3);
+      targetRotation.current = { x: 0.16, y: -0.75 };
+    } else if (stage === "workstation") {
+      // Workstation: Earth visible upper-right, ~20-30% visual presence
+      // DEBUGGING: Increased visibility, centered more to ensure it's visible
+      targetEarthPos.current.set(isMobile ? 0.5 : 1.8, isMobile ? 0.3 : 0.6, 0);
+      targetCameraPos.current.set(0, 0, 6.5);  // Closer camera for larger Earth
+      targetRotation.current = { x: 0.14, y: -0.70 };
+      console.log('Earth3DCanvas: workstation stage configured', {
+        earthPos: targetEarthPos.current,
+        cameraPos: targetCameraPos.current
+      });
+    } else if (stage === "vqa" || stage === "grounding") {
+      // Mumbai: 19.0760° N, 72.8777° E
+      focusCoordinates(19.0760, 72.8777, zoomProgress || 0.65);
+      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
+    } else if (stage === "nepal") {
+      // Syabru Besi, Nepal: 28.15° N, 85.34° E
+      focusCoordinates(28.15, 85.34, zoomProgress || 0.7);
+      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
+    } else if (stage === "sar") {
+      // Optical + SAR swath
+      focusCoordinates(28.15, 85.34, zoomProgress || 0.45);
+      targetEarthPos.current.set(isMobile ? 0 : 0.95, 0, -0.2);
+    } else if (stage === "evidence" || stage === "technical") {
+      // Evidence & Technical signal background anchor
+      targetEarthPos.current.set(isMobile ? 0 : -1.15, 0, -0.3);
+      targetCameraPos.current.set(0, 0, 5.5);
+    } else if (stage === "final_cta") {
+      // Final CTA: Earth large and centered
+      targetEarthPos.current.set(0, 0.1, 0);
+      targetCameraPos.current.set(0, 0, 4.8);
+    }
+
+    if (targetCoords) {
+      focusCoordinates(targetCoords.lat, targetCoords.lon, zoomProgress || 0.6);
+    }
+  }, [stage, targetCoords, zoomProgress, focusCoordinates]);
+
+  // Three.js Scene Setup & Model Loading
+  useEffect(() => {
+    const container = mountRef.current;
+    if (!container) return;
+
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || window.innerHeight;
+
+    // 1. Scene & Camera
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
+    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 5.4);
+    cameraRef.current = camera;
+
+    // 2. Renderer with transparent background for atmospheric blending
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,  // Enable alpha channel
+      powerPreference: "high-performance",
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    
+    // Transparent background - no flat black rectangle
+    renderer.setClearColor(0x000000, 0);
+    
+    container.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // 3. Realistic Sunlight & Subtle Ambient Deep Space Fill
+    const ambientLight = new THREE.AmbientLight(0x0e141c, 0.65);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfff7ea, 3.4);
+    sunLight.position.set(5.5, 2.8, 4.5);
+    scene.add(sunLight);
+
+    const rimLight = new THREE.DirectionalLight(0x406080, 0.45);
+    rimLight.position.set(-5, -2, -3);
+    scene.add(rimLight);
+
+    // 4. Earth Root Group
+    const earthGroup = new THREE.Group();
+    earthGroup.position.copy(currentEarthPos.current);
+    scene.add(earthGroup);
+    earthGroupRef.current = earthGroup;
+
+    // 4a. 3D Atmospheric Sphere around Earth (real geometry, not CSS)
+    const atmosphereGeometry = new THREE.SphereGeometry(WORLD_RADIUS * 1.08, 64, 64);
+    const atmosphereMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        viewVector: { value: camera.position },
+        c: { value: 0.15 },
+        p: { value: 4.5 }
+      },
+      vertexShader: `
+        uniform vec3 viewVector;
+        uniform float c;
+        uniform float p;
+        varying float intensity;
+        void main() {
+          vec3 vNormal = normalize(normalMatrix * normal);
+          vec3 vNormel = normalize(normalMatrix * viewVector);
+          intensity = pow(c - dot(vNormal, vNormel), p);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float c;
+        uniform float p;
+        varying float intensity;
+        void main() {
+          vec3 glow = vec3(0.6, 0.7, 0.8) * intensity;  // Subtle blue-gray atmospheric glow
+          gl_FragColor = vec4(glow, intensity * 0.3);
+        }
+      `
+    });
+    
+    const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    earthGroup.add(atmosphereMesh);
+    console.log('✓ Added 3D atmospheric sphere around Earth');
+
+    // 5. Pin Root Group
+    const pinGroup = new THREE.Group();
+    earthGroup.add(pinGroup);
+    pinGroupRef.current = pinGroup;
+
+    const create3DPin = (lat, lon, label) => {
+      while (pinGroup.children.length > 0) {
+        pinGroup.remove(pinGroup.children[0]);
+      }
+
+      const pinPos = latLonToVector3(lat, lon, WORLD_RADIUS * 1.008);
+      const pinSubGroup = new THREE.Group();
+      pinSubGroup.position.copy(pinPos);
+      pinSubGroup.lookAt(new THREE.Vector3(0, 0, 0));
+
+      const dotGeo = new THREE.SphereGeometry(0.045, 16, 16);
+      const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      pinSubGroup.add(dotMesh);
+
+      const ringGeo = new THREE.RingGeometry(0.08, 0.105, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xE4B65A,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.9,
+      });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.name = "pulseRing";
+      pinSubGroup.add(ringMesh);
+
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.75 });
+      const linePoints = [
+        new THREE.Vector3(-0.16, 0, 0), new THREE.Vector3(0.16, 0, 0),
+        new THREE.Vector3(0, -0.16, 0), new THREE.Vector3(0, 0.16, 0),
+      ];
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
+      const crosshair = new THREE.LineSegments(lineGeo, lineMat);
+      pinSubGroup.add(crosshair);
+
+      pinGroup.add(pinSubGroup);
+    };
+
+    // 6. Orbital Satellite System (Satellite + Elliptical Path)
+    const satGroup = new THREE.Group();
+    scene.add(satGroup);
+    satelliteGroupRef.current = satGroup;
+
+    // Elliptical Orbit Track Line
+    const orbitCurve = new THREE.EllipseCurve(0, 0, 3.2, 1.4, 0, 2 * Math.PI, false, 0);
+    const orbitPoints = orbitCurve.getPoints(120);
+    const orbitGeo = new THREE.BufferGeometry().setFromPoints(
+      orbitPoints.map(p => new THREE.Vector3(p.x, p.y * 0.7, p.y * 0.9))
+    );
+    const orbitMat = new THREE.LineBasicMaterial({
+      color: 0xD49A3A,
+      transparent: true,
+      opacity: 0.22,
+    });
+    const orbitLine = new THREE.Line(orbitGeo, orbitMat);
+    orbitLine.rotation.x = Math.PI / 5;
+    orbitLine.rotation.z = -Math.PI / 12;
+    earthGroup.add(orbitLine);
+
+    // Micro Satellite Mesh
+    const satBodyGeo = new THREE.BoxGeometry(0.06, 0.04, 0.04);
+    const satBodyMat = new THREE.MeshStandardMaterial({ color: 0xE9E5DA, metalness: 0.8, roughness: 0.2 });
+    const satBody = new THREE.Mesh(satBodyGeo, satBodyMat);
+
+    const panelGeo = new THREE.BoxGeometry(0.14, 0.005, 0.05);
+    const panelMat = new THREE.MeshStandardMaterial({ color: 0x1A365D, metalness: 0.9, roughness: 0.1 });
+    const panelLeft = new THREE.Mesh(panelGeo, panelMat);
+    panelLeft.position.set(-0.1, 0, 0);
+    const panelRight = new THREE.Mesh(panelGeo, panelMat);
+    panelRight.position.set(0.1, 0, 0);
+
+    const satellite = new THREE.Group();
+    satellite.add(satBody);
+    satellite.add(panelLeft);
+    satellite.add(panelRight);
+    satellite.scale.set(1.2, 1.2, 1.2);
+    satGroup.add(satellite);
+
+    // 7. Load GLB Earth Model
+    const loader = new GLTFLoader();
+    const assetPath = "/assets/earth/Earth_1_12756.glb";
+
+    loader.load(
+      assetPath,
+      (gltf) => {
+        const earthModel = gltf.scene;
+
+        const box = new THREE.Box3().setFromObject(earthModel);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const normalizedScale = (WORLD_RADIUS * 2) / (maxDim || 1000);
+
+        earthModel.scale.set(normalizedScale, normalizedScale, normalizedScale);
+        earthModel.position.set(0, 0, 0);
+
+        earthModel.traverse((child) => {
+          if (child.isMesh) {
+            child.material.roughness = 0.72;
+            child.material.metalness = 0.12;
+            if (child.material.map) {
+              child.material.map.anisotropy = 8;
+            }
+          }
+        });
+
+        earthGroup.add(earthModel);
+        create3DPin(19.0760, 72.8777, "MUMBAI");
+      },
+      undefined,
+      (error) => {
+        console.warn("GLB load fallback to procedural Earth sphere:", error);
+        const sphereGeo = new THREE.SphereGeometry(WORLD_RADIUS, 64, 64);
+        const sphereMat = new THREE.MeshStandardMaterial({
+          color: 0x142b3d,
+          roughness: 0.7,
+          metalness: 0.15,
+        });
+        const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+        earthGroup.add(sphereMesh);
+        create3DPin(19.0760, 72.8777, "MUMBAI");
+      }
+    );
+
+    // 8. Window Resize Handler
+    const handleResize = () => {
+      if (!container || !renderer || !camera) return;
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener("resize", handleResize);
+
+    // 9. Render & Animation Loop
+    let clock = new THREE.Clock();
+    const animate = () => {
+  // If reduced motion is preferred, skip updates that cause motion
+  if (reduced) {
+    renderer.render(scene, camera);
+    animFrameRef.current = requestAnimationFrame(animate);
+    return;
+  }
+  // If tab is hidden, pause dynamic updates but still render static frame
+  if (pausedRef.current) {
+    renderer.render(scene, camera);
+    animFrameRef.current = requestAnimationFrame(animate);
+    return;
+  }
+
+  const time = clock.getElapsedTime();
+
+  currentEarthPos.current.lerp(targetEarthPos.current, 0.045);
+  earthGroup.position.copy(currentEarthPos.current);
+
+  currentCameraPos.current.lerp(targetCameraPos.current, 0.045);
+  camera.position.copy(currentCameraPos.current);
+
+  currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.04;
+  currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.04;
+
+  if (stage === "hero" || stage === "final_cta" || stage === "workstation") {
+    targetRotation.current.y += 0.0006;
+  }
+
+  earthGroup.rotation.x = currentRotation.current.x;
+  earthGroup.rotation.y = currentRotation.current.y;
+
+  const satAngle = time * 0.35;
+  const satX = Math.cos(satAngle) * 3.1;
+  const satY = Math.sin(satAngle) * 1.3;
+  const satZ = Math.sin(satAngle * 0.8) * 1.1;
+  satellite.position.set(
+    currentEarthPos.current.x + satX,
+    currentEarthPos.current.y + satY,
+    currentEarthPos.current.z + satZ
+  );
+  satellite.lookAt(currentEarthPos.current);
+
+  if (pinGroup) {
+    const pulse = (Math.sin(time * 3.6) + 1) * 0.5;
+    pinGroup.traverse((child) => {
+      if (child.name === "pulseRing") {
+        child.scale.set(1 + pulse * 0.45, 1 + pulse * 0.45, 1);
+        child.material.opacity = 0.95 - pulse * 0.55;
+      }
+    });
+  }
+
+  renderer.render(scene, camera);
+  animFrameRef.current = requestAnimationFrame(animate);
+};
+  // start the animation loop
+  animate();
+
+  // cleanup on unmount
+  return () => {
+    window.removeEventListener("resize", handleResize);
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (renderer.domElement && container.contains(renderer.domElement)) {
+      container.removeChild(renderer.domElement);
+    }
+    renderer.dispose();
+  };
+
+  }, [WORLD_RADIUS, latLonToVector3]);
+
+  // Update Pin when target coordinates or stage change
+  useEffect(() => {
+    if (!pinGroupRef.current) return;
+    const pinGroup = pinGroupRef.current;
+
+    while (pinGroup.children.length > 0) {
+      pinGroup.remove(pinGroup.children[0]);
+    }
+
+    let lat = 19.0760;
+    let lon = 72.8777;
+    let label = "MUMBAI";
+
+    if (stage === "nepal" || stage === "sar") {
+      lat = 28.15;
+      lon = 85.34;
+      label = "SYABRU BESI / NEPAL";
+    } else if (targetCoords) {
+      lat = targetCoords.lat;
+      lon = targetCoords.lon;
+      label = targetCoords.label || "TARGET";
+    }
+
+    const pinPos = latLonToVector3(lat, lon, WORLD_RADIUS * 1.008);
+    const pinSubGroup = new THREE.Group();
+    pinSubGroup.position.copy(pinPos);
+    pinSubGroup.lookAt(new THREE.Vector3(0, 0, 0));
+
+    const dotGeo = new THREE.SphereGeometry(0.045, 16, 16);
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A });
+    const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+    pinSubGroup.add(dotMesh);
+
+    const ringGeo = new THREE.RingGeometry(0.08, 0.105, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0xE4B65A,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.name = "pulseRing";
+    pinSubGroup.add(ringMesh);
+
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.75 });
+    const linePoints = [
+      new THREE.Vector3(-0.16, 0, 0), new THREE.Vector3(0.16, 0, 0),
+      new THREE.Vector3(0, -0.16, 0), new THREE.Vector3(0, 0.16, 0),
+    ];
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
+    const crosshair = new THREE.LineSegments(lineGeo, lineMat);
+    pinSubGroup.add(crosshair);
+
+    pinGroup.add(pinSubGroup);
+  }, [stage, targetCoords, WORLD_RADIUS, latLonToVector3]);
+
+  return (
+    <div
+      ref={mountRef}
+      className={`w-full h-full relative overflow-hidden pointer-events-none ${className}`}
+      style={
+        size === "small"
+          ? {
+              position: "absolute",
+              top: "5%",
+              right: "5%",
+              width: "15vw",
+              height: "15vw",
+              opacity: (() => {
+                switch (visibilityState) {
+                  case "empty":
+                    return 0.45;
+                  case "imageLoaded":
+                    return 0.30;
+                  case "analyzing":
+                    return 0.25;
+                  case "findingSelected":
+                    return 0.20;
+                  case "showMeWhy":
+                    return 0.05;
+                  default:
+                    return 0.45;
+                }
+              })(),
+            }
+          : {}
+      }
+    />
+  );
+}
+
+export default Earth3DCanvas;

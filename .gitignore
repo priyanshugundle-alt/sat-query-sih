@@ -15,7 +15,6 @@ backend/outputs/*
 
 # IDE files
 .vscode/
-.idea/
 .manus-logs/
 
 # Dependencies
@@ -26,33 +25,8 @@ frontend/node_modules/
 .DS_Store
 Thumbs.db
 
-# Python Virtual Environments
-.venv/
-venv/
-env/
-ENV/
+# Large model binaries
+backend/trained_models/*.safetensors
+backend/trained_models/*.bin
+backend/trained_models/*.pth
 
-# Python Cache & Bytecode
-**/__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.pytest_cache/
-
-# Datasets & Large Metadata
-BigEarthNet-S1/
-*.parquet
-model_a_audit.txt
-model_a/cache/*.json
-!model_a/cache/.gitkeep
-
-# Checkpoints: Exclude temporary intermediate runs, keep best & unified fusion
-model_a/checkpoints/*INVALID_PREFIX*
-model_a/checkpoints/latest_checkpoint*.pt
-model_a/checkpoints/best_model_a_weighted.pt
-
-# Temporary scratch directory
-scratch/
-
-# Large zip bundles
-exports/*.zip

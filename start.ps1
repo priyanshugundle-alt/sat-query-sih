@@ -1,10 +1,7 @@
-# PowerShell script to start SatQuery AI VLM Server, Java Backend, and Frontend cleanly
+# PowerShell script to start SatQuery AI Java Backend and Frontend
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
-$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.12.1"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-
-Write-Host "Starting SatQuery AI Workstation..." -ForegroundColor Green
+Write-Host "Starting SatQuery AI Java Backend and Frontend..." -ForegroundColor Green
 
 if (-not (Test-Path "$scriptDir\frontend\node_modules")) {
     Write-Host "Installing frontend dependencies..." -ForegroundColor Yellow
@@ -13,36 +10,9 @@ if (-not (Test-Path "$scriptDir\frontend\node_modules")) {
     Pop-Location
 }
 
-# Check Port 8000 (VLM Server)
-$port8000Active = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
-if (-not $port8000Active) {
-    Write-Host "Launching Python Multi-VLM Specialist Engine on Port 8000..." -ForegroundColor Cyan
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$scriptDir'; python model_training/multi_vlm_server.py"
-} else {
-    Write-Host "Python VLM Server is already active on Port 8000." -ForegroundColor Yellow
-}
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$scriptDir\backend'; .\mvnw.cmd exec:java"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$scriptDir\frontend'; npx --no-install vite --host"
 
-# Check Port 8080 (Java Backend)
-$port8080Active = Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue
-if (-not $port8080Active) {
-    Write-Host "Launching Java Core Backend on Port 8080..." -ForegroundColor Cyan
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$scriptDir\backend'; `$env:JAVA_HOME='C:\Program Files\Java\jdk-21.0.12.1'; `$env:PATH=`"`$env:JAVA_HOME\bin;`$env:PATH`"; .\mvnw.cmd exec:java"
-} else {
-    Write-Host "Java Core Backend is already active on Port 8080." -ForegroundColor Yellow
-}
+Write-Host "SatQuery AI Backend & Frontend launched!" -ForegroundColor Cyan
 
-# Check Port 5173 (React Frontend)
-$port5173Active = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue
-if (-not $port5173Active) {
-    Write-Host "Launching React Frontend UI on Port 5173..." -ForegroundColor Cyan
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$scriptDir\frontend'; pnpm run dev"
-} else {
-    Write-Host "React Frontend UI is already active on Port 5173." -ForegroundColor Yellow
-}
 
-Write-Host "=========================================================" -ForegroundColor Green
-Write-Host "All SatQuery AI Services Are Active & Online!" -ForegroundColor Green
-Write-Host "Frontend: http://localhost:5173/" -ForegroundColor Cyan
-Write-Host "Java Backend: http://localhost:8080/" -ForegroundColor Cyan
-Write-Host "VLM Engine: http://localhost:8000/" -ForegroundColor Cyan
-Write-Host "=========================================================" -ForegroundColor Green

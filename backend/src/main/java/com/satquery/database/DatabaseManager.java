@@ -157,11 +157,7 @@ public class DatabaseManager {
     }
 
     public static Connection getConnection() throws SQLException {
-        Connection conn = DriverManager.getConnection(DB_URL);
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA busy_timeout = 5000;");
-        }
-        return conn;
+        return DriverManager.getConnection(DB_URL);
     }
 
     // Repositories delegation

@@ -119,7 +119,6 @@ export async function uploadAsset(file) {
  */
 export async function runQuery({
   imageIds = [],
-  stagedAssets = [],
   taskType = "VQA",
   queryText = "",
   parameters = {},
@@ -130,10 +129,6 @@ export async function runQuery({
     question: queryText.trim(),
     imageIds,
     assetIds: imageIds,
-    frontendAssets: stagedAssets.map(a => ({
-      id: a.id,
-      metadata: a.metadata
-    })),
     taskType: taskType.toLowerCase(),
     requestedTask: taskType.toUpperCase(),
     parameters: {
