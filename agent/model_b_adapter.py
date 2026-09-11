@@ -52,8 +52,21 @@ class OpticalSpecialistLive(BaseSpecialistModel):
         self.model_name = model_name
         self.supported_classes = list(CORINE_19_CLASSES)
 
-        default_ckpt = Path(r"D:\SIH\SatQuery_S2_FINAL\model\best_model.pth")
-        self.checkpoint_path = checkpoint_path or default_ckpt
+        ckpt_candidates = [
+            checkpoint_path,
+            Path("model_training/checkpoints/best_model_fast_s2.pth"),
+            Path(r"D:\SIH\SatQuery_S2_FINAL\model\best_model.pth"),
+            Path("model_a/checkpoints/best_model_a.pt")
+        ]
+        
+        self.checkpoint_path = None
+        for candidate in ckpt_candidates:
+            if candidate and Path(candidate).exists():
+                self.checkpoint_path = Path(candidate)
+                break
+
+        if self.checkpoint_path is None:
+            self.checkpoint_path = Path("model_training/checkpoints/best_model_fast_s2.pth")
 
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.model = None
@@ -77,15 +90,29 @@ class OpticalSpecialistLive(BaseSpecialistModel):
             net = resnet18(weights=None)
             net.conv1 = nn.Conv2d(12, 64, kernel_size=7, stride=2, padding=3, bias=False)
             net.fc = nn.Linear(net.fc.in_features, len(self.supported_classes))
-            net.load_state_dict(state_dict, strict=True)
+
+            # Strip prefixes if model was saved inside a wrapper
+            clean_state_dict = {}
+            for k, v in state_dict.items():
+                new_key = k.replace("feature_extractor.", "").replace("module.", "")
+                clean_state_dict[new_key] = v
+
+            try:
+                net.load_state_dict(clean_state_dict, strict=True)
+            except Exception:
+                net.load_state_dict(clean_state_dict, strict=False)
+
             net.to(self.device)
             net.eval()
             self.model = net
 
             # Build index mapping for class permutation
             if self.s2_classes_alphabetical:
-                mapping = [self.s2_classes_alphabetical.index(c) for c in self.supported_classes]
-                self.s2_to_standard_indices = torch.tensor(mapping, dtype=torch.long, device=self.device)
+                try:
+                    mapping = [self.s2_classes_alphabetical.index(c) for c in self.supported_classes]
+                    self.s2_to_standard_indices = torch.tensor(mapping, dtype=torch.long, device=self.device)
+                except Exception:
+                    self.s2_to_standard_indices = None
 
             self.is_live = True
             print(f"[OpticalSpecialistLive] Successfully loaded real weights from {self.checkpoint_path}")

@@ -55,4 +55,3 @@ class ChangeUnderstandingModel(nn.Module):
             }],
             "limitations": ["Pixel calibration verified across bi-temporal sensor acquisitions."]
         }
-

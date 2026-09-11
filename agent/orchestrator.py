@@ -125,9 +125,12 @@ class SatQueryAgent:
             )
             return {
                 "answer": error_ans,
+                "selected_model": "GeoValidityGate",
                 "uncertainty_level": UncertaintyLevel.INSUFFICIENT_EVIDENCE.value,
                 "confidence": 0.0,
-                "audit_receipt": receipt
+                "audit_receipt": receipt,
+                "audit_receipt_id": receipt["receipt_id"],
+                "total_latency_ms": round(elapsed_ms, 2)
             }
 
         # Step 2: Route to Specialist Tool

@@ -66,8 +66,12 @@ class SAREncoder:
         else:
             arr = band_input.astype(np.float32)
 
+        if arr.ndim == 3:
+            arr = arr[:, :, 0]
+
         if arr.shape != (self.config.dataset.img_height, self.config.dataset.img_width):
-            img_pil = Image.fromarray(arr)
+            arr_norm = ((arr - arr.min()) / (arr.max() - arr.min() + 1e-6) * 255.0).astype(np.uint8)
+            img_pil = Image.fromarray(arr_norm)
             img_pil = img_pil.resize(
                 (self.config.dataset.img_width, self.config.dataset.img_height),
                 Image.BILINEAR
