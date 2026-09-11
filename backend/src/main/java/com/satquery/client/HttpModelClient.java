@@ -42,20 +42,12 @@ public class HttpModelClient implements ModelClient {
 
             String jsonPayload = objectMapper.writeValueAsString(requestBody);
 
-            String path = switch(taskType) {
-                case VQA, CAPTIONING, INFORMATION_EXTRACTION -> "/api/query";
-                case GROUNDING -> "/api/roi/analyze";
-                case CHANGE_ANALYSIS, CHANGE_UNDERSTANDING -> "/api/change-detection";
-                case FUSION_ANALYSIS -> "/api/multimodal-query";
-                default -> "/api/query";
-            };
-
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + path))
+                    .uri(URI.create(baseUrl + "/analyze"))
                     .header("Content-Type", "application/json")
                     .header("X-SatQuery-Api-Key", "satquery-vlm-key-2026-sih")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .timeout(Duration.ofSeconds(60))
+                    .timeout(Duration.ofSeconds(10))
                     .build();
 
 

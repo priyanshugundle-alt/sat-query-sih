@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.satquery.client.HttpModelClient;
 import com.satquery.client.ModelClient;
+import com.satquery.client.JavaLocalModelClient;
 import com.satquery.controller.AgentController;
 import com.satquery.metadata.ImageMetadataReader;
 import com.satquery.model.*;
@@ -28,7 +29,28 @@ public class App {
     private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
-    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000");
+    private static final ModelClient modelClient = new ModelClient() {
+        private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
+        private final JavaLocalModelClient localClient = new JavaLocalModelClient();
+
+        @Override
+        public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
+            try {
+                // Try executing on the Remote Python VLM Server on port 5000
+                return httpClient.run(taskType, request, images);
+            } catch (Exception e) {
+                System.err.println("[SatQuery Backend] Remote Python VLM Server (port 5000) unavailable: " + e.getMessage());
+                System.out.println("[SatQuery Backend] Engaging Java Local VLM Fallback Engine...");
+                com.satquery.observer.TraceLogger.logEvent(
+                        "VLM_FALLBACK_ENGAGED",
+                        "Remote VLM server port 5000 unreachable (" + e.getMessage() + "). Engaged Java Local Fallback Engine.",
+                        "JavaLocalModelClient",
+                        "SUCCESS"
+                );
+                return localClient.run(taskType, request, images);
+            }
+        }
+    };
 
 
     private static final AgentController agentController = new AgentController(modelClient);
@@ -57,8 +79,6 @@ public class App {
         server.createContext("/api/models", new ModelsHandler());
         server.createContext("/api/benchmarks", new BenchmarksHandler());
         server.createContext("/api/gdal/inspect", new GdalInspectHandler());
-        server.createContext("/api/analysis/spectral", new SpectralHandler());
-        server.createContext("/api/analysis/area", new AreaHandler());
 
         server.createContext("/api/report", new ReportHandler());
         server.createContext("/api/evaluate", new EvaluateHandler());
@@ -559,12 +579,9 @@ public class App {
                 
                 String toolName = switch (taskType) {
                     case VQA -> "VQA_TOOL";
-                    case CAPTIONING -> "CAPTIONING_TOOL";
                     case GROUNDING -> "GROUNDING_TOOL";
-                    case CHANGE_UNDERSTANDING -> "CHANGE_UNDERSTANDING_TOOL";
                     case CHANGE_ANALYSIS -> "CHANGE_TOOL";
                     case FUSION_ANALYSIS -> "FUSION_TOOL";
-                    case INFORMATION_EXTRACTION -> "EXTRACTION_TOOL";
                 };
                 
                 com.satquery.registry.ToolValidationResult toolValidation = com.satquery.registry.ToolRegistry.validate(

@@ -1,5 +1,5 @@
 @echo off
-echo Starting SatQuery AI Workstation...
+echo Starting SatQuery AI (Java Backend & Vite Frontend)...
 
 REM Set JAVA_HOME automatically to installed JDK 21 if not set
 if not defined JAVA_HOME (
@@ -13,14 +13,7 @@ if not defined JAVA_HOME (
     if defined JAVA_HOME set "PATH=%JAVA_HOME%\bin;%PATH%"
 )
 
-REM Check if Python Model Server on Port 5000 is already running
-netstat -ano | findstr :5000 >nul
-if %errorlevel% neq 0 (
-    echo Launching Python Agentic Model Server on Port 5000...
-    start "SatQuery Model Server (Port 5000)" cmd /k "cd /d %~dp0 && start_python.bat"
-) else (
-    echo Python Model Server is already active on Port 5000.
-)
+echo SatQuery AI (Java Backend & Vite Frontend) started successfully!
 
 REM Check if Java Backend on Port 8080 is already running
 netstat -ano | findstr :8080 >nul

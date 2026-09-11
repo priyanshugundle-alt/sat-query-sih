@@ -57,13 +57,6 @@
             <version>3.45.2.0</version>
         </dependency>
 
-        <!-- Metadata Extractor (Drew Noakes) for universal image metadata -->
-        <dependency>
-            <groupId>com.drewnoakes</groupId>
-            <artifactId>metadata-extractor</artifactId>
-            <version>2.19.0</version>
-        </dependency>
-
         <!-- Apache PDFBox for PDF report generation -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -126,4 +119,3 @@
         </plugins>
     </build>
 </project>
- 

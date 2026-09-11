@@ -1,4 +1,4 @@
-# PowerShell script to start SatQuery AI VLM Server, Java Backend, and Frontend cleanly
+# PowerShell script to start SatQuery AI Java Backend, Python Model Server, and Frontend
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 $candidateJdkPaths = @(

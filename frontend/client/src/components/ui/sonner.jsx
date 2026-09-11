@@ -5,32 +5,25 @@ const Toaster = ({ ...props }) => {
     <Sonner
       position="bottom-right"
       toastOptions={{
+        className: "loader",
         style: {
-          background: "#112557",
-          color: "#f8fbff",
-          border: "1px solid rgba(183, 242, 58, 0.35)",
-          borderLeft: "4px solid #b7f23a",
-          borderRadius: "8px",
-          boxShadow:
-            "0 8px 32px rgba(17, 37, 87, 0.35), 0 0 0 1px rgba(255,255,255,0.06)",
-          padding: "14px 18px",
+          width: "fit-content",
+          height: "fit-content",
+          backgroundColor: "rgb(58, 58, 58)",
+          borderRadius: "7px",
+          padding: "10px 16px 10px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          cursor: "pointer",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
+          color: "rgba(255, 255, 255, 0.92)",
           fontSize: "13px",
-          fontWeight: "600",
-          fontFamily:
-            '"Manrope", ui-sans-serif, system-ui, sans-serif',
+          fontWeight: "500",
+          fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
           gap: "10px",
-        },
-        classNames: {
-          toast: "toaster-item",
-          title: "toaster-title",
-          description: "toaster-desc",
-          actionButton: "toaster-action",
-          cancelButton: "toaster-cancel",
-          icon: "toaster-icon",
-          success: "toaster-success",
-          error: "toaster-error",
-          warning: "toaster-warning",
-          info: "toaster-info",
         },
       }}
       {...props}
