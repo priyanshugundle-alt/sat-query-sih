@@ -20,7 +20,7 @@ REM Check if Java Backend on Port 8080 is already running
 netstat -ano | findstr :8080 >nul
 if %errorlevel% neq 0 (
     echo Launching Java Backend on Port 8080...
-    start "SatQuery Backend (Port 8080)" cmd /k "cd /d %~dp0backend && set JAVA_HOME=%JAVA_HOME% && set PATH=%JAVA_HOME%\bin;%%PATH%% && mvnw.cmd exec:java"
+    start "SatQuery Backend (Port 8080)" cmd /k "set JAVA_HOME=C:\Program Files\Java\jdk-26.0.1&& cd /d %~dp0backend && mvnw.cmd exec:java"
 ) else (
     echo Java Backend is already active on Port 8080.
 )
