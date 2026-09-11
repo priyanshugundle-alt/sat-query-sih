@@ -6,7 +6,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.satquery.client.HttpModelClient;
 import com.satquery.client.ModelClient;
-import com.satquery.client.JavaLocalModelClient;
 import com.satquery.controller.AgentController;
 import com.satquery.metadata.ImageMetadataReader;
 import com.satquery.model.*;
@@ -29,28 +28,7 @@ public class App {
     private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
-    private static final ModelClient modelClient = new ModelClient() {
-        private final HttpModelClient httpClient = new HttpModelClient("http://localhost:5000");
-        private final JavaLocalModelClient localClient = new JavaLocalModelClient();
-
-        @Override
-        public com.satquery.client.ModelResponse run(TaskType taskType, QueryRequest request, List<ImageAsset> images) {
-            try {
-                // Try executing on the Remote Python VLM Server on port 5000
-                return httpClient.run(taskType, request, images);
-            } catch (Exception e) {
-                System.err.println("[SatQuery Backend] Remote Python VLM Server (port 5000) unavailable: " + e.getMessage());
-                System.out.println("[SatQuery Backend] Engaging Java Local VLM Fallback Engine...");
-                com.satquery.observer.TraceLogger.logEvent(
-                        "VLM_FALLBACK_ENGAGED",
-                        "Remote VLM server port 5000 unreachable (" + e.getMessage() + "). Engaged Java Local Fallback Engine.",
-                        "JavaLocalModelClient",
-                        "SUCCESS"
-                );
-                return localClient.run(taskType, request, images);
-            }
-        }
-    };
+    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000");
 
 
     private static final AgentController agentController = new AgentController(modelClient);
@@ -767,19 +745,19 @@ public class App {
                     "modelName", "UniRSAdapter",
                     "version", "v1",
                     "supportedTasks", List.of("VQA", "GROUNDING", "CHANGE_ANALYSIS"),
-                    "availability", "DEMO"
+                    "availability", "ONLINE"
                 ),
                 Map.of(
                     "modelName", "EarthGptAdapter",
                     "version", "v1",
                     "supportedTasks", List.of("FUSION_ANALYSIS"),
-                    "availability", "DEMO"
+                    "availability", "ONLINE"
                 ),
                 Map.of(
                     "modelName", "ChangeQaAdapter",
                     "version", "v1",
                     "supportedTasks", List.of("CHANGE_ANALYSIS"),
-                    "availability", "DEMO"
+                    "availability", "ONLINE"
                 )
             );
             

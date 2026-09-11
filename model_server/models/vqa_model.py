@@ -70,9 +70,9 @@ class RemoteSensingVQAModel(nn.Module):
         # 4. Fallback to physical SceneCaptioner if VLM didn't answer
         if not ans and SceneCaptioner and detected_classes:
             ans = SceneCaptioner.answer_specific_question(
-                query,
-                detected_classes,
-                probabilities,
+                query=query,
+                detected_classes=detected_classes,
+                probabilities=probabilities,
                 modality=modality
             )
 

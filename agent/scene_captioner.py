@@ -36,6 +36,11 @@ class SceneCaptioner:
         is_sar = (vh_mean is not None and vv_mean is not None) or "sar" in modality.lower()
         sensor_prefix = "Sentinel-1 SAR" if is_sar else "Sentinel-2 Multispectral"
 
+        if isinstance(detected_classes, dict):
+            detected_classes = list(detected_classes.keys())
+        elif isinstance(detected_classes, (set, tuple)):
+            detected_classes = list(detected_classes)
+
         if not detected_classes:
             if is_sar:
                 return (

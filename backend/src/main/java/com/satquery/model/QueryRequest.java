@@ -29,9 +29,12 @@ public class QueryRequest {
     public String getQueryText() { return queryText; }
     public void setQueryText(String queryText) { this.queryText = queryText; }
 
-    // Support 'question' alias from React frontend
+    // Support 'question' and 'query' alias from frontend
     public String getQuestion() { return queryText; }
     public void setQuestion(String question) { this.queryText = question; }
+
+    public String getQuery() { return queryText; }
+    public void setQuery(String query) { this.queryText = query; }
 
     public List<String> getImageIds() { return imageIds; }
     public void setImageIds(List<String> imageIds) { this.imageIds = imageIds; }
