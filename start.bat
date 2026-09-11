@@ -37,7 +37,7 @@ if %errorlevel% neq 0 (
 )
 
 echo =========================================================
-echo All SatQuery AI Services Are Active & Online!
+echo All SatQuery AI Services Are Active and Online!
 echo Frontend: http://localhost:5173/
 echo Java Backend: http://localhost:8080/
 echo Model Server: http://localhost:5000/
