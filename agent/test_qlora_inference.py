@@ -7,14 +7,13 @@ import sys
 from pathlib import Path
 import torch
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
     from peft import PeftModel
+    PEFT_AVAILABLE = True
 except ImportError:
-    print("Please install transformers and peft: pip install transformers peft bitsandbytes")
-    sys.exit(1)
+    PEFT_AVAILABLE = False
+    print("[Notice] Optional peft / transformers dependencies not installed locally.")
 
 
 def test_qlora(
