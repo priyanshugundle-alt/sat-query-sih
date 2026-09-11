@@ -94,9 +94,13 @@ public class AgentController {
         // 3b. Registry Tool & Parameter validation
         String toolName = switch (taskType) {
             case VQA -> "VQA_TOOL";
+            case CAPTIONING -> "CAPTIONING_TOOL";
             case GROUNDING -> "GROUNDING_TOOL";
+            case CHANGE_UNDERSTANDING -> "CHANGE_UNDERSTANDING_TOOL";
             case CHANGE_ANALYSIS -> "CHANGE_TOOL";
             case FUSION_ANALYSIS -> "FUSION_TOOL";
+            case INFORMATION_EXTRACTION -> "EXTRACTION_TOOL";
+            default -> "VQA_TOOL";
         };
 
         com.satquery.registry.ToolValidationResult toolValidation = com.satquery.registry.ToolRegistry.validate(
@@ -149,9 +153,10 @@ public class AgentController {
         TaskResult result;
         try {
             ModelClient adaptedClient = switch (taskType) {
-                case VQA, GROUNDING -> new com.satquery.client.UniRSAdapter(modelClient);
-                case CHANGE_ANALYSIS -> new com.satquery.client.ChangeQaAdapter(modelClient);
+                case VQA, GROUNDING, CAPTIONING, INFORMATION_EXTRACTION -> new com.satquery.client.UniRSAdapter(modelClient);
+                case CHANGE_ANALYSIS, CHANGE_UNDERSTANDING -> new com.satquery.client.ChangeQaAdapter(modelClient);
                 case FUSION_ANALYSIS -> new com.satquery.client.EarthGptAdapter(modelClient);
+                default -> new com.satquery.client.UniRSAdapter(modelClient);
             };
             result = taskHandler.execute(request, images, adaptedClient);
         } catch (Exception e) {

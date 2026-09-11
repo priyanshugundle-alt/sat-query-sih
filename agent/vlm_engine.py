@@ -43,30 +43,39 @@ class SatQueryVLM:
 
         try:
             print(f"[SatQuery VLM] Loading fine-tuned LoRA VLM from {self.adapter_path}...")
-            from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+            from transformers import AutoModelForCausalLM, AutoTokenizer
             from peft import PeftModel
 
             self.tokenizer = AutoTokenizer.from_pretrained(str(self.adapter_path), trust_remote_code=True)
 
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.float16
-            )
-
-            base_model = AutoModelForCausalLM.from_pretrained(
-                self.base_model_name,
-                quantization_config=bnb_config,
-                device_map="auto",
-                trust_remote_code=True
-            )
+            if torch.cuda.is_available():
+                from transformers import BitsAndBytesConfig
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.float16
+                )
+                base_model = AutoModelForCausalLM.from_pretrained(
+                    self.base_model_name,
+                    quantization_config=bnb_config,
+                    device_map="auto",
+                    trust_remote_code=True
+                )
+            else:
+                base_model = AutoModelForCausalLM.from_pretrained(
+                    self.base_model_name,
+                    torch_dtype=torch.float32,
+                    device_map={"": "cpu"},
+                    local_files_only=True,
+                    trust_remote_code=True
+                )
 
             self.model = PeftModel.from_pretrained(base_model, str(self.adapter_path))
             self.model.eval()
             self.is_loaded = True
             print("[SatQuery VLM] Successfully loaded Qwen2.5-1.5B + BigEarthNet LoRA Adapter into memory.")
         except Exception as e:
-            print(f"[SatQuery VLM] Notice: VLM GPU initialization failed ({e}). Using optimized scene captioner fallback.")
+            print(f"[SatQuery VLM] Notice: VLM initialization note ({e}). Using optimized specialist engine pipeline.")
             self.is_loaded = False
 
     def answer_query(

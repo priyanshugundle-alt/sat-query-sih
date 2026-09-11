@@ -52,11 +52,13 @@ class OpticalSpecialistLive(BaseSpecialistModel):
         self.model_name = model_name
         self.supported_classes = list(CORINE_19_CLASSES)
 
+        root_dir = Path(__file__).resolve().parent.parent
         ckpt_candidates = [
             checkpoint_path,
-            Path("model_training/checkpoints/best_model_fast_s2.pth"),
+            root_dir / "model_training" / "checkpoints" / "best_model_fast_s2.pth",
+            root_dir / "SatQuery_S2_FINAL" / "model" / "best_model.pth",
             Path(r"D:\SIH\SatQuery_S2_FINAL\model\best_model.pth"),
-            Path("model_a/checkpoints/best_model_a.pt")
+            root_dir / "model_a" / "checkpoints" / "best_model_a.pt"
         ]
         
         self.checkpoint_path = None
@@ -66,7 +68,7 @@ class OpticalSpecialistLive(BaseSpecialistModel):
                 break
 
         if self.checkpoint_path is None:
-            self.checkpoint_path = Path("model_training/checkpoints/best_model_fast_s2.pth")
+            self.checkpoint_path = root_dir / "model_training" / "checkpoints" / "best_model_fast_s2.pth"
 
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.model = None
@@ -78,8 +80,10 @@ class OpticalSpecialistLive(BaseSpecialistModel):
 
     def _load_model(self):
         if not self.checkpoint_path.exists():
-            print(f"[OpticalSpecialistLive] Warning: Checkpoint not found at {self.checkpoint_path}. Operating in fallback mode.")
-            return
+            raise FileNotFoundError(
+                f"[OpticalSpecialistLive] Required model weights checkpoint not found at {self.checkpoint_path}. "
+                "Fallback mode is completely disabled."
+            )
 
         try:
             ckpt = torch.load(self.checkpoint_path, map_location="cpu")
@@ -117,7 +121,7 @@ class OpticalSpecialistLive(BaseSpecialistModel):
             self.is_live = True
             print(f"[OpticalSpecialistLive] Successfully loaded real weights from {self.checkpoint_path}")
         except Exception as e:
-            print(f"[OpticalSpecialistLive] Error loading real checkpoint: {e}. Fallback active.")
+            raise RuntimeError(f"[OpticalSpecialistLive] Error loading real checkpoint: {e}. Fallback mode is disabled.")
 
     def get_metadata(self) -> Dict[str, Any]:
         return {
@@ -127,7 +131,7 @@ class OpticalSpecialistLive(BaseSpecialistModel):
             "embedding_dim": 512,
             "num_classes": 19,
             "is_live": self.is_live,
-            "status": "Active (Live Weights Loaded)" if self.is_live else "Fallback Simulator"
+            "status": "Active (Live Weights Loaded)"
         }
 
     def _prepare_tensor(self, raster_input: Any) -> torch.Tensor:
@@ -150,7 +154,6 @@ class OpticalSpecialistLive(BaseSpecialistModel):
             if arr.ndim == 2:
                 arr = np.expand_dims(arr, 0)
             if arr.shape[0] < 12:
-                # repeat/pad to 12 channels
                 repeats = int(np.ceil(12 / arr.shape[0]))
                 arr = np.tile(arr, (repeats, 1, 1))[:12]
             elif arr.shape[0] > 12:
@@ -160,124 +163,106 @@ class OpticalSpecialistLive(BaseSpecialistModel):
 
         if isinstance(raster_input, (str, Path)):
             p = Path(raster_input)
-            if p.exists() and p.is_file():
-                try:
-                    from PIL import Image
-                    with Image.open(p) as img:
-                        img_rgb = img.convert("RGB")
-                        img_resized = img_rgb.resize((120, 120))
-                        arr_rgb = np.array(img_resized, dtype=np.float32) / 255.0
-                        r = arr_rgb[:, :, 0]
-                        g = arr_rgb[:, :, 1]
-                        b = arr_rgb[:, :, 2]
+            if not p.exists():
+                root_dir = Path(__file__).resolve().parent.parent
+                candidates = [
+                    root_dir / raster_input,
+                    root_dir / "backend" / raster_input,
+                    root_dir / "backend" / "uploads" / Path(raster_input).name,
+                    root_dir / "uploads" / Path(raster_input).name
+                ]
+                for c in candidates:
+                    if c.exists():
+                        p = c
+                        break
 
-                        # Physical synthesis of 12 Sentinel-2 bands from RGB
-                        excess_green = np.maximum(0.0, g * 1.5 - r)
-                        nir = np.clip(0.5 * r + 0.5 * g + 0.8 * excess_green, 0.0, 1.0)
-                        re1 = 0.7 * r + 0.3 * nir
-                        re2 = 0.5 * r + 0.5 * nir
-                        re3 = 0.3 * r + 0.7 * nir
-                        b8a = nir
-                        b09 = 0.8 * b + 0.2 * nir
-                        swir1 = np.clip(0.6 * r + 0.4 * g, 0.0, 1.0)
-                        swir2 = np.clip(0.5 * r + 0.3 * g, 0.0, 1.0)
+            if not p.exists():
+                raise FileNotFoundError(f"Satellite raster file not found: {p}")
 
-                        s2_synth = np.stack([b, b, g, r, re1, re2, re3, nir, b8a, b09, swir1, swir2], axis=0)
-                        return torch.from_numpy(s2_synth).unsqueeze(0).to(self.device)
-                except Exception as ex:
-                    print(f"[OpticalSpecialistLive] Notice reading {p}: {ex}")
+            from PIL import Image
+            with Image.open(p) as img:
+                img_rgb = img.convert("RGB")
+                img_resized = img_rgb.resize((120, 120))
+                arr_rgb = np.array(img_resized, dtype=np.float32) / 255.0
+                r = arr_rgb[:, :, 0]
+                g = arr_rgb[:, :, 1]
+                b = arr_rgb[:, :, 2]
 
-        # Fallback dummy tensor from hash
-        seed = sum(ord(c) for c in str(raster_input)) % 1000 if isinstance(raster_input, (str, Path)) else 42
-        rng = np.random.RandomState(seed)
-        dummy_arr = rng.randn(1, 12, 120, 120).astype(np.float32)
-        return torch.from_numpy(dummy_arr).to(self.device)
+                # Physical synthesis of 12 Sentinel-2 bands from RGB
+                excess_green = np.maximum(0.0, g * 1.5 - r)
+                nir = np.clip(0.5 * r + 0.5 * g + 0.8 * excess_green, 0.0, 1.0)
+                re1 = 0.7 * r + 0.3 * nir
+                re2 = 0.5 * r + 0.5 * nir
+                re3 = 0.3 * r + 0.7 * nir
+                b8a = nir
+                b09 = 0.8 * b + 0.2 * nir
+                swir1 = np.clip(0.6 * r + 0.4 * g, 0.0, 1.0)
+                swir2 = np.clip(0.5 * r + 0.3 * g, 0.0, 1.0)
+
+                s2_synth = np.stack([b, b, g, r, re1, re2, re3, nir, b8a, b09, swir1, swir2], axis=0)
+                return torch.from_numpy(s2_synth).unsqueeze(0).to(self.device)
+
+        raise ValueError(f"Invalid raster input: {raster_input}. Real input required.")
 
     def extract_features(self, raster_input: Any) -> np.ndarray:
-        if self.is_live and self.model is not None:
-            t = self._prepare_tensor(raster_input)
-            with torch.no_grad():
-                x = self.model.conv1(t)
-                x = self.model.bn1(x)
-                x = self.model.relu(x)
-                x = self.model.maxpool(x)
-                x = self.model.layer1(x)
-                x = self.model.layer2(x)
-                x = self.model.layer3(x)
-                x = self.model.layer4(x)
-                x = self.model.avgpool(x)
-                emb = torch.flatten(x, 1)
-                emb_norm = F.normalize(emb, p=2, dim=-1)
-                return emb_norm.cpu().numpy()[0]
+        if not self.is_live or self.model is None:
+            raise RuntimeError("Optical Specialist model is not loaded with real weights. Fallback mode is disabled.")
 
-        # Deterministic simulation fallback
-        seed = sum(ord(c) for c in str(raster_input)) % 1000 if isinstance(raster_input, (str, Path)) else 42
-        rng = np.random.RandomState(seed)
-        vec = rng.randn(512).astype(np.float32)
-        return vec / np.linalg.norm(vec)
+        t = self._prepare_tensor(raster_input)
+        with torch.no_grad():
+            x = self.model.conv1(t)
+            x = self.model.bn1(x)
+            x = self.model.relu(x)
+            x = self.model.maxpool(x)
+            x = self.model.layer1(x)
+            x = self.model.layer2(x)
+            x = self.model.layer3(x)
+            x = self.model.layer4(x)
+            x = self.model.avgpool(x)
+            emb = torch.flatten(x, 1)
+            emb_norm = F.normalize(emb, p=2, dim=-1)
+            return emb_norm.cpu().numpy()[0]
 
     def predict(self, raster_input: Any) -> Dict[str, Any]:
-        if self.is_live and self.model is not None:
-            t = self._prepare_tensor(raster_input)
-            with torch.no_grad():
-                raw_logits = self.model(t)
-                if self.s2_to_standard_indices is not None:
-                    aligned_logits = raw_logits[:, self.s2_to_standard_indices]
-                else:
-                    aligned_logits = raw_logits
-                probs = torch.sigmoid(aligned_logits).cpu().numpy()[0]
+        if not self.is_live or self.model is None:
+            raise RuntimeError("Optical Specialist model is not loaded with real weights. Fallback mode is disabled.")
 
-            prob_dict = {self.supported_classes[i]: float(probs[i]) for i in range(len(self.supported_classes))}
-            sorted_indices = np.argsort(probs)[::-1]
-            detected = [self.supported_classes[i] for i in sorted_indices if probs[i] >= 0.40]
-            if not detected:
-                detected = [self.supported_classes[sorted_indices[0]]]
+        t = self._prepare_tensor(raster_input)
+        with torch.no_grad():
+            raw_logits = self.model(t)
+            if self.s2_to_standard_indices is not None:
+                aligned_logits = raw_logits[:, self.s2_to_standard_indices]
+            else:
+                aligned_logits = raw_logits
+            probs = torch.sigmoid(aligned_logits).cpu().numpy()[0]
 
-            # Estimate spectral indices from bands B04 (Red=band 2), B08 (NIR=band 7), B03 (Green=band 1)
-            b_red = float(t[0, 2].mean().cpu().item())
-            b_nir = float(t[0, 7].mean().cpu().item())
-            b_green = float(t[0, 1].mean().cpu().item())
-            ndvi = (b_nir - b_red) / (b_nir + b_red + 1e-6)
-            ndwi = (b_green - b_nir) / (b_green + b_nir + 1e-6)
-
-            return {
-                "task": "optical_land_cover_classification",
-                "model_name": self.model_name,
-                "is_live": True,
-                "result": {
-                    "detected_classes": detected,
-                    "class_probabilities": prob_dict,
-                    "spectral_indices": {
-                        "estimated_ndvi": float(np.clip(ndvi, -1.0, 1.0)),
-                        "estimated_ndwi": float(np.clip(ndwi, -1.0, 1.0)),
-                    }
-                },
-                "confidence": float(np.max(probs)),
-                "processing_time_ms": 12.0
-            }
-
-        # Simulation fallback
-        seed = sum(ord(c) for c in str(raster_input)) % 1000 if isinstance(raster_input, (str, Path)) else 42
-        rng = np.random.RandomState(seed)
-        probs = rng.dirichlet(np.ones(len(self.supported_classes)))
-        sorted_indices = np.argsort(probs)[::-1]
-        detected = [self.supported_classes[i] for i in sorted_indices[:3]]
         prob_dict = {self.supported_classes[i]: float(probs[i]) for i in range(len(self.supported_classes))}
+        sorted_indices = np.argsort(probs)[::-1]
+        detected = [self.supported_classes[i] for i in sorted_indices if probs[i] >= 0.40]
+        if not detected:
+            detected = [self.supported_classes[sorted_indices[0]]]
+
+        # Estimate spectral indices from bands B04 (Red=band 2), B08 (NIR=band 7), B03 (Green=band 1)
+        b_red = float(t[0, 2].mean().cpu().item())
+        b_nir = float(t[0, 7].mean().cpu().item())
+        b_green = float(t[0, 1].mean().cpu().item())
+        ndvi = (b_nir - b_red) / (b_nir + b_red + 1e-6)
+        ndwi = (b_green - b_nir) / (b_green + b_nir + 1e-6)
 
         return {
             "task": "optical_land_cover_classification",
             "model_name": self.model_name,
-            "is_live": False,
+            "is_live": True,
             "result": {
                 "detected_classes": detected,
                 "class_probabilities": prob_dict,
                 "spectral_indices": {
-                    "estimated_ndvi": float(rng.uniform(0.35, 0.78)),
-                    "estimated_ndwi": float(rng.uniform(-0.25, 0.40)),
+                    "estimated_ndvi": float(np.clip(ndvi, -1.0, 1.0)),
+                    "estimated_ndwi": float(np.clip(ndwi, -1.0, 1.0)),
                 }
             },
-            "confidence": float(np.max(probs) * 1.2),
-            "processing_time_ms": 14.5
+            "confidence": float(np.max(probs)),
+            "processing_time_ms": 12.0
         }
 
 

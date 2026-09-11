@@ -151,4 +151,12 @@ class SceneCaptioner:
             else:
                 return "No major urban fabric or dense human infrastructure detected in this raster patch."
 
+        # Caption & General Analysis request
+        if any(w in q for w in ["caption", "describe", "description", "summary", "overview", "what does this show", "analyze", "inspect", "what is", "features", "objects", "tell me", "report"]):
+            return SceneCaptioner.generate_caption(image_bytes=image_bytes, detected_classes=detected_classes, probabilities=probabilities, modality=modality)
+
+        # Fallback to rich scene caption if classes are detected
+        if detected_classes:
+            return SceneCaptioner.generate_caption(image_bytes=image_bytes, detected_classes=detected_classes, probabilities=probabilities, modality=modality)
+
         return None

@@ -69,20 +69,15 @@ class CaptioningModel(nn.Module):
             )
 
         if not ans_text:
-            if SceneCaptioner and detected_classes:
-                ans_text = SceneCaptioner.generate_caption(
-                    detected_classes=detected_classes,
-                    probabilities=probabilities,
-                    vh_mean=vh_mean,
-                    vv_mean=vv_mean,
-                    modality=modality
-                )
-            elif detected_classes:
-                classes_str = ", ".join(detected_classes[:3])
-                sensor_desc = "Sentinel-2 multispectral" if modality == "Optical" else "Sentinel-1 SAR"
-                ans_text = f"{sensor_desc} satellite observation identified dominant surface classes: {classes_str}.{spectral_info}"
-            else:
-                ans_text = "Satellite imagery analyzed successfully across multispectral channels. Homogeneous feature distribution observed."
+            if not detected_classes:
+                raise ValueError("No valid land-cover signatures could be classified by the neural network on the provided raster.")
+            ans_text = SceneCaptioner.generate_caption(
+                detected_classes=detected_classes,
+                probabilities=probabilities,
+                vh_mean=vh_mean,
+                vv_mean=vv_mean,
+                modality=modality
+            )
 
         top_prob = round(probabilities.get(top_label, pred_data.get("confidence", 0.85)) * 100, 1)
         model_name = "Model-B Optical ResNet-18" if modality == "Optical" else "Model-A SAR ResNet"

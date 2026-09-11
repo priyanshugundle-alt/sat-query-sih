@@ -1816,13 +1816,15 @@ function WorkstationBoard({
             </p>
             <div className="claim-ledger-item">
               <p className="text-[11px] font-bold text-navy">
-                {activeTaskTab === "VQA"
-                  ? "Urban built-up grid boundary mapped in center quadrant."
-                  : activeTaskTab === "CHANGE"
-                  ? "Spectral vegetation change mapped across eastern shoreline."
-                  : activeTaskTab === "FUSION"
-                  ? "SAR radar backscatter combined with optical spectral bands."
-                  : "Target spatial feature localized with bounding box coordinates."}
+                {analysisResult?.evidence?.[0]?.description ||
+                  analysisResult?.evidenceSummary ||
+                  (activeTaskTab === "VQA"
+                    ? "Land-cover classification and spatial feature reasoning verified."
+                    : activeTaskTab === "CHANGE"
+                    ? "Spectral vegetation change mapped across temporal rasters."
+                    : activeTaskTab === "FUSION"
+                    ? "SAR radar backscatter combined with optical spectral bands."
+                    : "Target spatial feature localized with bounding box coordinates.")}
               </p>
               <div className="flex justify-between items-center mt-1 text-[8px] font-mono text-[#7082aa]">
                 <span>Source: {currentTask.targetEngine}</span>

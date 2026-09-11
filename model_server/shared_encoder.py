@@ -122,27 +122,23 @@ class QwenFeatureExtractor(nn.Module):
         embeddings = []
         for p in image_paths:
             mod = self.detect_modality(p) if modality == "auto" else modality
-            try:
-                if mod == "SAR" and self.model_a is not None:
-                    # SAR Specialist extraction
-                    with torch.no_grad():
-                        t_in = torch.randn(1, 2, 120, 120, device=self.device)
-                        feat = self.model_a.model.conv1(t_in)
-                        feat = torch.flatten(feat, 1)[:, :512]
-                        feat = torch.nn.functional.normalize(feat, p=2, dim=-1)
-                        embeddings.append(feat)
-                elif self.model_b is not None:
-                    # Optical Specialist extraction
-                    feat_np = self.model_b.extract_features(p)
-                    t_feat = torch.from_numpy(feat_np).float().to(self.device)
-                    if t_feat.ndim == 1:
-                        t_feat = t_feat.unsqueeze(0)
-                    embeddings.append(t_feat)
-                else:
-                    embeddings.append(torch.randn(1, self.embedding_dim, device=self.device))
-            except Exception as e:
-                print(f"     [Encoder] Warning extracting {p}: {e}")
-                embeddings.append(torch.randn(1, self.embedding_dim, device=self.device))
+            if mod == "SAR" and self.model_a is not None:
+                # SAR Specialist extraction
+                with torch.no_grad():
+                    t_in = torch.randn(1, 2, 120, 120, device=self.device)
+                    feat = self.model_a.model.conv1(t_in)
+                    feat = torch.flatten(feat, 1)[:, :512]
+                    feat = torch.nn.functional.normalize(feat, p=2, dim=-1)
+                    embeddings.append(feat)
+            elif self.model_b is not None:
+                # Optical Specialist extraction
+                feat_np = self.model_b.extract_features(p)
+                t_feat = torch.from_numpy(feat_np).float().to(self.device)
+                if t_feat.ndim == 1:
+                    t_feat = t_feat.unsqueeze(0)
+                embeddings.append(t_feat)
+            else:
+                raise RuntimeError(f"No trained specialist model loaded for modality: {mod}")
 
         return torch.cat(embeddings, dim=0)
 
@@ -150,39 +146,27 @@ class QwenFeatureExtractor(nn.Module):
         """Runs the appropriate specialist model on the given image raster."""
         mod = self.detect_modality(image_path) if modality == "auto" else modality
 
-        if mod == "SAR" and self.model_a is not None:
-            try:
-                # Use Model A SAR Inference
-                # If image is a single file, synthesize dual-polarization input
-                res = self.model_a.analyze(image_path, image_path)
-                return {
-                    "modality": "SAR",
-                    "detected_classes": res.get("detected_classes", []),
-                    "probabilities": res.get("class_probabilities", {}),
-                    "confidence": res.get("confidence", 0.90),
-                    "metrics": res.get("metrics", {})
-                }
-            except Exception as e:
-                print(f"[Encoder] Model A analyze warning: {e}")
+        if mod == "SAR":
+            if self.model_a is None:
+                raise RuntimeError("SAR Specialist Model A is not initialized.")
+            res = self.model_a.analyze(image_path, image_path)
+            return {
+                "modality": "SAR",
+                "detected_classes": res.get("detected_classes", []),
+                "probabilities": res.get("class_probabilities", {}),
+                "confidence": res.get("confidence", 0.90),
+                "metrics": res.get("metrics", {})
+            }
 
-        # Default to Model B Optical Specialist
-        if self.model_b is not None:
-            try:
-                pred = self.model_b.predict(image_path)
-                res = pred.get("result", {})
-                return {
-                    "modality": "Optical",
-                    "detected_classes": res.get("detected_classes", []),
-                    "probabilities": res.get("class_probabilities", {}),
-                    "confidence": pred.get("confidence", 0.90),
-                    "spectral_indices": res.get("spectral_indices", {})
-                }
-            except Exception as e:
-                print(f"[Encoder] Model B predict warning: {e}")
-
+        # Optical Specialist (Model B)
+        if self.model_b is None:
+            raise RuntimeError("Optical Specialist Model B is not initialized.")
+        pred = self.model_b.predict(image_path)
+        res = pred.get("result", {})
         return {
-            "modality": mod,
-            "detected_classes": ["Surface Entity"],
-            "probabilities": {},
-            "confidence": 0.85
+            "modality": "Optical",
+            "detected_classes": res.get("detected_classes", []),
+            "probabilities": res.get("class_probabilities", {}),
+            "confidence": pred.get("confidence", 0.90),
+            "spectral_indices": res.get("spectral_indices", {})
         }

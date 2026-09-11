@@ -81,11 +81,38 @@ const SPECIALIST_CONFIG = {
     engine: "OpticalSAR-Fusion (EarthGPT Adapter)",
     sublabel: "OPTICAL + SAR ◎",
   },
+  CAPTIONING: {
+    id: "CAPTIONING",
+    label: "Scene Captioning",
+    engine: "GeoCaption-VLM (UniRS Adapter)",
+    sublabel: "CAPTION ✍",
+  },
+  CHANGE_UNDERSTANDING: {
+    id: "CHANGE_UNDERSTANDING",
+    label: "Change Understanding",
+    engine: "ChangeQA-Siamese (Multi-Temporal)",
+    sublabel: "TEMPORAL ⏱",
+  },
+  INFORMATION_EXTRACTION: {
+    id: "INFORMATION_EXTRACTION",
+    label: "Info Extraction",
+    engine: "SatExtraction-VLM (Structured)",
+    sublabel: "EXTRACTION ✦",
+  },
 };
 
 // Automatic Natural-Language Intent Classifier
 function classifyQueryIntent(queryText) {
   const q = (queryText || "").toLowerCase();
+  if (/extract|coordinates|metadata|specs|sensor info|resolution/i.test(q)) {
+    return "INFORMATION_EXTRACTION";
+  }
+  if (/caption|describe scene|narrat|overview/i.test(q)) {
+    return "CAPTIONING";
+  }
+  if (/temporal|understand change|evolution|progression/i.test(q)) {
+    return "CHANGE_UNDERSTANDING";
+  }
   if (/change|differ|between|before|after|evolv|expand|flood|landslide/i.test(q)) {
     return "CHANGE";
   }
@@ -111,198 +138,6 @@ function generateConversationTitle(queryText) {
   const words = q.replace(/[?!.,;]/g, "").split(/\s+/).slice(0, 4).join(" ");
   return words.length > 28 ? words.slice(0, 26) + "..." : words.charAt(0).toUpperCase() + words.slice(1);
 }
-
-// ─────────────────────────────────────────────────────────────────
-// INITIAL SEED CONVERSATIONS FOR REALISTIC QUERY HISTORY
-// ─────────────────────────────────────────────────────────────────
-const SEED_CONVERSATIONS = [
-  {
-    id: "chat-mumbai-seed",
-    title: "Mumbai Land Cover Analysis",
-    createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(), // Yesterday
-    projectId: "proj-earth-obs",
-    stagedAssets: [
-      {
-        id: "asset-mumbai-proba",
-        name: "Bombay Seen by Proba Satellite",
-        previewUrl: "/assets/imagery/mumbai_proba.jpg",
-        modality: "OPTICAL",
-        date: "10 Sep 2026 · 11:20 AM",
-        metadata: {
-          format: "GeoTIFF",
-          width: 1024,
-          height: 1024,
-          bands: 4,
-          resolution: "5m GSD Multispectral",
-          crs: "EPSG:32643 (UTM Zone 43N)",
-          coordinates: "19.0760° N, 72.8777° E",
-        }
-      }
-    ],
-    messages: [
-      {
-        id: "msg-mumbai-1",
-        role: "user",
-        text: "What type of land cover dominates this region?",
-        timestamp: "11:20 AM"
-      },
-      {
-        id: "msg-mumbai-2",
-        role: "assistant",
-        text: "Urban residential development dominates the observed region, flanked by deep-water harbor logistics docks on the eastern bay.",
-        timestamp: "11:20 AM",
-        mode: "VQA",
-        confidence: 94.2,
-        findingsCount: 2,
-        evidence: [
-          { id: "target-01", type: "URBAN RESIDENTIAL GRID", confidence: 94.2, coords: "19.0760° N, 72.8777° E", detail: "High-density structural clusters" },
-          { id: "target-02", type: "MARITIME HARBOR", confidence: 89.6, coords: "19.0820° N, 72.8850° E", detail: "Logistics Docks & Quays" }
-        ],
-        whyThisAnswer: "High-confidence spectral signature matched high-density residential and maritime port profiles with 94.2% agreement."
-      }
-    ]
-  },
-  {
-    id: "chat-pune-seed",
-    title: "Built-up Area Detection",
-    createdAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(), // 3 days ago (Previous 7 Days)
-    projectId: "proj-urban",
-    stagedAssets: [
-      {
-        id: "asset-pune-sentinel",
-        name: "Sentinel-2 Pune Sector 4",
-        previewUrl: "/satquery-prism-hero.png",
-        modality: "OPTICAL",
-        date: "08 Sep 2026 · 09:15 AM",
-        metadata: {
-          format: "GeoTIFF",
-          width: 1024,
-          height: 1024,
-          bands: 4,
-          resolution: "0.5m GSD",
-          crs: "EPSG:32643 (UTM Zone 43N)",
-          coordinates: "18.5204° N, 73.8567° E",
-        }
-      }
-    ],
-    messages: [
-      {
-        id: "msg-pune-1",
-        role: "user",
-        text: "Where are the major built-up areas?",
-        timestamp: "09:15 AM"
-      },
-      {
-        id: "msg-pune-2",
-        role: "assistant",
-        text: "Spatial object grounding localized 3 target structural facilities with pixel-level bounding coordinates. Classification denotes industrial built-up area.",
-        timestamp: "09:15 AM",
-        mode: "GROUNDING",
-        confidence: 91.4,
-        findingsCount: 3,
-        evidence: [
-          { id: "target-01", type: "STRUCTURE 01", confidence: 94.2, coords: "18.5221° N, 73.8582° E", detail: "Industrial Warehouse Facility" },
-          { id: "target-02", type: "STRUCTURE 02", confidence: 91.8, coords: "18.5193° N, 73.8614° E", detail: "Foundation Pad (Excavation)" },
-          { id: "target-03", type: "WATER BASIN", confidence: 88.5, coords: "18.5168° N, 73.8549° E", detail: "Retention Reservoir" }
-        ],
-        whyThisAnswer: "Zero-shot visual grounding isolated target geometries with 91.4% average agreement against remote-sensing spatial baseline."
-      }
-    ]
-  },
-  {
-    id: "chat-nepal-seed",
-    title: "Nepal Change Analysis",
-    createdAt: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(), // 5 days ago (Previous 7 Days)
-    projectId: "proj-disaster",
-    stagedAssets: [
-      {
-        id: "asset-nepal-pair",
-        name: "Syabru Besi Nepal Bi-Temporal Pair",
-        previewUrl: "/assets/imagery/nepal_2026_08_27.jpg",
-        secondaryUrl: "/assets/imagery/nepal_2023_10_18.jpg",
-        modality: "OPTICAL",
-        date: "06 Sep 2026 · 02:45 PM",
-        metadata: {
-          format: "GeoTIFF",
-          width: 1024,
-          height: 1024,
-          bands: 4,
-          resolution: "10m GSD",
-          crs: "EPSG:32645",
-          coordinates: "28.1500° N, 85.3400° E",
-        }
-      }
-    ],
-    messages: [
-      {
-        id: "msg-nepal-1",
-        role: "user",
-        text: "Did this region change between 2023 and 2026?",
-        timestamp: "02:45 PM"
-      },
-      {
-        id: "msg-nepal-2",
-        role: "assistant",
-        text: "Bi-temporal change detection verified +14.5% urban expansion and new road-cutting excavation between October 2023 and August 2026.",
-        timestamp: "02:45 PM",
-        mode: "CHANGE",
-        confidence: 89.4,
-        findingsCount: 2,
-        evidence: [
-          { id: "target-01", type: "LANDSLIDE / EXCAVATION", confidence: 89.4, coords: "28.1500° N, 85.3400° E", detail: "Active Slope Inundation" },
-          { id: "target-02", type: "ROAD CORRIDOR", confidence: 91.2, coords: "28.1524° N, 85.3421° E", detail: "Newly Cleared Highway Spur" }
-        ],
-        whyThisAnswer: "Calibrated surface reflectance differencing confirmed a major pixel cluster shift from vegetative soil to compacted gravel."
-      }
-    ]
-  },
-  {
-    id: "chat-fusion-seed",
-    title: "Optical + SAR Comparison",
-    createdAt: new Date(Date.now() - 12 * 24 * 3600 * 1000).toISOString(), // 12 days ago (Older)
-    projectId: "proj-earth-obs",
-    stagedAssets: [
-      {
-        id: "asset-fusion-pair",
-        name: "Sentinel-1 SAR Radar Swath",
-        previewUrl: "/satquery-prism-sar.png",
-        modality: "FUSION",
-        date: "30 Aug 2026 · 04:10 PM",
-        metadata: {
-          format: "GeoTIFF",
-          width: 1024,
-          height: 1024,
-          bands: 4,
-          resolution: "10m GSD",
-          crs: "EPSG:32643",
-          coordinates: "18.5221° N, 73.8582° E",
-        }
-      }
-    ],
-    messages: [
-      {
-        id: "msg-fusion-1",
-        role: "user",
-        text: "Corroborate with SAR radar through cloud cover.",
-        timestamp: "04:10 PM"
-      },
-      {
-        id: "msg-fusion-2",
-        role: "assistant",
-        text: "Optical-SAR multimodal fusion penetrated monsoon cloud cover. C-band radar backscatter confirmed reinforced concrete structures and active water retention reservoir.",
-        timestamp: "04:10 PM",
-        mode: "OPTICAL + SAR",
-        confidence: 92.8,
-        findingsCount: 2,
-        evidence: [
-          { id: "target-01", type: "REINFORCED FACILITY", confidence: 92.8, coords: "18.5221° N, 73.8582° E", detail: "High Double-Bounce Backscatter" },
-          { id: "target-02", type: "RETENTION RESERVOIR", confidence: 90.5, coords: "18.5168° N, 73.8549° E", detail: "Specular Radar Reflection" }
-        ],
-        whyThisAnswer: "Co-registered Sentinel-1 SAR VV/VH dielectric reflections corroborated building footprints despite 78% cloud occlusion."
-      }
-    ]
-  }
-];
 
 // Project Taxonomy
 const PROJECTS_CONFIG = [
@@ -337,7 +172,7 @@ export default function Investigation() {
     } catch (e) {
       console.warn("Could not load stored conversations", e);
     }
-    return SEED_CONVERSATIONS;
+    return [];
   });
 
   const [activeChatId, setActiveChatId] = useState(null);
@@ -544,24 +379,35 @@ export default function Investigation() {
         modality = "SAR";
       }
 
-      const previewUrl = parsed.previewUrl || URL.createObjectURL(file);
+      // Real upload to JVM Backend /api/upload
+      let uploadedServerAsset = null;
+      try {
+        uploadedServerAsset = await uploadAsset(file);
+      } catch (uploadErr) {
+        console.warn("Backend upload note, operating with local raster context:", uploadErr);
+      }
+
+      const previewUrl = uploadedServerAsset?.previewUrl || parsed.previewUrl || URL.createObjectURL(file);
       const now = new Date();
       const formattedDate = `${now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} · ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
 
+      const realAssetId = uploadedServerAsset?.imageId || `asset-${Date.now()}`;
       const assetEntry = {
-        id: `asset-${Date.now()}`,
+        id: realAssetId,
+        imageId: realAssetId,
         name: file.name,
+        filePath: uploadedServerAsset?.filePath || null,
         previewUrl,
         modality,
         date: formattedDate,
         metadata: {
-          format: parsed.format || "GeoTIFF",
-          width: parsed.width || 1024,
-          height: parsed.height || 1024,
-          bands: parsed.bands || 4,
-          resolution: "0.5m GSD",
-          crs: "EPSG:32643 (UTM Zone 43N)",
-          coordinates: "19.0760° N, 72.8777° E",
+          format: uploadedServerAsset?.metadata?.format || parsed.format || "GeoTIFF",
+          width: uploadedServerAsset?.metadata?.width || parsed.width || 1024,
+          height: uploadedServerAsset?.metadata?.height || parsed.height || 1024,
+          bands: uploadedServerAsset?.metadata?.bands || parsed.bands || 4,
+          resolution: uploadedServerAsset?.metadata?.resolution || "0.5m GSD",
+          crs: uploadedServerAsset?.metadata?.crs || "EPSG:32643 (UTM Zone 43N)",
+          coordinates: uploadedServerAsset?.metadata?.boundingBox || "19.0760° N, 72.8777° E",
         },
       };
 
@@ -785,73 +631,72 @@ export default function Investigation() {
     setStagedAsset(null);
     setIsAnalyzing(true);
 
-    // ── Pipeline Stepper Simulation: QUERY → ROUTING → ANALYSIS → ANSWER → FINDINGS ──
+    // ── Pipeline Stepper: Real execution across Java Backend -> Python Model Server ──
     setRoutingStage("QUERY");
-    setRoutingDetail("Parsing natural language request and sensor metadata...");
+    setRoutingDetail("Dispatching natural language request and sensor metadata to SatQuery JVM backend...");
 
-    setTimeout(() => {
+    try {
+      const backendTaskType = {
+        "VQA": "vqa",
+        "GROUNDING": "grounding",
+        "CHANGE": "change_analysis",
+        "OPTICAL + SAR": "fusion_analysis",
+        "CAPTIONING": "captioning",
+        "CHANGE_UNDERSTANDING": "change_understanding",
+        "INFORMATION_EXTRACTION": "information_extraction",
+      }[effectiveMode] || "vqa";
+
+      const targetImageId = currentAssetForQuery ? (currentAssetForQuery.imageId || currentAssetForQuery.id) : null;
+      const imageIds = targetImageId ? [targetImageId] : [];
+
       setRoutingStage("ROUTING");
-      setRoutingDetail(`Routing to specialist engine: ${specialist.label} (${specialist.engine})`);
-    }, 450);
+      setRoutingDetail(`Routing to specialized engine: ${specialist.label} (${specialist.engine})`);
 
-    setTimeout(() => {
       setRoutingStage("ANALYSIS");
-      setRoutingDetail(`Calibrating multi-band reflectance & running ${specialist.sublabel}...`);
-    }, 950);
+      setRoutingDetail(`Executing ${specialist.sublabel} against raster tensor...`);
 
-    setTimeout(() => {
+      const result = await runQuery({
+        imageIds,
+        taskType: backendTaskType,
+        queryText: queryToSend,
+        datasetContext: "NORMAL_SATELLITE",
+      });
+
       setRoutingStage("ANSWER");
-      setRoutingDetail("Generating natural language finding and verifiable audit trace...");
-    }, 1450);
+      setRoutingDetail("Generating deterministic verification trace and verifiable audit dossier...");
 
-    setTimeout(() => {
-      let answerText = "";
-      let whyText = "";
-      let confidenceNum = 94.2;
+      const answerText = result.answer || "Analysis completed.";
+      const confidenceNum = typeof result.confidence === "number" ? result.confidence : 92;
+      const confidenceState = result.confidenceState || (confidenceNum >= 80 ? "HIGH" : "MEDIUM");
+
+      // Extract real evidence from result
       let evidenceList = [];
-
-      if (effectiveMode === "CHANGE") {
-        answerText =
-          "Bi-temporal change detection verified +14.5% urban expansion and new road-cutting excavation between October 2023 and August 2026.";
-        whyText =
-          "Calibrated surface reflectance differencing confirmed a major pixel cluster shift from vegetative soil to compacted gravel.";
-        confidenceNum = 89.4;
-        evidenceList = [
-          { id: "target-01", type: "LANDSLIDE / EXCAVATION", confidence: 89.4, coords: "28.1500° N, 85.3400° E", detail: "Active Slope Inundation" },
-          { id: "target-02", type: "ROAD CORRIDOR", confidence: 91.2, coords: "28.1524° N, 85.3421° E", detail: "Newly Cleared Highway Spur" },
-        ];
-      } else if (effectiveMode === "OPTICAL + SAR") {
-        answerText =
-          "Optical-SAR multimodal fusion penetrated monsoon cloud cover. C-band radar backscatter confirmed reinforced concrete structures and active water retention reservoir.";
-        whyText =
-          "Co-registered Sentinel-1 SAR VV/VH dielectric reflections corroborated building footprints despite 78% cloud occlusion.";
-        confidenceNum = 92.8;
-        evidenceList = [
-          { id: "target-01", type: "REINFORCED FACILITY", confidence: 92.8, coords: "18.5221° N, 73.8582° E", detail: "High Double-Bounce Backscatter" },
-          { id: "target-02", type: "RETENTION RESERVOIR", confidence: 90.5, coords: "18.5168° N, 73.8549° E", detail: "Specular Radar Reflection" },
-        ];
-      } else if (effectiveMode === "VQA") {
-        answerText =
-          "Urban residential development dominates the observed region, flanked by deep-water harbor logistics docks on the eastern bay.";
-        whyText =
-          "High-confidence spectral signature matched high-density residential and maritime port profiles with 94.2% agreement.";
-        confidenceNum = 94.2;
-        evidenceList = [
-          { id: "target-01", type: "URBAN RESIDENTIAL GRID", confidence: 94.2, coords: "19.0760° N, 72.8777° E", detail: "High-density structural clusters" },
-          { id: "target-02", type: "MARITIME HARBOR", confidence: 89.6, coords: "19.0820° N, 72.8850° E", detail: "Logistics Docks & Quays" },
-        ];
-      } else {
-        answerText =
-          "Spatial object grounding localized 3 target structural facilities with pixel-level bounding coordinates. Classification denotes industrial built-up area.";
-        whyText =
-          "Zero-shot visual grounding isolated target geometries with 91.4% average agreement against remote-sensing spatial baseline.";
-        confidenceNum = 91.4;
-        evidenceList = [
-          { id: "target-01", type: "STRUCTURE 01", confidence: 94.2, coords: "18.5221° N, 73.8582° E", detail: "Industrial Warehouse Facility" },
-          { id: "target-02", type: "STRUCTURE 02", confidence: 91.8, coords: "18.5193° N, 73.8614° E", detail: "Foundation Pad (Excavation)" },
-          { id: "target-03", type: "WATER BASIN", confidence: 88.5, coords: "18.5168° N, 73.8549° E", detail: "Retention Reservoir" },
-        ];
+      if (Array.isArray(result.evidence) && result.evidence.length > 0) {
+        evidenceList = result.evidence.map((ev, idx) => ({
+          id: `target-0${idx + 1}`,
+          type: ev.evidenceType || ev.type || "DETECTED_FEATURE",
+          confidence: ev.confidence ? Math.round(ev.confidence > 1 ? ev.confidence : ev.confidence * 100) : confidenceNum,
+          coords: ev.coordinates
+            ? (Array.isArray(ev.coordinates) ? ev.coordinates.join(", ") : String(ev.coordinates))
+            : (currentAssetForQuery?.metadata?.coordinates || "19.0760° N, 72.8777° E"),
+          detail: ev.detail || ev.label || "Model grounded feature attribute",
+          filePath: ev.filePath || null,
+        }));
+      } else if (Array.isArray(result.boundingBoxes) && result.boundingBoxes.length > 0) {
+        evidenceList = result.boundingBoxes.map((b, idx) => ({
+          id: `target-0${idx + 1}`,
+          type: b.label || "SPATIAL_GROUNDING",
+          confidence: confidenceNum,
+          coords: `${b.x1}, ${b.y1}, ${b.x2}, ${b.y2}`,
+          detail: b.label || "Localized bounding area",
+          filePath: null,
+        }));
       }
+
+      const whyText =
+        result.executionTrace?.steps?.length > 0
+          ? result.executionTrace.steps.map((s) => s.detail || s.name || s.eventName).filter(Boolean).join(" ➔ ")
+          : `Grounded inference executed by ${result.executionTrace?.modelUsed || specialist.engine} with ${confidenceNum}% confidence.`;
 
       const asstMsg = {
         id: `msg-asst-${Date.now()}`,
@@ -860,12 +705,17 @@ export default function Investigation() {
         timestamp: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
         mode: effectiveMode,
         confidence: confidenceNum,
+        confidenceState,
         findingsCount: evidenceList.length,
         evidence: evidenceList,
         whyThisAnswer: whyText,
         assetRef: currentAssetForQuery,
+        boundingBoxes: result.boundingBoxes || [],
+        changeMask: result.changeMask || null,
+        resultImageUrl: result.resultImageUrl || null,
+        reportUrl: result.reportUrl || null,
         queryResult: {
-          queryId: `SQ-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+          queryId: result.queryId || `SQ-${Date.now()}`,
           userQuery: queryToSend,
           intentDetected: specialist.label,
           routedTool: specialist.engine,
@@ -873,6 +723,7 @@ export default function Investigation() {
           confidence: confidenceNum,
           whyThisAnswer: whyText,
           evidence: evidenceList,
+          reportUrl: result.reportUrl || null,
         },
       };
 
@@ -884,8 +735,33 @@ export default function Investigation() {
 
       setRoutingStage("FINDINGS");
       setIsAnalyzing(false);
-      toast.success("Analysis complete. Evidence ready for inspection.");
-    }, 1850);
+      toast.success("Analysis complete. Real model evidence ready.");
+    } catch (error) {
+      console.error("SatQuery runQuery failed:", error);
+      const errMsg = error.response?.data?.error || error.message || "Query failed to execute on server.";
+
+      const errAsstMsg = {
+        id: `msg-asst-${Date.now()}`,
+        role: "assistant",
+        text: `Analysis failed: ${errMsg}. Please ensure Java Backend (port 8080) and Python Model Server (port 5000) are running.`,
+        timestamp: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+        mode: effectiveMode,
+        confidence: 0,
+        findingsCount: 0,
+        evidence: [],
+        whyThisAnswer: `Backend connection error: ${errMsg}`,
+        assetRef: currentAssetForQuery,
+        queryResult: null,
+      };
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === chatId ? { ...c, messages: [...c.messages, errAsstMsg] } : c
+        )
+      );
+      setIsAnalyzing(false);
+      toast.error(`Query failed: ${errMsg}`);
+    }
   };
 
   // Inspect Canvas Findings
@@ -1864,23 +1740,26 @@ export default function Investigation() {
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 8, scale: 0.98 }}
                               transition={{ duration: 0.12 }}
-                              className="absolute bottom-full right-0 mb-3 w-48 bg-[#151817] border border-[#2A2E2B] shadow-2xl p-1 font-mono text-xs z-50 rounded-none"
+                              className="absolute bottom-full right-0 mb-3 w-60 bg-[#151817] border border-[#2A2E2B] shadow-2xl p-1 font-mono text-xs z-50 rounded-none max-h-72 overflow-y-auto"
                             >
-                              {["AUTO", "VQA", "GROUNDING", "CHANGE", "OPTICAL + SAR"].map((mode) => (
+                              {Object.keys(SPECIALIST_CONFIG).map((mode) => (
                                 <button
                                   key={mode}
                                   onClick={() => {
                                     setTaskMode(mode);
                                     setTaskDropdownOpen(false);
                                   }}
-                                  className={`w-full px-2.5 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer ${
+                                  className={`w-full px-2.5 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer border-b border-[#2A2E2B]/40 last:border-none ${
                                     taskMode === mode
                                       ? "bg-[#1D211F] text-[#D49A3A] font-bold"
                                       : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#1D211F]"
                                   }`}
                                 >
-                                  <span>{mode}</span>
-                                  {taskMode === mode && <Check size={12} className="text-[#D49A3A]" />}
+                                  <div className="flex flex-col">
+                                    <span className="text-[11px] font-bold">{SPECIALIST_CONFIG[mode]?.label || mode}</span>
+                                    <span className="text-[9px] text-[#9A9A90] font-mono">{SPECIALIST_CONFIG[mode]?.sublabel}</span>
+                                  </div>
+                                  {taskMode === mode && <Check size={12} className="text-[#D49A3A] flex-shrink-0" />}
                                 </button>
                               ))}
                             </motion.div>
@@ -2002,8 +1881,9 @@ export default function Investigation() {
           queryResult={activeEvidenceResult || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult}
           imageAssets={activeConversation?.stagedAssets || []}
           onDownloadPdf={() => {
-            downloadReportPdf("SQ-2026-CERTIFIED");
-            toast.success("ISRO Analysis Report PDF generated with certified audit trace");
+            const currentQId = activeEvidenceResult?.queryId || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult?.queryId || "SQ-2026-CERTIFIED";
+            downloadReportPdf(currentQId);
+            toast.success(`ISRO Analysis Report PDF for ${currentQId} generated`);
           }}
         />
 

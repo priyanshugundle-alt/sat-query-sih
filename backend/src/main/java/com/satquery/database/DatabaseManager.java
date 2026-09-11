@@ -99,8 +99,10 @@ public class DatabaseManager {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             
-            // Enforce foreign key constraints
+            // Enforce foreign key constraints and WAL mode to prevent locking
             stmt.execute("PRAGMA foreign_keys = ON;");
+            stmt.execute("PRAGMA journal_mode = WAL;");
+            stmt.execute("PRAGMA busy_timeout = 10000;");
             
             // Execute schema file statements separated by semicolon
             String[] queries = schemaSql.split(";");

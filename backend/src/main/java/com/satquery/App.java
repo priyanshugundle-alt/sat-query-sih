@@ -579,9 +579,13 @@ public class App {
                 
                 String toolName = switch (taskType) {
                     case VQA -> "VQA_TOOL";
+                    case CAPTIONING -> "CAPTIONING_TOOL";
                     case GROUNDING -> "GROUNDING_TOOL";
+                    case CHANGE_UNDERSTANDING -> "CHANGE_UNDERSTANDING_TOOL";
                     case CHANGE_ANALYSIS -> "CHANGE_TOOL";
                     case FUSION_ANALYSIS -> "FUSION_TOOL";
+                    case INFORMATION_EXTRACTION -> "EXTRACTION_TOOL";
+                    default -> "VQA_TOOL";
                 };
                 
                 com.satquery.registry.ToolValidationResult toolValidation = com.satquery.registry.ToolRegistry.validate(

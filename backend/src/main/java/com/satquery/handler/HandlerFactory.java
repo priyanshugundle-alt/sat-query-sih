@@ -13,6 +13,10 @@ public class HandlerFactory {
             case GROUNDING -> new GroundingHandler();
             case CHANGE_ANALYSIS -> new ChangeHandler();
             case FUSION_ANALYSIS -> new FusionHandler();
+            case CAPTIONING -> new CaptioningHandler();
+            case CHANGE_UNDERSTANDING -> new ChangeUnderstandingHandler();
+            case INFORMATION_EXTRACTION -> new ExtractionHandler();
+            default -> throw new IllegalArgumentException("Unsupported task type: " + taskType);
         };
     }
 }

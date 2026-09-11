@@ -58,6 +58,8 @@ public class QueryRequest {
     public Map<String, Object> getParameters() { return parameters; }
     public void setParameters(Map<String, Object> parameters) { this.parameters = parameters; }
 
+    private List<Map<String, Object>> frontendAssets;
+
     public String getRequestedTask() { return requestedTask; }
     public void setRequestedTask(String requestedTask) { this.requestedTask = requestedTask; }
 
