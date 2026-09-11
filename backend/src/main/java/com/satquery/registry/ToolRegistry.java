@@ -49,6 +49,36 @@ public class ToolRegistry {
                 2,
                 List.of(new ParameterRule("alignmentMode", "STRING", 2, 20))
         ));
+
+        // 5. CAPTIONING_TOOL definition
+        registry.put("CAPTIONING_TOOL", new ToolDefinition(
+                "CAPTIONING_TOOL",
+                "Satellite scene multi-modal descriptive captioning",
+                List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
+                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                1,
+                List.of()
+        ));
+
+        // 6. CHANGE_UNDERSTANDING_TOOL definition
+        registry.put("CHANGE_UNDERSTANDING_TOOL", new ToolDefinition(
+                "CHANGE_UNDERSTANDING_TOOL",
+                "Bi-temporal change description and reasoning",
+                List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
+                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                2,
+                List.of(new ParameterRule("changeThreshold", "DOUBLE", 0.0, 1.0))
+        ));
+
+        // 7. EXTRACTION_TOOL definition
+        registry.put("EXTRACTION_TOOL", new ToolDefinition(
+                "EXTRACTION_TOOL",
+                "Structured geographic information and attribute extraction",
+                List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
+                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                1,
+                List.of()
+        ));
     }
 
     public static ToolDefinition getTool(String name) {

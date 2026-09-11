@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
@@ -8,25 +8,49 @@ app = FastAPI(title="SatQuery AI Agentic Model Server")
 registry = ModelRegistry()
 
 class QueryRequest(BaseModel):
-    task: str
-    query: str
-    images: List[str]
+    task: Optional[str] = None
+    query: Optional[str] = ""
+    images: Optional[List[str]] = []
     parameters: Optional[dict] = None
 
 @app.post("/analyze")
-async def analyze_query(request: QueryRequest):
+@app.post("/api/query")
+@app.post("/api/roi/analyze")
+@app.post("/api/change-detection")
+@app.post("/api/multimodal-query")
+async def analyze_query(request: QueryRequest, req: Request):
     try:
-        print(f"[Model Server] Received Task: {request.task}")
+        path = req.url.path
+        task = request.task
+        
+        # Auto-infer task from URL route if missing
+        if not task:
+            if "roi" in path:
+                task = "GROUNDING"
+            elif "change" in path:
+                task = "CHANGE_ANALYSIS"
+            elif "multimodal" in path:
+                task = "FUSION_ANALYSIS"
+            else:
+                task = "VQA"
+        
+        print(f"[Model Server] Path: {path} -> Routed Task: {task}")
         
         # 1. Agentic Orchestration: Route to the correct model
-        specialized_model = registry.get_model(request.task)
+        specialized_model = registry.get_model(task)
         
         # 2. Execute Model Inference
         result = specialized_model.run(
-            query=request.query,
-            image_paths=request.images,
+            query=request.query or "",
+            image_paths=request.images or [],
             params=request.parameters or {}
         )
+        
+        # Ensure evidence objects have evidenceType for com.satquery.model.Evidence compatibility
+        if "evidence" in result and isinstance(result["evidence"], list):
+            for ev in result["evidence"]:
+                if isinstance(ev, dict) and "type" in ev and "evidenceType" not in ev:
+                    ev["evidenceType"] = ev["type"]
         
         return result
         
@@ -43,3 +67,4 @@ def health_check():
 if __name__ == "__main__":
     print("Starting SatQuery AI Agentic Model Server on port 5000...")
     uvicorn.run(app, host="0.0.0.0", port=5000)
+
