@@ -16,20 +16,11 @@ if defined JAVA_HOME set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 echo SatQuery AI (Java Backend ^& Vite Frontend) started successfully!
 
-REM Check if Python Model Server on Port 5000 is already running
-netstat -ano | findstr :5000 >nul
-if %errorlevel% neq 0 (
-    echo Launching Python Model Server on Port 5000...
-    start "SatQuery Model Server (Port 5000)" cmd /k "cd /d %~dp0model_server && call venv\Scripts\activate.bat && python main.py"
-) else (
-    echo Model Server is already active on Port 5000.
-)
-
 REM Check if Java Backend on Port 8080 is already running
 netstat -ano | findstr :8080 >nul
 if %errorlevel% neq 0 (
     echo Launching Java Backend on Port 8080...
-    start "SatQuery Backend (Port 8080)" cmd /k "set JAVA_HOME=%JAVA_HOME%&& cd /d %~dp0backend && mvnw.cmd exec:java"
+    start "SatQuery Backend (Port 8080)" cmd /k "set JAVA_HOME=C:\Program Files\Java\jdk-26.0.1&& cd /d %~dp0backend && mvnw.cmd exec:java"
 ) else (
     echo Java Backend is already active on Port 8080.
 )
