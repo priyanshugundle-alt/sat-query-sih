@@ -9,12 +9,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.GpsDirectory;
-import com.drew.metadata.exif.ExifIFD0Directory;
-import com.drew.lang.GeoLocation;
-
 public class GdalProcessor {
 
     public GeoRasterMetadata inspect(Path path) {
@@ -68,32 +62,6 @@ public class GdalProcessor {
 
         String fileName = file.getName().toLowerCase();
         boolean isTiff = fileName.endsWith(".tif") || fileName.endsWith(".tiff");
-
-        // 0. Extract Universal Metadata using Drew Noakes (EXIF/GPS/Camera)
-        try {
-            Metadata extractMeta = ImageMetadataReader.readMetadata(file);
-            
-            // Extract Camera Make/Model (Sensor Platform)
-            ExifIFD0Directory ifd0Dir = extractMeta.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            if (ifd0Dir != null && ifd0Dir.containsTag(ExifIFD0Directory.TAG_MODEL)) {
-                metadata.setSensorPlatform(ifd0Dir.getString(ExifIFD0Directory.TAG_MODEL));
-            }
-            
-            // Extract GPS Location (Useful for Drone JPEGs)
-            GpsDirectory gpsDir = extractMeta.getFirstDirectoryOfType(GpsDirectory.class);
-            if (gpsDir != null) {
-                GeoLocation geoLocation = gpsDir.getGeoLocation();
-                if (geoLocation != null && !geoLocation.isZero()) {
-                    metadata.setMinLat(geoLocation.getLatitude());
-                    metadata.setMinLon(geoLocation.getLongitude());
-                    metadata.setMaxLat(geoLocation.getLatitude());
-                    metadata.setMaxLon(geoLocation.getLongitude());
-                    metadata.setGeoreferenced(true);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("[GdalProcessor] Metadata Extractor skipped or failed: " + e.getMessage());
-        }
 
         // 1. TIFF IFD Header Parsing for GeoTIFF Tags
         if (isTiff) {

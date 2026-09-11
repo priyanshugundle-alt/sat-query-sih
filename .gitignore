@@ -15,7 +15,6 @@ backend/outputs/*
 
 # IDE files
 .vscode/
-.idea/
 .manus-logs/
 
 # Dependencies
@@ -26,14 +25,13 @@ frontend/node_modules/
 .DS_Store
 Thumbs.db
 
-# Python Virtual Environments
-.venv/
-venv/
-env/
-ENV/
+# Large model binaries
+backend/trained_models/*.safetensors
+backend/trained_models/*.bin
+backend/trained_models/*.pth
 
 # Python Cache & Bytecode
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -41,6 +39,7 @@ __pycache__/
 
 # Datasets & Large Metadata
 BigEarthNet-S1/
+BigEarthNet.txt/
 *.parquet
 model_a_audit.txt
 model_a/cache/*.json

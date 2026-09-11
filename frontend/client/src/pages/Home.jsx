@@ -44,7 +44,6 @@ import {
   toWebUrl,
 } from "@/api/client";
 import { parseGeoTiffFile } from "@/lib/geotiff";
-import * as mgrs from "mgrs";
 
 // -------------------------------------------------------------
 // TASK TYPES & REPRESENTATIVE QUERIES SPECIFICATION
@@ -176,7 +175,6 @@ export default function Home() {
   const [pipelineStep, setPipelineStep] = useState(1); // 1: Query -> 2: Metadata -> 3: Routing -> 4: Inference -> 5: Report
   const [showReceipt, setShowReceipt] = useState(false);
   const [activeQueryId, setActiveQueryId] = useState(null);
-  const [imageAddress, setImageAddress] = useState(null);
 
   // Analysis Outputs from Backend
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -196,53 +194,6 @@ export default function Home() {
     () => stagedAssets.filter(item => item.included),
     [stagedAssets]
   );
-
-  const primaryAsset = activeStagedAssets[0];
-
-  // Reverse geocoding for geographic address
-  useEffect(() => {
-    let bbox = primaryAsset?.metadata?.bbox;
-    let centerLon = null;
-    let centerLat = null;
-    let isMgrsExtracted = false;
-
-    if (bbox) {
-      centerLon = (bbox[0] + bbox[2]) / 2;
-      centerLat = (bbox[1] + bbox[3]) / 2;
-    } else if (primaryAsset?.name) {
-      // If the GeoTIFF is a stripped ML crop without metadata, 
-      // extract the real MGRS tile from the Sentinel-2 filename (e.g. _T33UUP_)
-      const match = primaryAsset.name.match(/_T([0-9]{1,2}[A-Z]{3})/i);
-      if (match && match[1]) {
-        try {
-          const point = mgrs.toPoint(match[1]);
-          centerLon = point[0];
-          centerLat = point[1];
-          isMgrsExtracted = true;
-        } catch (e) {
-          console.warn("Failed to parse MGRS from filename", e);
-        }
-      }
-    }
-
-    if (centerLon === null || centerLat === null) {
-      setImageAddress("Address Unknown (Missing Geo-tags in file)");
-      return;
-    }
-
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${centerLat}&lon=${centerLon}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.display_name) {
-          const prefix = isMgrsExtracted ? "📍 [From Filename]: " : "";
-          setImageAddress(prefix + data.display_name);
-        }
-      })
-      .catch(err => {
-        console.warn("Reverse geocoding failed", err);
-        setImageAddress(null);
-      });
-  }, [primaryAsset?.metadata?.bbox, primaryAsset?.name]);
 
   // Check JVM backend health on mount and periodically
   const refreshJvmHealth = async () => {
@@ -575,7 +526,6 @@ export default function Home() {
     try {
       const response = await runQuery({
         imageIds: activeStagedAssets.map(a => a.id),
-        stagedAssets: activeStagedAssets,
         taskType: activeTaskTab,
         queryText,
         parameters: {
@@ -1000,7 +950,6 @@ export default function Home() {
               validationError={validationError}
               isDemoMode={isDemoMode}
               currentTask={currentTask}
-              imageAddress={imageAddress}
             />
           )}
 
@@ -1072,7 +1021,6 @@ function WorkstationBoard({
   validationError,
   isDemoMode,
   currentTask,
-  imageAddress,
 }) {
   const [activeMediaTab, setActiveMediaTab] = useState("image"); // 'image' | 'split' | 'map'
   const [showGrounding, setShowGrounding] = useState(true);
@@ -1428,11 +1376,11 @@ function WorkstationBoard({
           {activeMediaTab === "image" && (
             <div className="relative w-full h-full p-2 flex items-center justify-center overflow-hidden">
               {analysisResult?.resultImageUrl || primaryAsset?.previewUrl ? (
-                <div className="relative w-full h-full flex items-center justify-center">
+                <div className="relative max-w-full max-h-full flex items-center justify-center">
                   <img
                     src={analysisResult?.resultImageUrl || primaryAsset?.previewUrl}
                     alt="Satellite Observation Grid"
-                    className="w-full h-full max-h-[520px] object-contain transition duration-300 select-none shadow-lg rounded"
+                    className="max-w-full max-h-[520px] w-auto h-auto object-contain transition duration-300 select-none shadow-lg rounded"
                     onError={e => {
                       if (primaryAsset?.file && !e.currentTarget.src.startsWith("blob:")) {
                         e.currentTarget.src = URL.createObjectURL(primaryAsset.file);
@@ -1559,16 +1507,9 @@ function WorkstationBoard({
         <div className="bg-white px-4 py-2.5 border-t border-[#e2ebfb] flex flex-wrap items-center justify-between text-[10px] font-mono text-[#5a709c] gap-2">
           <div className="flex items-center gap-1.5">
             <MapPin size={13} className="text-[#1179FF]" />
-            <div className="flex flex-col justify-center">
-              <span className="font-bold text-navy truncate max-w-[280px]">
-                {primaryAsset ? primaryAsset.name : "No Active Staged Asset"}
-              </span>
-              {imageAddress && (
-                <span className="text-[9px] text-[#5a709c] max-w-[500px] whitespace-normal" title={imageAddress}>
-                  {imageAddress}
-                </span>
-              )}
-            </div>
+            <span className="font-bold text-navy truncate max-w-[280px]">
+              {primaryAsset ? primaryAsset.name : "No Active Staged Asset"}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             {primaryAsset ? (
@@ -1593,14 +1534,6 @@ function WorkstationBoard({
                     {primaryAsset.metadata?.crs || "EPSG:4326"}
                   </strong>
                 </span>
-                {primaryAsset.metadata?.bbox && (
-                  <span>
-                    BBox:{" "}
-                    <strong className="text-navy font-bold" title="[Min Lon, Min Lat, Max Lon, Max Lat]">
-                      {`[${primaryAsset.metadata.bbox.map(n => n.toFixed(4)).join(', ')}]`}
-                    </strong>
-                  </span>
-                )}
                 <span>
                   Res:{" "}
                   <strong className="text-navy font-bold">

@@ -133,9 +133,6 @@ importers:
       lucide-react:
         specifier: ^0.453.0
         version: 0.453.0(react@19.2.1)
-      mgrs:
-        specifier: ^2.2.0
-        version: 2.2.0
       nanoid:
         specifier: ^5.1.5
         version: 5.1.6
@@ -2729,9 +2726,6 @@ packages:
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
-
-  mgrs@2.2.0:
-    resolution: {integrity: sha512-BHeewhEJ1n2MOFKvGXFPMxgfczWArFGltBYSZ+JTzlNfHSwJ7gEsXGXFjaU619yLmpmtyoLHu+d8Sd6ACsd0QA==}
 
   micromark-core-commonmark@2.0.3:
     resolution: {integrity: sha512-RDBrHEMSxVFLg6xvnXmb1Ayr2WzLAWjeSATAoxwKYJV94TeNavgoIdA0a9ytzDSVzBy2YKFK+emCPOEibLeCrg==}
@@ -6243,8 +6237,6 @@ snapshots:
       - supports-color
 
   methods@1.1.2: {}
-
-  mgrs@2.2.0: {}
 
   micromark-core-commonmark@2.0.3:
     dependencies:

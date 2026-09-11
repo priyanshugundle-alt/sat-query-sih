@@ -3,6 +3,7 @@ package com.satquery.model;
 @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public class Evidence {
 
+    @com.fasterxml.jackson.annotation.JsonAlias({"type", "evidence_type"})
     private String evidenceType;  // IMAGE, BOUNDING_BOX, MASK, CHANGE_MAP, SENSOR_BRANCH
     private String filePath;
     private String label;
