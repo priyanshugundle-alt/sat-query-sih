@@ -44,7 +44,6 @@ export default function DesignSystemDemo() {
           <InstrumentCluster 
             analysisCount={analysisCount}
             isSystemLive={true}
-            isDemoMode={false}
             variant="hero"
           />
         </div>
