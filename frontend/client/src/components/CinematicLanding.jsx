@@ -106,55 +106,26 @@ export function CinematicLanding({
         />
       </div>
 
-      {/* ─── 3. MINIMAL TECHNICAL HEADER NAVIGATION ─── */}
-      <header className="sticky top-0 z-50 h-12 px-6 md:px-12 bg-[#0B0D0C]/85 backdrop-blur-md border-b border-[#2A2E2B] flex items-center justify-between font-mono text-xs">
+      {/* ─── 3. SLEEK HIGH-CONTRAST HEADER ─── */}
+      <header className="sticky top-0 z-50 h-14 px-6 md:px-12 bg-[#0B0D0C]/90 backdrop-blur-md border-b border-white/10 flex items-center justify-between">
         
         {/* Brand */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => scrollToSection("hero-section")}
-            className="flex items-center gap-2 text-[#F3F0E8] font-bold text-sm hover:text-[#D49A3A] transition-colors cursor-pointer"
-          >
-            <span className="w-2 h-2 bg-[#D49A3A] shadow-[0_0_8px_#D49A3A]" />
-            <span>SATQUERY AI</span>
-          </button>
-          <span className="text-[#2A2E2B]">/</span>
-          <span className="text-[10px] text-[#9A9A90] hidden md:inline">
-            SIH26167 · ISRO SPACE TECH
-          </span>
-        </div>
-
-        {/* Minimal Navigation across chapters */}
-        <nav className="hidden lg:flex items-center gap-6 text-[11px] text-[#9A9A90]">
-          {[
-            { id: "hero-section", label: "01 EARTH" },
-            { id: "vqa-section", label: "02 VQA" },
-            { id: "grounding-section", label: "03 GROUNDING" },
-            { id: "nepal-section", label: "04 CHANGE" },
-            { id: "fusion-section", label: "05 FUSION" },
-            { id: "evidence-section", label: "06 EVIDENCE" },
-            { id: "technical-section", label: "07 PIPELINE" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className="hover:text-[#D49A3A] transition-colors cursor-pointer"
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
+        <button
+          onClick={() => scrollToSection("hero-section")}
+          className="flex items-center gap-2.5 text-[#F3F0E8] font-bold text-base hover:text-[#D49A3A] transition-colors cursor-pointer"
+        >
+          <span className="w-2.5 h-2.5 rounded-full bg-[#D49A3A] shadow-[0_0_10px_#D49A3A]" />
+          <span className="tracking-wide">SATQUERY AI</span>
+        </button>
 
         {/* Primary Workstation CTA */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleLaunchWorkstation()}
-            className="px-3.5 py-1.5 bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-          >
-            <span>START INVESTIGATION</span>
-            <span>↗</span>
-          </button>
-        </div>
+        <button
+          onClick={() => handleLaunchWorkstation()}
+          className="px-4 py-2 bg-[#D49A3A] hover:bg-[#E4B65A] active:scale-95 text-[#0B0D0C] font-bold text-xs tracking-wider rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_2px_12px_rgba(212,154,58,0.25)]"
+        >
+          <span>OPEN WORKSTATION</span>
+          <span className="text-sm leading-none">↗</span>
+        </button>
 
       </header>
 
@@ -173,15 +144,15 @@ export function CinematicLanding({
             {/* Left Column: Headline & Supporting Text */}
             <div className="lg:col-span-6 flex flex-col justify-center z-30">
               
-              {/* Technical Eyebrow */}
+              {/* High-Contrast Eyebrow */}
               <motion.div
                 initial={{ opacity: 0, y: -14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="font-mono text-[10px] sm:text-[11px] tracking-[0.20em] text-[#D49A3A] uppercase font-bold mb-3 flex items-center gap-2"
+                className="font-mono text-xs tracking-[0.16em] text-[#D49A3A] uppercase font-bold mb-3 flex items-center gap-2"
               >
-                <span className="w-1.5 h-1.5 bg-[#D49A3A]" />
-                <span>01 / EARTH · REMOTE SENSING VISION-LANGUAGE</span>
+                <span className="w-2 h-2 rounded-full bg-[#D49A3A] shadow-[0_0_8px_#D49A3A]" />
+                <span>MULTIMODAL SATELLITE INTELLIGENCE</span>
               </motion.div>
 
               {/* Display Heading: Space Grotesk */}
@@ -204,10 +175,10 @@ export function CinematicLanding({
               >
                 <div className="font-sans text-[clamp(26px,3vw,44px)] font-extrabold text-[#F3F0E8] tracking-tight leading-tight">
                   ASK EARTH.<br />
-                  <span className="text-[#9A9A90]">UNDERSTAND IT.</span>
+                  <span className="text-[#C8C5BB]">UNDERSTAND IT.</span>
                 </div>
 
-                <p className="font-sans text-base sm:text-lg text-[#9A9A90] max-w-md leading-relaxed pt-1">
+                <p className="font-sans text-base sm:text-lg text-[#C8C5BB] max-w-md leading-relaxed pt-1">
                   A cinematic Earth-observation intelligence experience. Scroll to begin.
                 </p>
               </motion.div>
@@ -221,36 +192,33 @@ export function CinematicLanding({
               >
                 <button
                   onClick={() => scrollToSection("vqa-section")}
-                  className="px-4 py-2 bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+                  className="px-4 py-2.5 bg-[#D49A3A] hover:bg-[#E4B65A] active:scale-95 text-[#0B0D0C] font-bold rounded-lg flex items-center gap-2 transition-all cursor-pointer shadow-sm"
                 >
                   <span>EXPLORE OBSERVATION JOURNEY</span>
-                  <ChevronDown size={13} />
+                  <ChevronDown size={14} />
                 </button>
 
                 <button
                   onClick={() => handleLaunchWorkstation()}
-                  className="px-3.5 py-2 bg-[#151817] hover:bg-[#1D211F] border border-[#2A2E2B] text-[#E9E5DA] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 bg-[#151817] hover:bg-[#1D211F] active:scale-95 border border-[#2A2E2B] text-[#E9E5DA] font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <span>LAUNCH WORKSTATION</span>
                   <span>↗</span>
                 </button>
               </motion.div>
 
-              {/* Telemetry Indicator */}
+              {/* Telemetry Indicator - Clean & High Contrast */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1.3 }}
-                className="flex items-center gap-3 pt-6 font-mono text-[9px] text-[#9A9A90]/70"
+                transition={{ duration: 0.8, delay: 1.1 }}
+                className="inline-flex items-center gap-3 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#E9E5DA] mt-6 w-fit"
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#68745C] animate-pulse" />
-                  <span>ORBITAL TRACK ACTIVE</span>
+                  <span className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_8px_#34C759] animate-pulse" />
+                  <span className="text-[#34C759] font-bold">ORBITAL TARGET:</span>
                 </div>
-                <span>·</span>
-                <span>WGS 84 / GSD 0.5M</span>
-                <span>·</span>
-                <span>19.0760° N, 72.8777° E</span>
+                <span className="text-[#F3F0E8] font-semibold">INDIA (20.59° N, 78.96° E)</span>
               </motion.div>
 
             </div>
@@ -261,9 +229,9 @@ export function CinematicLanding({
           </div>
 
           {/* Scroll Cue */}
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 font-mono text-[9px] text-[#9A9A90]/60 flex flex-col items-center gap-1 animate-pulse pointer-events-none">
-            <span>SCROLL TO DESCEND INTO SATELLITE DATA</span>
-            <ChevronDown size={13} />
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-xs text-[#E9E5DA]/80 flex flex-col items-center gap-1.5 pointer-events-none">
+            <span className="text-[11px] tracking-wider uppercase">SCROLL TO EXPLORE SATELLITE DATA</span>
+            <ChevronDown size={16} className="text-[#D49A3A] animate-bounce" />
           </div>
         </section>
 

@@ -51,9 +51,9 @@ useEffect(() => {
 const WORLD_RADIUS = 2.25;
 
 
-  // Transform states for smooth damping - centered on the massive Afro-Eurasian landmass
-  const currentRotation = useRef({ x: 0.20, y: 0.95 });
-  const targetRotation = useRef({ x: 0.20, y: 0.95 });
+  // Transform states for smooth damping - centered directly on India (20.59° N, 78.96° E)
+  const currentRotation = useRef({ x: 0.16, y: -2.95 });
+  const targetRotation = useRef({ x: 0.16, y: -2.95 });
   const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const currentEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
@@ -83,10 +83,9 @@ const WORLD_RADIUS = 2.25;
     const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
     if (stage === "hero") {
-      // Hero: Earth prominently framed on the right side, showing the massive Afro-Eurasian landmass
+      // Hero: Earth prominently framed on the right side, pinned and centered directly on India
+      focusCoordinates(20.5937, 78.9629, 0.25);
       targetEarthPos.current.set(isMobile ? 0 : 1.15, isMobile ? -0.30 : 0.05, 0);
-      targetCameraPos.current.set(0, 0, 5.2);
-      targetRotation.current = { x: 0.20, y: 0.95 };
     } else if (stage === "workstation") {
       // Workstation: Earth visible upper-right, ~20-30% visual presence
       targetEarthPos.current.set(isMobile ? 0.5 : 1.7, isMobile ? 0.3 : 0.5, 0);
@@ -220,12 +219,20 @@ const WORLD_RADIUS = 2.25;
       pinSubGroup.position.copy(pinPos);
       pinSubGroup.lookAt(new THREE.Vector3(0, 0, 0));
 
-      const dotGeo = new THREE.SphereGeometry(0.045, 16, 16);
-      const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A });
+      // Luminous white core dot
+      const coreGeo = new THREE.SphereGeometry(0.04, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      pinSubGroup.add(coreMesh);
+
+      // Amber luminous beacon halo
+      const dotGeo = new THREE.SphereGeometry(0.065, 16, 16);
+      const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.9 });
       const dotMesh = new THREE.Mesh(dotGeo, dotMat);
       pinSubGroup.add(dotMesh);
 
-      const ringGeo = new THREE.RingGeometry(0.08, 0.105, 32);
+      // Primary pulsing radar ring
+      const ringGeo = new THREE.RingGeometry(0.08, 0.11, 32);
       const ringMat = new THREE.MeshBasicMaterial({
         color: 0xE4B65A,
         side: THREE.DoubleSide,
@@ -236,10 +243,23 @@ const WORLD_RADIUS = 2.25;
       ringMesh.name = "pulseRing";
       pinSubGroup.add(ringMesh);
 
-      const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.75 });
+      // Secondary radar wave ring
+      const ringGeo2 = new THREE.RingGeometry(0.14, 0.17, 32);
+      const ringMat2 = new THREE.MeshBasicMaterial({
+        color: 0xD49A3A,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.65,
+      });
+      const ringMesh2 = new THREE.Mesh(ringGeo2, ringMat2);
+      ringMesh2.name = "pulseRing2";
+      pinSubGroup.add(ringMesh2);
+
+      // Crosshairs
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.85 });
       const linePoints = [
-        new THREE.Vector3(-0.16, 0, 0), new THREE.Vector3(0.16, 0, 0),
-        new THREE.Vector3(0, -0.16, 0), new THREE.Vector3(0, 0.16, 0),
+        new THREE.Vector3(-0.20, 0, 0), new THREE.Vector3(0.20, 0, 0),
+        new THREE.Vector3(0, -0.20, 0), new THREE.Vector3(0, 0.20, 0),
       ];
       const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
       const crosshair = new THREE.LineSegments(lineGeo, lineMat);
@@ -319,7 +339,7 @@ const WORLD_RADIUS = 2.25;
         });
 
         earthGroup.add(earthModel);
-        create3DPin(19.0760, 72.8777, "MUMBAI");
+        create3DPin(20.5937, 78.9629, "INDIA");
       },
       undefined,
       (error) => {
@@ -332,7 +352,7 @@ const WORLD_RADIUS = 2.25;
         });
         const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
         earthGroup.add(sphereMesh);
-        create3DPin(19.0760, 72.8777, "MUMBAI");
+        create3DPin(20.5937, 78.9629, "INDIA");
       }
     );
 
@@ -398,6 +418,10 @@ const WORLD_RADIUS = 2.25;
         child.scale.set(1 + pulse * 0.45, 1 + pulse * 0.45, 1);
         child.material.opacity = 0.95 - pulse * 0.55;
       }
+      if (child.name === "pulseRing2") {
+        child.scale.set(1 + pulse * 0.65, 1 + pulse * 0.65, 1);
+        child.material.opacity = 0.65 - pulse * 0.5;
+      }
     });
   }
 
@@ -428,11 +452,19 @@ const WORLD_RADIUS = 2.25;
       pinGroup.remove(pinGroup.children[0]);
     }
 
-    let lat = 19.0760;
-    let lon = 72.8777;
-    let label = "MUMBAI";
+    let lat = 20.5937;
+    let lon = 78.9629;
+    let label = "INDIA";
 
-    if (stage === "nepal" || stage === "sar") {
+    if (stage === "hero") {
+      lat = 20.5937;
+      lon = 78.9629;
+      label = "INDIA";
+    } else if (stage === "vqa" || stage === "grounding") {
+      lat = 19.0760;
+      lon = 72.8777;
+      label = "MUMBAI";
+    } else if (stage === "nepal" || stage === "sar") {
       lat = 28.15;
       lon = 85.34;
       label = "SYABRU BESI / NEPAL";
@@ -447,12 +479,20 @@ const WORLD_RADIUS = 2.25;
     pinSubGroup.position.copy(pinPos);
     pinSubGroup.lookAt(new THREE.Vector3(0, 0, 0));
 
-    const dotGeo = new THREE.SphereGeometry(0.045, 16, 16);
-    const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A });
+    // Luminous white core dot
+    const coreGeo = new THREE.SphereGeometry(0.04, 16, 16);
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    pinSubGroup.add(coreMesh);
+
+    // Amber luminous beacon halo
+    const dotGeo = new THREE.SphereGeometry(0.065, 16, 16);
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.9 });
     const dotMesh = new THREE.Mesh(dotGeo, dotMat);
     pinSubGroup.add(dotMesh);
 
-    const ringGeo = new THREE.RingGeometry(0.08, 0.105, 32);
+    // Primary pulsing radar ring
+    const ringGeo = new THREE.RingGeometry(0.08, 0.11, 32);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xE4B65A,
       side: THREE.DoubleSide,
@@ -463,10 +503,23 @@ const WORLD_RADIUS = 2.25;
     ringMesh.name = "pulseRing";
     pinSubGroup.add(ringMesh);
 
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.75 });
+    // Secondary radar wave ring
+    const ringGeo2 = new THREE.RingGeometry(0.14, 0.17, 32);
+    const ringMat2 = new THREE.MeshBasicMaterial({
+      color: 0xD49A3A,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.65,
+    });
+    const ringMesh2 = new THREE.Mesh(ringGeo2, ringMat2);
+    ringMesh2.name = "pulseRing2";
+    pinSubGroup.add(ringMesh2);
+
+    // Crosshairs
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.85 });
     const linePoints = [
-      new THREE.Vector3(-0.16, 0, 0), new THREE.Vector3(0.16, 0, 0),
-      new THREE.Vector3(0, -0.16, 0), new THREE.Vector3(0, 0.16, 0),
+      new THREE.Vector3(-0.20, 0, 0), new THREE.Vector3(0.20, 0, 0),
+      new THREE.Vector3(0, -0.20, 0), new THREE.Vector3(0, 0.20, 0),
     ];
     const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
     const crosshair = new THREE.LineSegments(lineGeo, lineMat);
