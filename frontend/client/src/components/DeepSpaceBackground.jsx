@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 /**
  * DeepSpaceBackground — Subtle, Realistic Deep Space Canvas
@@ -95,20 +95,6 @@ export function DeepSpaceBackground({ opacity = 1 }) {
       style={{ opacity, transition: "opacity 1s ease" }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-
-      {/* Faint corner coordinate ticks */}
-      <div className="absolute top-16 left-8 font-mono text-[9px] text-[#9A9A90]/40 tracking-widest pointer-events-none hidden md:block">
-        ORBITAL TRACK / 687.4 KM · INCL: 98.2°
-      </div>
-      <div className="absolute top-16 right-8 font-mono text-[9px] text-[#9A9A90]/40 tracking-widest pointer-events-none hidden md:block">
-        ISRO RS-VLM / CALIBRATED
-      </div>
-      <div className="absolute bottom-12 left-8 font-mono text-[9px] text-[#9A9A90]/35 tracking-widest pointer-events-none hidden md:block">
-        19.0760° N, 72.8777° E → 28.1500° N, 85.3400° E
-      </div>
-      <div className="absolute bottom-12 right-8 font-mono text-[9px] text-[#9A9A90]/35 tracking-widest pointer-events-none hidden md:block">
-        WGS 84 / MULTIMODAL EVIDENCE ENGINE
-      </div>
     </div>
   );
 }

@@ -207,18 +207,18 @@ export function CinematicLanding({
                 </button>
               </motion.div>
 
-              {/* Telemetry Indicator - Clean & High Contrast */}
+              {/* Origin India Status Badge */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 1.1 }}
-                className="inline-flex items-center gap-3 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#E9E5DA] mt-6 w-fit"
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#E9E5DA] mt-6 w-fit backdrop-blur-md shadow-sm"
               >
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_8px_#34C759] animate-pulse" />
-                  <span className="text-[#34C759] font-bold">ORBITAL TARGET:</span>
+                  <span className="text-[#34C759] font-bold tracking-wider">ORIGIN:</span>
                 </div>
-                <span className="text-[#F3F0E8] font-semibold">INDIA (20.59° N, 78.96° E)</span>
+                <span className="text-[#F3F0E8] font-semibold tracking-wide">INDIA (20.59° N, 78.96° E)</span>
               </motion.div>
 
             </div>

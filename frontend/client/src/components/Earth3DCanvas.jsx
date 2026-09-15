@@ -30,7 +30,6 @@ export function Earth3DCanvas({
   const rendererRef = useRef(null);
   const earthGroupRef = useRef(null);
   const pinGroupRef = useRef(null);
-  const satelliteGroupRef = useRef(null);
   const animFrameRef = useRef(null);
   const reduced = useReducedMotion();
   // Reduced motion and visibility handling
@@ -52,26 +51,28 @@ const WORLD_RADIUS = 2.25;
 
 
   // Transform states for smooth damping - centered directly on India (20.59° N, 78.96° E)
-  const currentRotation = useRef({ x: 0.16, y: -2.95 });
-  const targetRotation = useRef({ x: 0.16, y: -2.95 });
+  // Mesh orientation formula: rotY = -(lon + 45)° = -(78.96 + 45)° = -123.96° = -2.16 rad
+  const currentRotation = useRef({ x: 0.16, y: -2.16 });
+  const targetRotation = useRef({ x: 0.16, y: -2.16 });
   const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const currentEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
   const targetEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
 
-  // Convert lat/lon to 3D Cartesian coordinates on sphere
+  // Convert lat/lon to 3D Cartesian coordinates on sphere matching Earth_1_12756.glb orientation
   const latLonToVector3 = useCallback((lat, lon, radius = WORLD_RADIUS) => {
-    const phi = (90 - lat) * (Math.PI / 180);
-    const theta = (lon + 180) * (Math.PI / 180);
-    const x = -(radius * Math.sin(phi) * Math.cos(theta));
-    const z = radius * Math.sin(phi) * Math.sin(theta);
-    const y = radius * Math.cos(phi);
+    const latRad = lat * (Math.PI / 180);
+    const theta = (45 - lon) * (Math.PI / 180);
+    const hRadius = radius * Math.cos(latRad);
+    const x = hRadius * Math.cos(theta);
+    const y = radius * Math.sin(latRad);
+    const z = hRadius * Math.sin(theta);
     return new THREE.Vector3(x, y, z);
   }, [WORLD_RADIUS]);
 
   // Rotate Earth to center specific lat/lon toward camera
   const focusCoordinates = useCallback((lat, lon, zoom = 0) => {
-    const rotY = -((lon + 90) * (Math.PI / 180));
+    const rotY = -((lon + 45) * (Math.PI / 180));
     const rotX = (lat * (Math.PI / 180)) * 0.45;
     targetRotation.current = { x: rotX, y: rotY };
     const dist = 5.4 - zoom * 2.2;
@@ -268,47 +269,7 @@ const WORLD_RADIUS = 2.25;
       pinGroup.add(pinSubGroup);
     };
 
-    // 6. Orbital Satellite System (Satellite + Elliptical Path)
-    const satGroup = new THREE.Group();
-    scene.add(satGroup);
-    satelliteGroupRef.current = satGroup;
-
-    // Elliptical Orbit Track Line
-    const orbitCurve = new THREE.EllipseCurve(0, 0, 3.2, 1.4, 0, 2 * Math.PI, false, 0);
-    const orbitPoints = orbitCurve.getPoints(120);
-    const orbitGeo = new THREE.BufferGeometry().setFromPoints(
-      orbitPoints.map(p => new THREE.Vector3(p.x, p.y * 0.7, p.y * 0.9))
-    );
-    const orbitMat = new THREE.LineBasicMaterial({
-      color: 0xD49A3A,
-      transparent: true,
-      opacity: 0.22,
-    });
-    const orbitLine = new THREE.Line(orbitGeo, orbitMat);
-    orbitLine.rotation.x = Math.PI / 5;
-    orbitLine.rotation.z = -Math.PI / 12;
-    earthGroup.add(orbitLine);
-
-    // Micro Satellite Mesh
-    const satBodyGeo = new THREE.BoxGeometry(0.06, 0.04, 0.04);
-    const satBodyMat = new THREE.MeshStandardMaterial({ color: 0xE9E5DA, metalness: 0.8, roughness: 0.2 });
-    const satBody = new THREE.Mesh(satBodyGeo, satBodyMat);
-
-    const panelGeo = new THREE.BoxGeometry(0.14, 0.005, 0.05);
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x1A365D, metalness: 0.9, roughness: 0.1 });
-    const panelLeft = new THREE.Mesh(panelGeo, panelMat);
-    panelLeft.position.set(-0.1, 0, 0);
-    const panelRight = new THREE.Mesh(panelGeo, panelMat);
-    panelRight.position.set(0.1, 0, 0);
-
-    const satellite = new THREE.Group();
-    satellite.add(satBody);
-    satellite.add(panelLeft);
-    satellite.add(panelRight);
-    satellite.scale.set(1.2, 1.2, 1.2);
-    satGroup.add(satellite);
-
-    // 7. Load GLB Earth Model
+    // 6. Load GLB Earth Model
     const loader = new GLTFLoader();
     const assetPath = "/assets/earth/Earth_1_12756.glb";
 
@@ -399,17 +360,6 @@ const WORLD_RADIUS = 2.25;
 
   earthGroup.rotation.x = currentRotation.current.x;
   earthGroup.rotation.y = currentRotation.current.y + slowDrift;
-
-  const satAngle = time * 0.35;
-  const satX = Math.cos(satAngle) * 3.1;
-  const satY = Math.sin(satAngle) * 1.3;
-  const satZ = Math.sin(satAngle * 0.8) * 1.1;
-  satellite.position.set(
-    currentEarthPos.current.x + satX,
-    currentEarthPos.current.y + satY,
-    currentEarthPos.current.z + satZ
-  );
-  satellite.lookAt(currentEarthPos.current);
 
   if (pinGroup) {
     const pulse = (Math.sin(time * 3.6) + 1) * 0.5;
