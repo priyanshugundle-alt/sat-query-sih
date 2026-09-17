@@ -152,13 +152,7 @@ public class AgentController {
         // 4. Execution
         TaskResult result;
         try {
-            ModelClient adaptedClient = switch (taskType) {
-                case VQA, GROUNDING, CAPTIONING, INFORMATION_EXTRACTION -> new com.satquery.client.UniRSAdapter(modelClient);
-                case CHANGE_ANALYSIS, CHANGE_UNDERSTANDING -> new com.satquery.client.ChangeQaAdapter(modelClient);
-                case FUSION_ANALYSIS -> new com.satquery.client.EarthGptAdapter(modelClient);
-                default -> new com.satquery.client.UniRSAdapter(modelClient);
-            };
-            result = taskHandler.execute(request, images, adaptedClient);
+            result = taskHandler.execute(request, images, modelClient);
         } catch (Exception e) {
             TraceLogger.logEvent("EXECUTION_FAILED", e.getMessage(), taskHandler.getClass().getSimpleName(), "FAILED");
             result = new TaskResult();

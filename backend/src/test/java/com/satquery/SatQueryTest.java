@@ -2,7 +2,6 @@ package com.satquery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.satquery.client.HttpModelClient;
-import com.satquery.client.MockModelClient;
 import com.satquery.controller.AgentController;
 import com.satquery.handler.HandlerFactory;
 import com.satquery.handler.SatelliteTask;
@@ -30,7 +29,7 @@ public class SatQueryTest {
     private ImageMetadataReader metadataReader;
     private InputValidator validator;
     private HandlerFactory factory;
-    private MockModelClient mockClient;
+    private HttpModelClient modelClient;
     private AgentController controller;
     private ObjectMapper objectMapper;
 
@@ -39,8 +38,8 @@ public class SatQueryTest {
         metadataReader = new ImageMetadataReader();
         validator = new InputValidator();
         factory = new HandlerFactory();
-        mockClient = new MockModelClient();
-        controller = new AgentController(mockClient);
+        modelClient = new HttpModelClient("http://localhost:5000");
+        controller = new AgentController(modelClient);
         objectMapper = new ObjectMapper();
     }
 
@@ -301,22 +300,7 @@ public class SatQueryTest {
         assertEquals("OPTIONAL", plan.getRequestedEvidence());
     }
 
-    @Test
-    public void testModelAdaptersDelegation() {
-        com.satquery.client.UniRSAdapter uniRSAdapter = new com.satquery.client.UniRSAdapter(mockClient);
-        com.satquery.client.EarthGptAdapter earthGptAdapter = new com.satquery.client.EarthGptAdapter(mockClient);
-        com.satquery.client.ChangeQaAdapter changeQaAdapter = new com.satquery.client.ChangeQaAdapter(mockClient);
 
-        QueryRequest req = new QueryRequest("q-test", "Describe image", List.of("img-1", "img-2"), "2026");
-        ImageMetadata meta1 = new ImageMetadata("GeoTIFF", 512, 512, 3, "OPTICAL", "2026-01-01", null, null, false);
-        ImageMetadata meta2 = new ImageMetadata("GeoTIFF", 512, 512, 1, "SAR", "2026-01-03", null, null, false);
-        ImageAsset img1 = new ImageAsset("img-1", "optical.tif", "/uploads/optical.tif", meta1);
-        ImageAsset img2 = new ImageAsset("img-2", "sar.tif", "/uploads/sar.tif", meta2);
-
-        assertNotNull(uniRSAdapter.run(TaskType.VQA, req, List.of(img1)));
-        assertNotNull(earthGptAdapter.run(TaskType.FUSION_ANALYSIS, req, List.of(img1, img2)));
-        assertNotNull(changeQaAdapter.run(TaskType.CHANGE_ANALYSIS, req, List.of(img1, img2)));
-    }
 
     @Test
     public void testTracePublisher() {
