@@ -742,21 +742,21 @@ public class App {
             
             List<Map<String, Object>> models = List.of(
                 Map.of(
-                    "modelName", "UniRSAdapter",
-                    "version", "v1",
-                    "supportedTasks", List.of("VQA", "GROUNDING", "CHANGE_ANALYSIS"),
+                    "modelName", "SatQuery-ModelA-ResNet",
+                    "version", "v1.0",
+                    "supportedTasks", List.of("CLASSIFICATION", "GROUNDING", "EXTRACTION"),
                     "availability", "ONLINE"
                 ),
                 Map.of(
-                    "modelName", "EarthGptAdapter",
-                    "version", "v1",
-                    "supportedTasks", List.of("FUSION_ANALYSIS"),
+                    "modelName", "SatQuery-ModelB-Fusion",
+                    "version", "v1.0",
+                    "supportedTasks", List.of("FUSION_ANALYSIS", "CHANGE_DETECTION"),
                     "availability", "ONLINE"
                 ),
                 Map.of(
-                    "modelName", "ChangeQaAdapter",
-                    "version", "v1",
-                    "supportedTasks", List.of("CHANGE_ANALYSIS"),
+                    "modelName", "SatQuery-QwenVLM",
+                    "version", "v2.5",
+                    "supportedTasks", List.of("VQA", "CAPTIONING", "CHANGE_UNDERSTANDING"),
                     "availability", "ONLINE"
                 )
             );
@@ -882,7 +882,17 @@ public class App {
                 double nir = req.get("nir") != null ? Double.parseDouble(req.get("nir").toString()) : 0.65;
                 double swir = req.get("swir") != null ? Double.parseDouble(req.get("swir").toString()) : 0.08;
 
-                Map<String, Object> spectralResult = com.satquery.processor.SpectralIndexProcessor.analyzeBands(red, green, blue, nir, swir);
+                double ndvi = (nir + red) == 0 ? 0.0 : (nir - red) / (nir + red);
+                double mndwi = (green + swir) == 0 ? 0.0 : (green - swir) / (green + swir);
+                double ndbi = (swir + nir) == 0 ? 0.0 : (swir - nir) / (swir + nir);
+
+                Map<String, Object> spectralResult = new HashMap<>();
+                spectralResult.put("ndvi", Math.round(ndvi * 1000.0) / 1000.0);
+                spectralResult.put("mndwi", Math.round(mndwi * 1000.0) / 1000.0);
+                spectralResult.put("ndbi", Math.round(ndbi * 1000.0) / 1000.0);
+                spectralResult.put("blue", blue);
+                spectralResult.put("status", "SUCCESS");
+
                 sendJsonResponse(exchange, 200, spectralResult);
             } catch (Exception e) {
                 sendJsonResponse(exchange, 500, Map.of("error", "Spectral Index computation failed: " + e.getMessage()));
@@ -910,7 +920,16 @@ public class App {
                 int height = req.get("height") != null ? Integer.parseInt(req.get("height").toString()) : 1024;
                 double gsd = req.get("gsd") != null ? Double.parseDouble(req.get("gsd").toString()) : 10.0;
 
-                Map<String, Object> areaResult = com.satquery.processor.SpatialAreaCalculator.calculateBoundingBoxArea(x1, y1, x2, y2, width, height, gsd);
+                double pxWidth = Math.abs(x2 - x1) * width;
+                double pxHeight = Math.abs(y2 - y1) * height;
+                double areaMeters = pxWidth * pxHeight * (gsd * gsd);
+                double areaKm2 = areaMeters / 1000000.0;
+
+                Map<String, Object> areaResult = new HashMap<>();
+                areaResult.put("areaKm2", Math.round(areaKm2 * 1000.0) / 1000.0);
+                areaResult.put("areaM2", Math.round(areaMeters * 10.0) / 10.0);
+                areaResult.put("status", "SUCCESS");
+
                 sendJsonResponse(exchange, 200, areaResult);
             } catch (Exception e) {
                 sendJsonResponse(exchange, 500, Map.of("error", "Spatial Area calculation failed: " + e.getMessage()));
