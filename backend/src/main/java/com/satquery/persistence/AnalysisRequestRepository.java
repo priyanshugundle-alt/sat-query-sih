@@ -13,7 +13,6 @@ public class AnalysisRequestRepository {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final TraceEventRepository traceRepo = new TraceEventRepository();
     private final EvidenceRepository evidenceRepo = new EvidenceRepository();
-    private final ReportRepository reportRepo = new ReportRepository();
     private final ImageAssetRepository imageRepo = new ImageAssetRepository();
 
     public void save(TaskResult result) {

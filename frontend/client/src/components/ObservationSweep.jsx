@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Target, Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -65,7 +65,7 @@ export function ObservationSweep({
     <div className="w-full flex flex-col lg:flex-row gap-6 items-stretch font-sans">
       
       {/* ─── SATELLITE IMAGE VIEWPORT (PRIMARY VISUAL HERO) ─── */}
-      <div className="flex-1 relative bg-[#0B0D0C] border border-[#2A2E2B] overflow-hidden min-h-[440px] md:min-h-[520px] flex items-center justify-center group select-none">
+      <div className="flex-1 relative bg-[#040708] border border-[#1C323B] overflow-hidden min-h-[440px] md:min-h-[520px] flex items-center justify-center group select-none">
         
         {/* Real Satellite Image */}
         <img
@@ -75,24 +75,24 @@ export function ObservationSweep({
           loading="eager"
         />
 
-        {/* Observation Sweep Thin Amber Scanline */}
+        {/* Observation Sweep Thin Cyan Scanline */}
         {isScanning && (
           <div
             className="absolute top-0 bottom-0 pointer-events-none z-20"
             style={{
               left: `${scanProgress * 100}%`,
               width: "1px",
-              background: "#D49A3A",
-              boxShadow: "0 0 12px 1px rgba(212, 154, 58, 0.4)",
+              background: "#12A5B8",
+              boxShadow: "0 0 12px 1px rgba(18, 165, 184, 0.5)",
             }}
           >
             {/* Minimal scan indicator tick */}
-            <div className="absolute top-4 -left-1.5 w-3 h-3 bg-[#D49A3A] rotate-45" />
-            <div className="absolute bottom-4 -left-1.5 w-3 h-3 bg-[#D49A3A] rotate-45" />
+            <div className="absolute top-4 -left-1.5 w-3 h-3 bg-[#12A5B8] rotate-45" />
+            <div className="absolute bottom-4 -left-1.5 w-3 h-3 bg-[#12A5B8] rotate-45" />
           </div>
         )}
 
-        {/* Spatial Grounding Bounding Boxes (Thin Amber Borders) */}
+        {/* Spatial Grounding Bounding Boxes (Thin Cyan Borders) */}
         {revealed && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -103,7 +103,7 @@ export function ObservationSweep({
             {boundingRegions.map((region, idx) => (
               <div
                 key={idx}
-                className="absolute border border-[#D49A3A] bg-[#D49A3A]/10 transition-all duration-300"
+                className="absolute border border-[#12A5B8] bg-[#12A5B8]/15 transition-all duration-300"
                 style={{
                   top: region.top,
                   left: region.left,
@@ -112,15 +112,15 @@ export function ObservationSweep({
                 }}
               >
                 {/* Corner crosshairs */}
-                <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-[#E4B65A]" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-[#E4B65A]" />
-                <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-[#E4B65A]" />
-                <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#E4B65A]" />
+                <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-[#22D3EE]" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-[#22D3EE]" />
+                <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-[#22D3EE]" />
+                <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#22D3EE]" />
 
                 {/* Region Tag */}
-                <div className="absolute -top-6 left-0 bg-[#0B0D0C]/90 border border-[#D49A3A] px-2 py-0.5 font-mono text-[9px] text-[#E4B65A] font-bold flex items-center gap-1.5 whitespace-nowrap">
+                <div className="absolute -top-6 left-0 bg-[#040708]/95 border border-[#12A5B8] px-2 py-0.5 font-mono text-[9px] text-[#FFFFFF] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-sm">
                   <span>{region.label}</span>
-                  <span className="text-[#9A9A90] font-normal">[{region.confidence}]</span>
+                  <span className="text-[#8AA3AD] font-normal">[{region.confidence}]</span>
                 </div>
               </div>
             ))}
@@ -128,16 +128,16 @@ export function ObservationSweep({
         )}
 
         {/* Top-Left Telemetry Overlay */}
-        <div className="absolute top-3 left-3 bg-[#0B0D0C]/85 border border-[#2A2E2B] px-2.5 py-1.5 font-mono text-[10px] text-[#E9E5DA] backdrop-blur-sm z-20">
-          <div className="text-[#D49A3A] font-bold tracking-wider">{meta.source}</div>
-          <div className="text-[#9A9A90] text-[9px]">{meta.coords}</div>
+        <div className="absolute top-3 left-3 bg-[#040708]/90 border border-[#1C323B] px-2.5 py-1.5 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-sm z-20">
+          <div className="text-[#12A5B8] font-bold tracking-wider">{meta.source}</div>
+          <div className="text-[#8AA3AD] text-[9px]">{meta.coords}</div>
         </div>
 
         {/* Bottom-Right Sweep Controller */}
         <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
           <button
             onClick={restartScan}
-            className="px-2.5 py-1 bg-[#151817]/90 hover:bg-[#1D211F] border border-[#2A2E2B] hover:border-[#D49A3A] font-mono text-[10px] text-[#E9E5DA] transition-colors"
+            className="px-2.5 py-1 bg-[#0D171C]/90 hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8] font-mono text-[10px] text-[#F0F6F8] transition-colors rounded cursor-pointer"
           >
             ↻ RE-SCAN
           </button>
@@ -145,24 +145,24 @@ export function ObservationSweep({
       </div>
 
       {/* ─── TECHNICAL EVIDENCE & VLM ANALYSIS PANEL ─── */}
-      <div className="w-full lg:w-96 flex flex-col justify-between p-5 bg-[#151817] border border-[#2A2E2B]">
+      <div className="w-full lg:w-96 flex flex-col justify-between p-5 bg-[#0D171C] border border-[#1C323B]">
         <div className="space-y-4">
           
           {/* Natural Language Query */}
           <div>
-            <div className="font-mono text-[9px] text-[#D49A3A] uppercase font-bold tracking-widest mb-1">
+            <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
               OBSERVATION QUERY / {taskType}
             </div>
-            <div className="text-sm font-semibold text-[#F3F0E8] leading-snug">
+            <div className="text-sm font-semibold text-[#FFFFFF] leading-snug">
               "{query}"
             </div>
           </div>
 
           {/* Model Analysis State */}
-          <div className="pt-3 border-t border-[#2A2E2B] font-mono text-xs">
-            <div className="flex items-center justify-between text-[9px] text-[#9A9A90] uppercase tracking-wider mb-2">
+          <div className="pt-3 border-t border-[#1C323B] font-mono text-xs">
+            <div className="flex items-center justify-between text-[9px] text-[#8AA3AD] uppercase tracking-wider mb-2">
               <span>SPECIALIST ENGINE</span>
-              <span className="text-[#68745C]">GeoChat-VQA (UniRS)</span>
+              <span className="text-[#12A5B8]">GeoChat-VQA (UniRS)</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -172,34 +172,34 @@ export function ObservationSweep({
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-3"
                 >
-                  <div className="p-3 bg-[#0B0D0C] border-l-2 border-[#D49A3A]">
-                    <span className="text-[9px] font-bold text-[#D49A3A] block mb-1 uppercase">
+                  <div className="p-3 bg-[#040708] border-l-2 border-[#12A5B8]">
+                    <span className="text-[9px] font-bold text-[#12A5B8] block mb-1 uppercase">
                       SATQUERY VLM ANSWER
                     </span>
-                    <p className="font-sans text-xs text-[#E9E5DA] leading-relaxed">
+                    <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
                       {answer}
                     </p>
                   </div>
 
                   {/* Audit Evidence Breakdown */}
                   <div className="space-y-1.5 text-[10px] pt-1">
-                    <div className="flex justify-between py-1 border-b border-[#2A2E2B]">
-                      <span className="text-[#9A9A90]">MODEL CONFIDENCE</span>
-                      <span className="text-[#E4B65A] font-bold">91.4% (VERIFIED)</span>
+                    <div className="flex justify-between py-1 border-b border-[#1C323B]">
+                      <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
+                      <span className="text-[#12A5B8] font-bold">91.4% (VERIFIED)</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-[#2A2E2B]">
-                      <span className="text-[#9A9A90]">TARGET LOCALIZATION</span>
-                      <span className="text-[#76AEB0]">2 Bounding Sectors</span>
+                    <div className="flex justify-between py-1 border-b border-[#1C323B]">
+                      <span className="text-[#8AA3AD]">TARGET LOCALIZATION</span>
+                      <span className="text-[#22D3EE]">2 Bounding Sectors</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-[#2A2E2B]">
-                      <span className="text-[#9A9A90]">CALIBRATION</span>
-                      <span className="text-[#68745C]">WGS 84 / GSD 5m</span>
+                    <div className="flex justify-between py-1 border-b border-[#1C323B]">
+                      <span className="text-[#8AA3AD]">CALIBRATION</span>
+                      <span className="text-[#0E7C8A]">WGS 84 / GSD 5m</span>
                     </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="p-4 bg-[#0B0D0C] border border-[#2A2E2B] flex items-center justify-center gap-2 text-[#9A9A90] text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D49A3A] animate-ping" />
+                <div className="p-4 bg-[#040708] border border-[#1C323B] flex items-center justify-center gap-2 text-[#8AA3AD] text-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B8] animate-ping" />
                   <span>Observation sweep in progress...</span>
                 </div>
               )}
@@ -209,10 +209,10 @@ export function ObservationSweep({
         </div>
 
         {/* Footer Action */}
-        <div className="pt-4 border-t border-[#2A2E2B] mt-4">
+        <div className="pt-4 border-t border-[#1C323B] mt-4">
           <button
             onClick={onActionClick}
-            className="w-full py-2 bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-mono font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full py-2 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_15px_rgba(18,165,184,0.25)] rounded"
           >
             <span>INTERROGATE THIS SCENE</span>
             <span>↗</span>

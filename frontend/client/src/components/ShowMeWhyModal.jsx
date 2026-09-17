@@ -33,24 +33,24 @@ export function ShowMeWhyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-card border-card w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono text-xs">
+      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono text-xs rounded-lg">
         
         {/* Header */}
-        <div className="p-4 bg-[#0B0D0C] border-b border-[#2A2E2B] flex items-center justify-between">
+        <div className="p-4 bg-[#040708] border-b border-[#1C323B] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-[#151817] border border-[#D49A3A]/40 flex items-center justify-center text-[#D49A3A]">
+            <div className="w-7 h-7 bg-[#0D171C] border border-[#12A5B8]/40 flex items-center justify-center text-[#12A5B8] rounded">
               <ShieldCheck size={15} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[#F3F0E8] text-xs uppercase tracking-wide">
+                <span className="font-bold text-[#FFFFFF] text-xs uppercase tracking-wide">
                   EVIDENCE PROVENANCE AUDIT
                 </span>
-                <span className="px-1.5 py-0.5 bg-[#D49A3A]/15 border border-[#D49A3A]/40 text-[#D49A3A] font-bold text-[9px]">
+                <span className="px-1.5 py-0.5 bg-[#12A5B8]/15 border border-[#12A5B8]/40 text-[#12A5B8] font-bold text-[9px] rounded">
                   {targetLabel} · {confidence}% CONFIDENCE
                 </span>
               </div>
-              <div className="text-[10px] text-[#9A9A90] font-sans">
+              <div className="text-[10px] text-[#8AA3AD] font-sans">
                 Deterministic Vision-Language Grounding Trace
               </div>
             </div>
@@ -58,7 +58,7 @@ export function ShowMeWhyModal({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-[#9A9A90] hover:text-[#F3F0E8] hover:bg-[#1D211F] transition-colors"
+            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors rounded cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -69,129 +69,129 @@ export function ShowMeWhyModal({
           
           {/* 3-STEP REASONING JOURNEY */}
           <div className="space-y-3">
-            <div className="text-[10px] text-[#D49A3A] uppercase tracking-widest font-bold">
+            <div className="text-[10px] text-[#12A5B8] uppercase tracking-widest font-bold">
               3-STEP SCIENTIFIC VERIFICATION JOURNEY
             </div>
 
             {/* Step 1: Observation */}
-            <div className="p-3.5 bg-[#0B0D0C] border border-[#2A2E2B] space-y-2">
+            <div className="p-3.5 bg-[#040708] border border-[#1C323B] space-y-2 rounded">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[#76AEB0] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-[#76AEB0]" />
+                <span className="font-bold text-[#12A5B8] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full" />
                   <span>01 · OBSERVATION (SATELLITE REFLECTANCE)</span>
                 </span>
-                <span className="text-[9px] text-[#9A9A90]">GSD 0.5M</span>
+                <span className="text-[9px] text-[#8AA3AD]">GSD 0.5M</span>
               </div>
-              <p className="font-sans text-xs text-[#E9E5DA] leading-relaxed">
+              <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
                 High-contrast multi-spectral reflectance pattern identified in coastal urban sector. Geometric footprint matches structured rectangular foundation pads.
               </p>
             </div>
 
             {/* Down Arrow */}
-            <div className="flex justify-center text-[#D49A3A] text-xs">
+            <div className="flex justify-center text-[#12A5B8] text-xs font-bold">
               ↓
             </div>
 
             {/* Step 2: Model Interpretation */}
-            <div className="p-3.5 bg-[#0B0D0C] border border-[#2A2E2B] space-y-2">
+            <div className="p-3.5 bg-[#040708] border border-[#1C323B] space-y-2 rounded">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[#D49A3A] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-[#D49A3A]" />
+                <span className="font-bold text-[#22D3EE] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-[#22D3EE] rounded-full" />
                   <span>02 · MODEL INTERPRETATION (SPECIALIST ADAPTER)</span>
                 </span>
-                <span className="text-[9px] text-[#9A9A90]">GroundingDINO / UniRS</span>
+                <span className="text-[9px] text-[#8AA3AD]">GroundingDINO / UniRS</span>
               </div>
-              <p className="font-sans text-xs text-[#E9E5DA] leading-relaxed">
+              <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
                 Visual question-answering backbone cross-referenced spectral signature with built-up industrial warehouse profiles, rejecting agricultural and bare soil classifications.
               </p>
             </div>
 
             {/* Down Arrow */}
-            <div className="flex justify-center text-[#D49A3A] text-xs">
+            <div className="flex justify-center text-[#12A5B8] text-xs font-bold">
               ↓
             </div>
 
             {/* Step 3: Conclusion */}
-            <div className="p-3.5 bg-[#0B0D0C] border border-[#68745C]/50 space-y-2">
+            <div className="p-3.5 bg-[#040708] border border-[#0E7C8A]/50 space-y-2 rounded">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[#68745C] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-[#68745C]" />
+                <span className="font-bold text-[#0E7C8A] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-[#0E7C8A] rounded-full" />
                   <span>03 · CONCLUSION (AUDITED FINDING)</span>
                 </span>
-                <span className="text-[9px] text-[#68745C] font-bold">VERIFIED ◉</span>
+                <span className="text-[9px] text-[#12A5B8] font-bold">VERIFIED ◉</span>
               </div>
-              <p className="font-sans text-xs text-[#F3F0E8] font-medium leading-relaxed">
+              <p className="font-sans text-xs text-[#FFFFFF] font-medium leading-relaxed">
                 Confirmed structural facility at {coords} with {confidence}% calibrated agreement. Visual evidence bounds isolated with zero hallucinated coordinates.
               </p>
             </div>
           </div>
 
           {/* 6-PILLAR AUDIT GRID */}
-          <div className="pt-2 border-t border-[#2A2E2B]">
-            <div className="text-[10px] text-[#9A9A90] uppercase tracking-widest font-bold mb-3">
+          <div className="pt-2 border-t border-[#1C323B]">
+            <div className="text-[10px] text-[#8AA3AD] uppercase tracking-widest font-bold mb-3">
               AUDIT SPECIFICATIONS (LEVEL 3 EVIDENCE)
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
-              <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[8px] text-[#9A9A90] uppercase block mb-0.5">WHAT</span>
-                <span className="font-bold text-[#F3F0E8] text-[11px] truncate block">{targetLabel}</span>
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+                <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">WHAT</span>
+                <span className="font-bold text-[#FFFFFF] text-[11px] truncate block">{targetLabel}</span>
               </div>
 
-              <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[8px] text-[#9A9A90] uppercase block mb-0.5">WHERE</span>
-                <span className="font-bold text-[#76AEB0] text-[11px] truncate block">{coords}</span>
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+                <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">WHERE</span>
+                <span className="font-bold text-[#12A5B8] text-[11px] truncate block">{coords}</span>
               </div>
 
-              <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[8px] text-[#9A9A90] uppercase block mb-0.5">WHEN</span>
-                <span className="font-bold text-[#E9E5DA] text-[11px] truncate block">2026.08.24 UTC</span>
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+                <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">WHEN</span>
+                <span className="font-bold text-[#F0F6F8] text-[11px] truncate block">2026.08.24 UTC</span>
               </div>
 
-              <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[8px] text-[#9A9A90] uppercase block mb-0.5">SOURCE</span>
-                <span className="font-bold text-[#E9E5DA] text-[11px] truncate block">{sourceSensor}</span>
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+                <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">SOURCE</span>
+                <span className="font-bold text-[#F0F6F8] text-[11px] truncate block">{sourceSensor}</span>
               </div>
 
-              <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[8px] text-[#9A9A90] uppercase block mb-0.5">CONFIDENCE</span>
-                <span className="font-bold text-[#D49A3A] text-[11px] truncate block">{confidence}% (Calibrated)</span>
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+                <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">CONFIDENCE</span>
+                <span className="font-bold text-[#12A5B8] text-[11px] truncate block">{confidence}% (Calibrated)</span>
               </div>
 
-              <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[8px] text-[#9A9A90] uppercase block mb-0.5">CROSS-MODAL</span>
-                <span className="font-bold text-[#68745C] text-[11px] truncate block">OPTICAL MSI AVAILABLE</span>
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+                <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">CROSS-MODAL</span>
+                <span className="font-bold text-[#0E7C8A] text-[11px] truncate block">OPTICAL MSI AVAILABLE</span>
               </div>
             </div>
           </div>
 
           {/* Cryptographic SHA-256 Provenance Tag */}
-          <div className="p-2.5 bg-[#0B0D0C] border border-[#2A2E2B] flex items-center justify-between text-[9px] text-[#9A9A90]">
+          <div className="p-2.5 bg-[#040708] border border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD] rounded">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 size={12} className="text-[#68745C]" />
+              <CheckCircle2 size={12} className="text-[#0E7C8A]" />
               <span>SHA-256 PROVENANCE:</span>
-              <span className="font-mono text-[#E9E5DA] truncate max-w-xs">{sha256Hash}</span>
+              <span className="font-mono text-[#F0F6F8] truncate max-w-xs">{sha256Hash}</span>
             </div>
-            <span className="text-[#76AEB0]">ISRO SIH26167 AUDIT COMPLIANT</span>
+            <span className="text-[#12A5B8] font-semibold">ISRO SIH26167 AUDIT COMPLIANT</span>
           </div>
 
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 bg-[#0B0D0C] border-t border-[#2A2E2B] flex items-center justify-between">
+        <div className="p-3.5 bg-[#040708] border-t border-[#1C323B] flex items-center justify-between">
           <button
             onClick={() => {
               onClose();
               if (onOpenAnalysisDetails) onOpenAnalysisDetails();
             }}
-            className="text-[#D49A3A] hover:underline text-xs flex items-center gap-1 cursor-pointer"
+            className="text-[#12A5B8] hover:underline text-xs flex items-center gap-1 cursor-pointer font-semibold"
           >
             <span>ANALYSIS DETAILS ↗</span>
           </button>
 
           <Button
             onClick={onClose}
-            className="bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-mono font-bold text-xs h-8 px-4"
+            className="bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 px-4 rounded border border-[#12A5B8]/40 shadow-sm cursor-pointer"
           >
             Close Audit
           </Button>

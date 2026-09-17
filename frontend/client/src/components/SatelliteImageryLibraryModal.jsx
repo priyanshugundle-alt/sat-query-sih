@@ -108,23 +108,23 @@ export function SatelliteImageryLibraryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-150">
-      <div className="bg-[#151817] border border-[#2A2E2B] w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono text-xs">
+      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-5xl max-h-[90vh] flex flex-col shadow-[0_10px_35px_rgba(0,0,0,0.8)] overflow-hidden font-mono text-xs">
         {/* Modal Top Header */}
-        <div className="p-4 bg-[#0B0D0C] border-b border-[#2A2E2B] flex items-center justify-between">
+        <div className="p-4 bg-[#080E11] border-b border-[#1C323B] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#151817] border border-[#D49A3A]/40 flex items-center justify-center text-[#D49A3A]">
+            <div className="w-8 h-8 bg-[#0D171C] border border-[#12A5B8]/40 flex items-center justify-center text-[#12A5B8]">
               <Database size={16} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xs font-bold text-[#F3F0E8] tracking-wide uppercase">
+                <h2 className="text-xs font-bold text-[#FFFFFF] tracking-wide uppercase">
                   SATELLITE IMAGERY LIBRARY
                 </h2>
-                <span className="px-2 py-0.5 bg-[#1D211F] text-[9px] text-[#D49A3A] font-bold">
+                <span className="px-2 py-0.5 bg-[#0B4F58]/30 border border-[#12A5B8]/30 text-[9px] text-[#12A5B8] font-bold">
                   ISRO & SENTINEL CATALOG
                 </span>
               </div>
-              <p className="text-[11px] text-[#9A9A90] font-sans mt-0.5">
+              <p className="text-[11px] text-[#8AA3AD] font-sans mt-0.5">
                 Select an earth observation scene to stage onto the Investigation Canvas.
               </p>
             </div>
@@ -132,14 +132,14 @@ export function SatelliteImageryLibraryModal({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-[#9A9A90] hover:text-[#F3F0E8] hover:bg-[#1D211F] transition-colors"
+            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Search & Filter Strip */}
-        <div className="p-3 bg-[#151817] border-b border-[#2A2E2B] flex flex-wrap items-center justify-between gap-3">
+        <div className="p-3 bg-[#0D171C] border-b border-[#1C323B] flex flex-wrap items-center justify-between gap-3">
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5">
             {[
@@ -153,8 +153,8 @@ export function SatelliteImageryLibraryModal({
                 onClick={() => setFilterModality(tab.id)}
                 className={`px-2.5 py-1 text-[11px] transition-all border ${
                   filterModality === tab.id
-                    ? "bg-[#D49A3A] text-[#0B0D0C] border-[#D49A3A] font-bold shadow-sm"
-                    : "bg-[#0B0D0C] text-[#9A9A90] hover:text-[#E9E5DA] border-[#2A2E2B]"
+                    ? "bg-[#0E7C8A] text-[#FFFFFF] border-[#12A5B8] font-bold shadow-[0_0_10px_rgba(18,165,184,0.3)]"
+                    : "bg-[#080E11] text-[#8AA3AD] hover:text-[#FFFFFF] border-[#1C323B]"
                 }`}
               >
                 {tab.label}
@@ -163,14 +163,14 @@ export function SatelliteImageryLibraryModal({
           </div>
 
           {/* Search Input */}
-          <div className="flex items-center gap-2 bg-[#0B0D0C] border border-[#2A2E2B] px-2.5 py-1 w-64">
-            <Search size={13} className="text-[#9A9A90]" />
+          <div className="flex items-center gap-2 bg-[#080E11] border border-[#1C323B] px-2.5 py-1 w-64">
+            <Search size={13} className="text-[#8AA3AD]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search sensor, location, CRS..."
-              className="bg-transparent border-none outline-none text-xs text-[#F3F0E8] placeholder:text-[#9A9A90] w-full font-sans"
+              className="bg-transparent border-none outline-none text-xs text-[#FFFFFF] placeholder:text-[#8AA3AD] w-full font-sans"
             />
           </div>
         </div>
@@ -180,10 +180,10 @@ export function SatelliteImageryLibraryModal({
           {filteredCatalog.map((scene) => (
             <div
               key={scene.id}
-              className="bg-[#0B0D0C] border border-[#2A2E2B] hover:border-[#D49A3A]/60 overflow-hidden flex flex-col transition-all group shadow-sm hover:shadow-md"
+              className="bg-[#080E11] border border-[#1C323B] hover:border-[#12A5B8]/60 overflow-hidden flex flex-col transition-all group shadow-sm hover:shadow-md"
             >
               {/* Scene Thumbnail + Sensor Overlays */}
-              <div className="relative h-44 bg-[#0B0D0C] overflow-hidden">
+              <div className="relative h-44 bg-[#080E11] overflow-hidden">
                 <img
                   src={scene.previewUrl}
                   alt={scene.name}
@@ -191,49 +191,49 @@ export function SatelliteImageryLibraryModal({
                 />
                 
                 {/* Modality Badge */}
-                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-[#0B0D0C]/90 backdrop-blur-sm border border-[#2A2E2B] text-[10px] font-bold text-[#D49A3A]">
+                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-[#080E11]/90 backdrop-blur-sm border border-[#1C323B] text-[10px] font-bold text-[#12A5B8]">
                   {scene.modalityBadge}
                 </div>
 
                 {/* Cloud Cover */}
-                <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-[#0B0D0C]/90 backdrop-blur-sm border border-[#2A2E2B] text-[10px] text-[#E9E5DA] flex items-center gap-1">
-                  <CloudSun size={11} className="text-[#76AEB0]" />
+                <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-[#080E11]/90 backdrop-blur-sm border border-[#1C323B] text-[10px] text-[#F0F6F8] flex items-center gap-1">
+                  <CloudSun size={11} className="text-[#12A5B8]" />
                   <span>Cloud: {scene.cloudCover}</span>
                 </div>
 
                 {/* GSD Tag */}
-                <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-[#0B0D0C]/90 backdrop-blur-sm border border-[#2A2E2B] text-[10px] text-[#68745C] font-bold">
+                <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-[#080E11]/90 backdrop-blur-sm border border-[#1C323B] text-[10px] text-[#12A5B8] font-bold">
                   GSD: {scene.gsd}
                 </div>
               </div>
 
               {/* Card Body with Required SIH Metadata */}
-              <div className="p-3.5 flex-1 flex flex-col justify-between bg-[#151817]">
+              <div className="p-3.5 flex-1 flex flex-col justify-between bg-[#0D171C]">
                 <div>
-                  <h3 className="text-xs font-bold text-[#F3F0E8] font-sans tracking-tight mb-1">
+                  <h3 className="text-xs font-bold text-[#FFFFFF] font-sans tracking-tight mb-1">
                     {scene.name}
                   </h3>
-                  <p className="text-[11px] text-[#9A9A90] font-sans line-clamp-2 mb-3">
+                  <p className="text-[11px] text-[#8AA3AD] font-sans line-clamp-2 mb-3">
                     {scene.description}
                   </p>
 
                   {/* Remote Sensing Technical Specs Table */}
-                  <div className="grid grid-cols-2 gap-1.5 p-2 bg-[#0B0D0C] border border-[#2A2E2B] text-[10px] mb-3">
+                  <div className="grid grid-cols-2 gap-1.5 p-2 bg-[#080E11] border border-[#1C323B] text-[10px] mb-3">
                     <div>
-                      <span className="text-[#9A9A90] block text-[9px] uppercase font-bold">SENSOR PLATFORM</span>
-                      <span className="text-[#E9E5DA] font-semibold">{scene.sensor}</span>
+                      <span className="text-[#8AA3AD] block text-[9px] uppercase font-bold">SENSOR PLATFORM</span>
+                      <span className="text-[#F0F6F8] font-semibold">{scene.sensor}</span>
                     </div>
                     <div>
-                      <span className="text-[#9A9A90] block text-[9px] uppercase font-bold">ACQUISITION TIME</span>
-                      <span className="text-[#E9E5DA] font-semibold">{scene.acquisitionDate}</span>
+                      <span className="text-[#8AA3AD] block text-[9px] uppercase font-bold">ACQUISITION TIME</span>
+                      <span className="text-[#F0F6F8] font-semibold">{scene.acquisitionDate}</span>
                     </div>
                     <div>
-                      <span className="text-[#9A9A90] block text-[9px] uppercase font-bold">CRS / PROJECTION</span>
-                      <span className="text-[#76AEB0] font-semibold">{scene.projection}</span>
+                      <span className="text-[#8AA3AD] block text-[9px] uppercase font-bold">CRS / PROJECTION</span>
+                      <span className="text-[#12A5B8] font-semibold">{scene.projection}</span>
                     </div>
                     <div>
-                      <span className="text-[#9A9A90] block text-[9px] uppercase font-bold">COORDINATES</span>
-                      <span className="text-[#D49A3A] font-semibold">{scene.coordinates}</span>
+                      <span className="text-[#8AA3AD] block text-[9px] uppercase font-bold">COORDINATES</span>
+                      <span className="text-[#12A5B8] font-semibold">{scene.coordinates}</span>
                     </div>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export function SatelliteImageryLibraryModal({
                     onSelectScene(scene);
                     onClose();
                   }}
-                  className="w-full bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-mono font-bold text-xs h-8 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-[0_0_12px_rgba(18,165,184,0.3)]"
                 >
                   <span>Open Investigation</span>
                   <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -255,9 +255,9 @@ export function SatelliteImageryLibraryModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3 bg-[#0B0D0C] border-t border-[#2A2E2B] flex items-center justify-between text-[11px] text-[#9A9A90]">
+        <div className="p-3 bg-[#080E11] border-t border-[#1C323B] flex items-center justify-between text-[11px] text-[#8AA3AD]">
           <span>4 Certified Remote-Sensing Benchmark Scenarios Loaded</span>
-          <span className="text-[#76AEB0]">ISRO SIH26167 STANDARDS COMPLIANT</span>
+          <span className="text-[#12A5B8]">ISRO SIH26167 STANDARDS COMPLIANT</span>
         </div>
       </div>
     </div>

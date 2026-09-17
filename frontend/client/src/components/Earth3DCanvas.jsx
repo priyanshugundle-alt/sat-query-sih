@@ -39,6 +39,8 @@ export function Earth3DCanvas({
   const isDragging = useRef(false);
   const prevMousePos = useRef({ x: 0, y: 0 });
   const isUserInteracting = useRef(false);
+  const spinVelocity = useRef({ x: 0, y: 0 });
+  const lastInteractionTime = useRef(0);
 
   // Pause animation when tab is hidden
   useEffect(() => {
@@ -54,9 +56,8 @@ export function Earth3DCanvas({
   const WORLD_RADIUS = 2.25;
 
   // Transform states for smooth damping - centered directly on India (20.59° N, 78.96° E)
-  // rotY = -(lon + 58.5)° = -(78.96 + 58.5)° = -137.46° = -2.40 rad
-  const currentRotation = useRef({ x: 0.16, y: -2.40 });
-  const targetRotation = useRef({ x: 0.16, y: -2.40 });
+  const currentRotation = useRef({ x: 0.38, y: 1.50 });
+  const targetRotation = useRef({ x: 0.38, y: 1.50 });
   const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const currentEarthPos = useRef(new THREE.Vector3(0.85, 0, 0));
@@ -64,8 +65,9 @@ export function Earth3DCanvas({
 
   // Rotate Earth to center specific lat/lon toward camera
   const focusCoordinates = useCallback((lat, lon, zoom = 0) => {
-    const rotY = -((lon + 58.5) * (Math.PI / 180));
-    const rotX = (lat * (Math.PI / 180)) * 0.45;
+    // Calibrated for Earth_1_12756.glb: centers target lat/lon directly towards camera
+    const rotY = ((180 - lon) - 15.0) * (Math.PI / 180);
+    const rotX = (lat * (Math.PI / 180)) * 1.05;
     targetRotation.current = { x: rotX, y: rotY };
     const dist = 5.4 - zoom * 2.2;
     targetCameraPos.current.set(0, 0, dist);
@@ -233,11 +235,31 @@ export function Earth3DCanvas({
       }
     );
 
-    // 6. Interactive Mouse & Touch Revolving Controls
+    // 6. Interactive Raycasting & Mouse / Touch Revolving Controls
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const checkHover = (clientX, clientY) => {
+      if (!container || !camera || !earthGroup) return false;
+      const rect = container.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return false;
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(earthGroup.children, true);
+      return intersects.length > 0;
+    };
+
     const onPointerDown = (e) => {
+      // Left click or touch only
+      if (e.button !== undefined && e.button !== 0) return;
+
       isDragging.current = true;
       isUserInteracting.current = true;
+      lastInteractionTime.current = performance.now();
       prevMousePos.current = { x: e.clientX, y: e.clientY };
+      spinVelocity.current = { x: 0, y: 0 };
+
       try {
         container.setPointerCapture(e.pointerId);
       } catch (err) {}
@@ -245,30 +267,60 @@ export function Earth3DCanvas({
     };
 
     const onPointerMove = (e) => {
-      if (!isDragging.current) return;
-      const deltaX = e.clientX - prevMousePos.current.x;
-      const deltaY = e.clientY - prevMousePos.current.y;
+      if (isDragging.current) {
+        const deltaX = e.clientX - prevMousePos.current.x;
+        const deltaY = e.clientY - prevMousePos.current.y;
 
-      targetRotation.current.y += deltaX * 0.0055;
-      targetRotation.current.x += deltaY * 0.0055;
-      // Clamp vertical tilt to prevent inversion
-      targetRotation.current.x = Math.max(-1.1, Math.min(1.1, targetRotation.current.x));
+        // Smooth rotation sensitivity
+        const sensitivity = 0.0055;
+        targetRotation.current.y += deltaX * sensitivity;
+        targetRotation.current.x += deltaY * sensitivity;
+        // Clamp vertical tilt to prevent inverted polar spin
+        targetRotation.current.x = Math.max(-1.25, Math.min(1.25, targetRotation.current.x));
 
-      prevMousePos.current = { x: e.clientX, y: e.clientY };
+        // Track velocity for inertia release
+        spinVelocity.current = {
+          x: deltaX * 0.0035,
+          y: deltaY * 0.0035,
+        };
+
+        prevMousePos.current = { x: e.clientX, y: e.clientY };
+        lastInteractionTime.current = performance.now();
+      } else {
+        const overEarth = checkHover(e.clientX, e.clientY);
+        container.style.cursor = overEarth ? "grab" : "default";
+      }
     };
 
     const onPointerUp = (e) => {
+      if (!isDragging.current) return;
       isDragging.current = false;
+      lastInteractionTime.current = performance.now();
       try {
         container.releasePointerCapture(e.pointerId);
       } catch (err) {}
-      container.style.cursor = "grab";
+      const overEarth = checkHover(e.clientX, e.clientY);
+      container.style.cursor = overEarth ? "grab" : "default";
+    };
+
+    const onDoubleClick = (e) => {
+      if (checkHover(e.clientX, e.clientY)) {
+        if (stage === "hero") {
+          focusCoordinates(20.5937, 78.9629, 0.25);
+        } else {
+          targetRotation.current = { x: 0.16, y: -2.40 };
+          targetCameraPos.current.set(0, 0, 5.2);
+        }
+        spinVelocity.current = { x: 0, y: 0 };
+        isUserInteracting.current = false;
+      }
     };
 
     container.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
+    container.addEventListener("dblclick", onDoubleClick);
 
     // 7. Window Resize Handler
     const handleResize = () => {
@@ -297,20 +349,37 @@ export function Earth3DCanvas({
 
       const time = clock.getElapsedTime();
 
+      // Inertia & Momentum physics when user releases drag
+      if (!isDragging.current) {
+        if (Math.abs(spinVelocity.current.x) > 0.00003 || Math.abs(spinVelocity.current.y) > 0.00003) {
+          targetRotation.current.y += spinVelocity.current.x;
+          targetRotation.current.x += spinVelocity.current.y;
+          targetRotation.current.x = Math.max(-1.25, Math.min(1.25, targetRotation.current.x));
+          spinVelocity.current.x *= 0.94; // fluid friction damping
+          spinVelocity.current.y *= 0.94;
+        } else {
+          spinVelocity.current = { x: 0, y: 0 };
+        }
+
+        // Resume subtle planetary drift after 3.5s idle
+        const timeSinceTouch = performance.now() - lastInteractionTime.current;
+        if (timeSinceTouch > 3500) {
+          isUserInteracting.current = false;
+          targetRotation.current.y += 0.0007;
+        }
+      }
+
       currentEarthPos.current.lerp(targetEarthPos.current, 0.045);
       earthGroup.position.copy(currentEarthPos.current);
 
       currentCameraPos.current.lerp(targetCameraPos.current, 0.045);
       camera.position.copy(currentCameraPos.current);
 
-      currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.08;
-      currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.08;
-
-      // Subtle planetary movement only when user isn't actively interacting
-      const slowDrift = (!isUserInteracting.current && (stage === "hero" || stage === "final_cta" || stage === "workstation")) ? Math.sin(time * 0.15) * 0.03 : 0;
+      currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.1;
+      currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.1;
 
       earthGroup.rotation.x = currentRotation.current.x;
-      earthGroup.rotation.y = currentRotation.current.y + slowDrift;
+      earthGroup.rotation.y = currentRotation.current.y;
 
       renderer.render(scene, camera);
       animFrameRef.current = requestAnimationFrame(animate);
@@ -323,6 +392,7 @@ export function Earth3DCanvas({
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
+      container.removeEventListener("dblclick", onDoubleClick);
       window.removeEventListener("resize", handleResize);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (renderer.domElement && container.contains(renderer.domElement)) {

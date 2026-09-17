@@ -17,12 +17,12 @@ export function CertifiedSeal({
 }) {
   if (variant === "inline") {
     return (
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#3a3a3e] bg-[#1a1a1c] rounded">
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#1C323B] bg-[#0D171C] rounded shadow-sm">
         <div className="flex items-center justify-center w-5 h-5 relative">
-          <div className="absolute w-4 h-4 border border-[#e8a33d] rounded-full" />
-          <div className="absolute w-2.5 h-2.5 border border-[#e8a33d] rotate-45" />
+          <div className="absolute w-4 h-4 border border-[#12A5B8] rounded-full" />
+          <div className="absolute w-2.5 h-2.5 border border-[#12A5B8] rotate-45" />
         </div>
-        <span className="font-mono text-[9px] text-[#e8a33d] uppercase tracking-wider">
+        <span className="font-mono text-[9px] text-[#12A5B8] uppercase tracking-wider font-semibold">
           {referenceId} · {confidence}%
         </span>
       </div>
@@ -31,19 +31,19 @@ export function CertifiedSeal({
 
   if (variant === "compact") {
     return (
-      <div className="inline-flex flex-col items-center gap-2 px-4 py-3 border border-[#3a3a3e] bg-[#1a1a1c]">
+      <div className="inline-flex flex-col items-center gap-2 px-4 py-3 border border-[#1C323B] bg-[#0D171C] rounded shadow-sm">
         <div className="flex items-center justify-center w-6 h-6 relative">
-          <div className="absolute w-5 h-5 border border-[#e8a33d] rounded-full" />
-          <div className="absolute w-3 h-3 border border-[#e8a33d] rotate-45" />
+          <div className="absolute w-5 h-5 border border-[#12A5B8] rounded-full" />
+          <div className="absolute w-3 h-3 border border-[#12A5B8] rotate-45" />
         </div>
-        <div className="font-serif text-[9px] font-semibold text-[#f2ece2] uppercase tracking-wide text-center">
+        <div className="font-sans text-[9px] font-bold text-[#FFFFFF] uppercase tracking-wide text-center">
           Verified
         </div>
-        <div className="w-full h-[1px] bg-[#3a3a3e]" />
-        <div className="font-mono text-[8px] text-[#8a7f6d] text-center leading-snug">
+        <div className="w-full h-[1px] bg-[#1C323B]" />
+        <div className="font-mono text-[8px] text-[#8AA3AD] text-center leading-snug">
           {referenceId}
         </div>
-        <div className="font-mono text-[7px] text-[#e8a33d] uppercase tracking-widest">
+        <div className="font-mono text-[7px] text-[#12A5B8] font-bold uppercase tracking-widest">
           TRACED
         </div>
       </div>
@@ -52,36 +52,36 @@ export function CertifiedSeal({
 
   // Default full seal
   return (
-    <div className="certified-seal">
+    <div className="p-4 border border-[#1C323B] bg-[#0D171C] rounded flex flex-col items-center text-center max-w-[200px] shadow-sm">
       {/* Abstract Geometric Mark (NOT official government emblem) */}
-      <div className="certified-seal-mark">
+      <div className="relative flex items-center justify-center w-8 h-8 mb-2">
         {/* Outer circle */}
-        <div className="absolute w-6 h-6 border-2 border-[#e8a33d] rounded-full" />
+        <div className="absolute w-7 h-7 border-2 border-[#12A5B8] rounded-full shadow-[0_0_8px_rgba(18,165,184,0.3)]" />
         {/* Inner rotated square/diamond */}
-        <div className="absolute w-[14px] h-[14px] border-2 border-[#e8a33d] rotate-45" />
+        <div className="absolute w-[16px] h-[16px] border-2 border-[#12A5B8] rotate-45" />
       </div>
 
       {/* Title */}
-      <div className="certified-seal-title">
+      <div className="font-sans text-xs font-bold text-[#FFFFFF] uppercase tracking-wider mb-2">
         Verified Analysis
       </div>
 
       {/* Divider */}
-      <div className="certified-seal-divider" />
+      <div className="w-full h-[1px] bg-[#1C323B] mb-2" />
 
       {/* Metadata */}
-      <div className="certified-seal-meta">
-        <div className="mb-1">REF: {referenceId}</div>
-        <div className="mb-1">MODEL: {model}</div>
-        <div className="mb-1">CONF: {confidence}%</div>
-        <div>SOURCE: {sensor}</div>
+      <div className="font-mono text-[9px] text-[#8AA3AD] space-y-1 text-left w-full">
+        <div>REF: <span className="text-[#F0F6F8]">{referenceId}</span></div>
+        <div>MODEL: <span className="text-[#F0F6F8]">{model}</span></div>
+        <div>CONF: <span className="text-[#12A5B8] font-bold">{confidence}%</span></div>
+        <div>SOURCE: <span className="text-[#F0F6F8]">{sensor}</span></div>
       </div>
 
       {/* Divider */}
-      <div className="certified-seal-divider" />
+      <div className="w-full h-[1px] bg-[#1C323B] my-2" />
 
       {/* Footer */}
-      <div className="certified-seal-footer">
+      <div className="font-mono text-[8px] text-[#12A5B8] font-bold uppercase tracking-widest">
         Traced · Auditable
       </div>
     </div>

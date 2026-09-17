@@ -79,7 +79,7 @@ class OpticalSpecialistLive(BaseSpecialistModel):
         self._load_model()
 
     def _load_model(self):
-        if not self.checkpoint_path.exists():
+        if self.checkpoint_path is None or not self.checkpoint_path.exists():
             raise FileNotFoundError(
                 f"[OpticalSpecialistLive] Required model weights checkpoint not found at {self.checkpoint_path}. "
                 "Fallback mode is completely disabled."
