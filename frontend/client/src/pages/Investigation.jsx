@@ -893,18 +893,18 @@ export default function Investigation() {
                 {/* ── Top Header: Brand + Collapse ── */}
                 <div className="p-3 border-b border-[#1C323B]/80 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-none bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
+                    <span className="w-2 h-2 rounded-full bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
                     <span className="font-mono text-xs font-bold tracking-wider text-[#FFFFFF]">
                       SATQUERY AI
                     </span>
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 bg-[#0D171C] text-[#8AA3AD] border border-[#1C323B]">
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#0D171C] text-[#8AA3AD] border border-white/[0.08] rounded-md">
                       ISRO
                     </span>
                   </div>
 
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="p-1 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C] transition-colors rounded-none cursor-pointer"
+                    className="p-1.5 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C] transition-colors rounded-lg cursor-pointer"
                     title="Collapse Sidebar"
                   >
                     <PanelLeftClose size={15} />
@@ -915,7 +915,7 @@ export default function Investigation() {
                 <div className="p-3 pb-2">
                   <button
                     onClick={handleNewChat}
-                    className="w-full py-2 px-3 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] font-mono text-xs flex items-center justify-between transition-all cursor-pointer shadow-sm group"
+                    className="w-full py-2 px-3 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] font-mono text-xs flex items-center justify-between transition-all cursor-pointer shadow-sm group rounded-xl"
                   >
                     <span className="flex items-center gap-2 font-bold tracking-wide">
                       <Plus size={14} className="text-[#12A5B8] group-hover:rotate-90 transition-transform" />
@@ -932,7 +932,7 @@ export default function Investigation() {
                       setSidebarTab("chats");
                       setActiveProjectId(null);
                     }}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer ${
+                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer rounded-lg ${
                       sidebarTab === "chats"
                         ? "bg-[#132127] text-[#12A5B8] font-bold border-b border-[#12A5B8]"
                         : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
@@ -942,7 +942,7 @@ export default function Investigation() {
                   </button>
                   <button
                     onClick={() => setSidebarTab("images")}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer flex items-center justify-center gap-1 rounded-lg ${
                       sidebarTab === "images"
                         ? "bg-[#132127] text-[#12A5B8] font-bold border-b border-[#12A5B8]"
                         : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
@@ -950,14 +950,14 @@ export default function Investigation() {
                   >
                     <span>IMAGES</span>
                     {allImagesAcrossChats.length > 0 && (
-                      <span className="text-[9px] px-1 bg-[#0D171C] text-[#8AA3AD] rounded-none">
+                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#8AA3AD] rounded-md">
                         {allImagesAcrossChats.length}
                       </span>
                     )}
                   </button>
                   <button
                     onClick={() => setSidebarTab("projects")}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer ${
+                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer rounded-lg ${
                       sidebarTab === "projects"
                         ? "bg-[#132127] text-[#12A5B8] font-bold border-b border-[#12A5B8]"
                         : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
@@ -985,7 +985,7 @@ export default function Investigation() {
                             <div
                               key={conv.id}
                               onClick={() => handleSelectChat(conv.id)}
-                              className={`group px-2.5 py-2 cursor-pointer text-xs truncate flex items-center justify-between transition-colors ${
+                              className={`group px-2.5 py-2 cursor-pointer text-xs truncate flex items-center justify-between transition-colors rounded-xl ${
                                 isActive
                                   ? "bg-[#0D171C] text-[#12A5B8] font-bold border-l-2 border-[#12A5B8]"
                                   : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]/60"
@@ -995,7 +995,7 @@ export default function Investigation() {
                               <span className="truncate">{conv.title}</span>
                               <button
                                 onClick={(e) => handleDeleteChat(e, conv.id)}
-                                className="opacity-0 group-hover:opacity-100 p-0.5 text-[#8AA3AD] hover:text-[#B9654D] transition-opacity cursor-pointer flex-shrink-0 ml-2"
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-[#8AA3AD] hover:text-[#B9654D] transition-opacity cursor-pointer flex-shrink-0 ml-2 rounded"
                                 title="Delete conversation"
                               >
                                 <Trash2 size={12} />
@@ -1031,12 +1031,12 @@ export default function Investigation() {
                                 if (target) target.scrollIntoView({ behavior: "smooth" });
                               }, 100);
                             }}
-                            className="p-2 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 cursor-pointer transition-all flex items-center gap-2.5 group"
+                            className="p-2 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 cursor-pointer transition-all flex items-center gap-2.5 group rounded-xl"
                           >
                             <img
                               src={img.previewUrl}
                               alt={img.name}
-                              className="w-10 h-10 object-cover border border-[#1C323B] flex-shrink-0"
+                              className="w-10 h-10 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="text-[11px] font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] truncate">
@@ -1069,7 +1069,7 @@ export default function Investigation() {
                         return (
                           <div
                             key={proj.id}
-                            className={`p-2.5 border transition-all ${
+                            className={`p-2.5 border transition-all rounded-xl ${
                               isSelected
                                 ? "bg-[#0D171C] border-[#12A5B8]"
                                 : "bg-[#0D171C]/60 border-[#1C323B] hover:border-[#12A5B8]/40"
@@ -1087,7 +1087,7 @@ export default function Investigation() {
                                   {proj.description}
                                 </span>
                               </div>
-                              <span className="text-[9px] px-1.5 py-0.5 bg-[#080E11] text-[#12A5B8] border border-[#1C323B]">
+                              <span className="text-[9px] px-2 py-0.5 bg-[#080E11] text-[#12A5B8] border border-white/[0.08] rounded-md">
                                 {proj.badge}
                               </span>
                             </div>
@@ -1105,7 +1105,7 @@ export default function Investigation() {
                                     <div
                                       key={c.id}
                                       onClick={() => handleSelectChat(c.id)}
-                                      className="px-1.5 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate"
+                                      className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg"
                                     >
                                       · {c.title}
                                     </div>
@@ -1145,7 +1145,7 @@ export default function Investigation() {
                       e.stopPropagation();
                       setProfileMenuOpen((prev) => !prev);
                     }}
-                    className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer ${
+                    className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl ${
                       profileMenuOpen ? "bg-[#132127]" : "hover:bg-[#0D171C]"
                     }`}
                   >
@@ -1169,10 +1169,10 @@ export default function Investigation() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.98 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute bottom-full left-2 right-2 mb-2 bg-[#0D171C] border border-[#1C323B] shadow-2xl p-1 font-sans text-xs z-50 rounded-none"
+                        className="absolute bottom-full left-2 right-2 mb-2 bg-[#0D171C] border border-[#1C323B] shadow-2xl p-1 font-sans text-xs z-50 rounded-2xl overflow-hidden"
                       >
                         {/* Profile Header Item */}
-                        <div className="p-2 flex items-center justify-between hover:bg-[#132127] cursor-pointer transition-colors border-b border-[#1C323B]/60 pb-2">
+                        <div className="p-2 flex items-center justify-between hover:bg-[#132127] cursor-pointer transition-colors border-b border-[#1C323B]/60 pb-2 rounded-xl">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-[#B9654D] text-[#FFFFFF] font-bold text-[10px] flex items-center justify-center">
                               KP
@@ -1192,7 +1192,7 @@ export default function Investigation() {
                               toast.info("SatQuery Pro: Full Multi-Modal Sentinel + Cartosat Archive Access");
                               setProfileMenuOpen(false);
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                           >
                             <Sparkles size={14} className="text-[#12A5B8]" />
                             <span>Upgrade plan</span>
@@ -1200,12 +1200,12 @@ export default function Investigation() {
 
                           <button
                             onClick={() => {
-                              toast.info("Personalization: Sensor Preferences & CRS Projection Presets");
+                              toast.info("Personalization settings");
                               setProfileMenuOpen(false);
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                           >
-                            <Clock size={14} className="text-[#8AA3AD]" />
+                            <Sliders size={14} className="text-[#8AA3AD]" />
                             <span>Personalization</span>
                           </button>
 
@@ -1214,7 +1214,7 @@ export default function Investigation() {
                               toast.info("Kadambari Pingle — Space Applications Centre (SAC), ISRO");
                               setProfileMenuOpen(false);
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                           >
                             <User size={14} className="text-[#8AA3AD]" />
                             <span>Profile</span>
@@ -1225,7 +1225,7 @@ export default function Investigation() {
                               setSettingsModalOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                           >
                             <SettingsIcon size={14} className="text-[#8AA3AD]" />
                             <span>Settings</span>
@@ -1242,7 +1242,7 @@ export default function Investigation() {
                               setCommandPaletteOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center justify-between transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center justify-between transition-colors cursor-pointer rounded-xl"
                           >
                             <div className="flex items-center gap-2.5">
                               <HelpCircle size={14} className="text-[#8AA3AD]" />
@@ -1257,7 +1257,7 @@ export default function Investigation() {
                               setProfileMenuOpen(false);
                               toast.info("Logged out to orbital perspective");
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#B9654D] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#B9654D] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                           >
                             <LogOut size={14} />
                             <span>Log out</span>
@@ -1274,12 +1274,12 @@ export default function Investigation() {
                   ══════════════════════════════════════════════════════════ */}
               <main className="flex-1 flex flex-col h-full overflow-hidden relative">
                 {/* ── Top Bar: Sidebar toggle, Chat title, Orbit return ── */}
-                <header className="h-12 px-4 border-b border-[#1C323B]/70 bg-[#080E11]/80 backdrop-blur-md flex items-center justify-between z-30 font-mono text-xs">
+                <header className="h-12 px-4 ios-glass-header flex items-center justify-between z-30 font-mono text-xs">
                   <div className="flex items-center gap-3 min-w-0">
                     {!sidebarOpen && (
                       <button
                         onClick={() => setSidebarOpen(true)}
-                        className="p-1 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C] transition-colors cursor-pointer"
+                        className="p-1.5 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C] transition-colors cursor-pointer rounded-md"
                         title="Open Sidebar"
                       >
                         <PanelLeftOpen size={16} />
@@ -1291,7 +1291,7 @@ export default function Investigation() {
                         {activeConversation?.title || "SatQuery Workstation"}
                       </span>
                       {activeConversation?.projectId && (
-                        <span className="text-[9px] px-1.5 py-0.5 bg-[#0D171C] text-[#12A5B8] border border-[#1C323B] hidden sm:inline">
+                        <span className="text-[9px] px-2 py-0.5 bg-[#0D171C] text-[#12A5B8] border border-white/[0.08] hidden sm:inline rounded-md">
                           {activeConversation.projectId === "proj-disaster"
                             ? "DISASTER"
                             : activeConversation.projectId === "proj-urban"
@@ -1306,7 +1306,7 @@ export default function Investigation() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setReportModalOpen(true)}
-                      className="px-2.5 py-1 text-[11px] text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#0D171C] border border-transparent hover:border-[#1C323B] transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-3 py-1 text-[11px] text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#0D171C] border border-white/[0.08] transition-colors flex items-center gap-1.5 cursor-pointer rounded-md"
                     >
                       <FileText size={13} />
                       <span className="hidden sm:inline">AUDIT REPORT ↗</span>
@@ -1314,7 +1314,7 @@ export default function Investigation() {
 
                     <button
                       onClick={() => setViewMode("landing")}
-                      className="px-2.5 py-1 text-[11px] text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border border-[#1C323B] transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-3 py-1 text-[11px] text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border border-white/[0.08] transition-colors flex items-center gap-1.5 cursor-pointer rounded-md"
                       title="Return to 3D Orbit Landing"
                     >
                       <Globe size={13} className="text-[#12A5B8]" />
@@ -1353,8 +1353,8 @@ export default function Investigation() {
                           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                           className="text-center space-y-2 mb-3"
                         >
-                          <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#0D171C] border border-[#1C323B] font-mono text-[10px] text-[#12A5B8] uppercase tracking-wider">
-                            <span className="w-1.5 h-1.5 bg-[#12A5B8]" />
+                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0D171C] border border-white/[0.08] font-mono text-[10px] text-[#12A5B8] uppercase tracking-wider rounded-md">
+                            <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full" />
                             <span>EARTH OBSERVATION AGENTIC WORKSTATION</span>
                           </div>
                           <h1 className="font-sans text-3xl sm:text-4xl font-extrabold text-[#FFFFFF] tracking-tight">
@@ -1378,7 +1378,7 @@ export default function Investigation() {
                             transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
                           }}
                           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full mt-3 text-left font-sans"
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-3 text-left font-sans"
                         >
                           {[
                             {
@@ -1409,7 +1409,7 @@ export default function Investigation() {
                                 setTaskMode(card.mode);
                                 composerInputRef.current?.focus();
                               }}
-                              className="p-3 bg-[#0D171C]/80 hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 cursor-pointer transition-all group"
+                              className="p-3.5 bg-[#0D171C]/80 hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 cursor-pointer transition-all group rounded-2xl shadow-sm"
                             >
                               <div className="text-xs font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] flex items-center justify-between">
                                 <span>{card.title}</span>
@@ -1440,7 +1440,7 @@ export default function Investigation() {
                               {msg.attachedAsset && (
                                 <div
                                   id={`asset-${msg.attachedAsset.id}`}
-                                  className="p-3.5 bg-[#0D171C] border border-[#1C323B] space-y-3 font-mono text-xs max-w-xl ml-auto"
+                                  className="p-3.5 bg-[#0D171C] border border-[#1C323B] space-y-3 font-mono text-xs max-w-xl ml-auto rounded-2xl"
                                 >
                                   <div className="flex items-center justify-between text-[10px] text-[#8AA3AD] border-b border-[#1C323B] pb-2">
                                     <span className="font-bold text-[#12A5B8] uppercase tracking-wider flex items-center gap-1.5">
@@ -1462,7 +1462,7 @@ export default function Investigation() {
                                   {/* Clickable Image Card Preview */}
                                   <div
                                     onClick={() => handleOpenCanvasInspection(msg.attachedAsset)}
-                                    className="relative h-48 sm:h-56 bg-[#080E11] overflow-hidden border border-[#1C323B] group cursor-pointer"
+                                    className="relative h-48 sm:h-56 bg-[#080E11] overflow-hidden border border-[#1C323B] group cursor-pointer rounded-xl"
                                   >
                                     <img
                                       src={msg.attachedAsset.previewUrl}
@@ -1470,10 +1470,10 @@ export default function Investigation() {
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#080E11]/80 via-transparent to-transparent flex items-end justify-between p-2.5">
-                                      <span className="text-[10px] text-[#F0F6F8] font-mono bg-[#080E11]/80 px-2 py-0.5 border border-[#1C323B]">
+                                      <span className="text-[10px] text-[#F0F6F8] font-mono bg-[#080E11]/80 px-2.5 py-0.5 border border-[#1C323B] rounded-full">
                                         {msg.attachedAsset.metadata?.resolution || "0.5m GSD"} · {msg.attachedAsset.metadata?.format || "GeoTIFF"}
                                       </span>
-                                      <span className="text-[10px] font-bold text-[#12A5B8] flex items-center gap-1 bg-[#080E11]/90 px-2 py-0.5 border border-[#12A5B8]/40">
+                                      <span className="text-[10px] font-bold text-[#12A5B8] flex items-center gap-1 bg-[#080E11]/90 px-2.5 py-0.5 border border-[#12A5B8]/40 rounded-full">
                                         <Maximize2 size={11} />
                                         <span>INSPECT CANVAS ↗</span>
                                       </span>
@@ -1485,7 +1485,7 @@ export default function Investigation() {
                               {/* 2. User Question Bubble */}
                               {msg.role === "user" && msg.text && (
                                 <div className="flex justify-end">
-                                  <div className="max-w-xl p-3.5 bg-[#0D171C] border border-[#1C323B] text-[#FFFFFF] font-sans text-sm leading-relaxed">
+                                  <div className="max-w-xl p-3.5 bg-[#0D171C] border border-[#1C323B] text-[#FFFFFF] font-sans text-sm leading-relaxed rounded-2xl">
                                     <div className="flex items-center justify-between text-[9px] font-mono text-[#8AA3AD] mb-1">
                                       <span className="text-[#76AEB0] font-bold">YOU</span>
                                       <span>{msg.timestamp}</span>
@@ -1497,11 +1497,11 @@ export default function Investigation() {
 
                               {/* 3. Assistant Response Block */}
                               {msg.role === "assistant" && (
-                                <div className="p-4 bg-[#080E11]/90 border border-[#1C323B] space-y-3 font-sans max-w-2xl">
+                                <div className="p-4 bg-[#080E11]/90 border border-[#1C323B] space-y-3 font-sans max-w-2xl rounded-2xl">
                                   {/* Assistant Header */}
                                   <div className="flex items-center justify-between text-xs font-mono border-b border-[#1C323B]/70 pb-2">
                                     <div className="flex items-center gap-2">
-                                      <span className="w-2 h-2 bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
+                                      <span className="w-2 h-2 bg-[#12A5B8] shadow-[0_0_6px_#12A5B8] rounded-full" />
                                       <span className="font-bold text-[#12A5B8]">SATQUERY AI</span>
                                       <span className="text-[10px] text-[#8AA3AD] font-mono">
                                         [{SPECIALIST_CONFIG[msg.mode]?.sublabel || "OPTICAL ◉"}]
@@ -1522,7 +1522,7 @@ export default function Investigation() {
                                     <div className="flex items-center gap-2">
                                       <button
                                         onClick={() => handleOpenCanvasInspection(msg.assetRef, msg.evidence)}
-                                        className="px-2.5 py-1 bg-[#0D171C] hover:bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/40 hover:border-[#12A5B8] font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                                        className="px-3 py-1 bg-[#0D171C] hover:bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/40 hover:border-[#12A5B8] font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 shadow-sm rounded-lg"
                                       >
                                         <Target size={12} />
                                         <span>VIEW FINDINGS ↗</span>
@@ -1533,7 +1533,7 @@ export default function Investigation() {
                                           setActiveEvidenceResult(msg.queryResult);
                                           setShowMeWhyOpen(true);
                                         }}
-                                        className="px-2.5 py-1 bg-[#0D171C] hover:bg-[#132127] text-[#F0F6F8] hover:text-[#12A5B8] border border-[#1C323B] text-[11px] transition-colors cursor-pointer flex items-center gap-1"
+                                        className="px-3 py-1 bg-[#0D171C] hover:bg-[#132127] text-[#F0F6F8] hover:text-[#12A5B8] border border-[#1C323B] text-[11px] transition-colors cursor-pointer flex items-center gap-1 rounded-lg"
                                       >
                                         <ShieldCheck size={12} />
                                         <span>SHOW ME WHY ↗</span>
@@ -1549,7 +1549,7 @@ export default function Investigation() {
                             EXECUTION PIPELINE: QUERY → ROUTING → ANALYSIS → ANSWER → FINDINGS
                             ──────────────────────────────────────────────── */}
                         {isAnalyzing && (
-                          <div className="p-4 bg-[#0D171C] border border-[#12A5B8] space-y-3 font-mono text-xs animate-pulse max-w-2xl">
+                          <div className="p-4 bg-[#0D171C] border border-[#12A5B8] space-y-3 font-mono text-xs animate-pulse max-w-2xl rounded-2xl">
                             <div className="flex items-center justify-between text-[10px] font-bold">
                               <span className="text-[#12A5B8] uppercase tracking-wider flex items-center gap-1.5">
                                 <Activity size={12} className="animate-spin" />
@@ -1603,12 +1603,12 @@ export default function Investigation() {
                   <div className="max-w-3xl mx-auto pointer-events-auto">
                     {/* Staged Imagery Attachment Pill (if present) */}
                     {stagedAsset && (
-                      <div className="mb-2 p-2 bg-[#0D171C]/95 border border-[#1C323B] flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md">
+                      <div className="mb-2 p-2 bg-[#0D171C]/95 border border-[#1C323B] flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md rounded-2xl">
                         <div className="flex items-center gap-2 min-w-0">
                           <img
                             src={stagedAsset.previewUrl}
                             alt="Staged"
-                            className="w-8 h-8 object-cover border border-[#1C323B] flex-shrink-0"
+                            className="w-8 h-8 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg"
                           />
                           <div className="truncate">
                             <span className="font-bold text-[#F0F6F8] truncate block text-[11px]">
@@ -1621,7 +1621,7 @@ export default function Investigation() {
                         </div>
                         <button
                           onClick={() => setStagedAsset(null)}
-                          className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer"
+                          className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer rounded-md"
                           title="Remove attached imagery"
                         >
                           <X size={14} />
@@ -1630,7 +1630,7 @@ export default function Investigation() {
                     )}
 
                     {/* Composer Bar Container */}
-                    <div className="bg-[#0D171C]/95 backdrop-blur-xl border border-[#1C323B] focus-within:border-[#12A5B8] p-2.5 flex items-center gap-2 shadow-2xl transition-all relative">
+                    <div className="ios-glass p-2.5 flex items-center gap-2 shadow-2xl transition-all relative rounded-xl border border-white/[0.12]">
                       {/* Hidden File Input for Image Upload */}
                       <input
                         type="file"
@@ -1648,7 +1648,7 @@ export default function Investigation() {
                             setPlusMenuOpen((prev) => !prev);
                             setTaskDropdownOpen(false);
                           }}
-                          className={`p-2 text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127] transition-colors cursor-pointer ${
+                          className={`p-2 text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127] transition-colors cursor-pointer rounded-md ${
                             plusMenuOpen ? "text-[#12A5B8] bg-[#132127]" : ""
                           }`}
                           title="Attach Satellite Imagery or Scenes"
@@ -1664,14 +1664,14 @@ export default function Investigation() {
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 8, scale: 0.98 }}
                               transition={{ duration: 0.12 }}
-                              className="absolute bottom-full left-0 mb-3 w-56 bg-[#0D171C] border border-[#1C323B] shadow-2xl p-1 font-sans text-xs z-50 rounded-none"
+                              className="absolute bottom-full left-0 mb-3 w-56 ios-glass border border-white/[0.12] shadow-2xl p-1.5 font-sans text-xs z-50 rounded-xl overflow-hidden"
                             >
                               <button
                                 onClick={() => {
                                   fileInputRef.current?.click();
                                   setPlusMenuOpen(false);
                                 }}
-                                className="w-full px-3 py-2 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer"
+                                className="w-full px-3 py-2 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                               >
                                 <Upload size={14} className="text-[#12A5B8]" />
                                 <div>
@@ -1685,7 +1685,7 @@ export default function Investigation() {
                                   setImageryLibraryOpen(true);
                                   setPlusMenuOpen(false);
                                 }}
-                                className="w-full px-3 py-2 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer border-t border-[#1C323B]/60 mt-1"
+                                className="w-full px-3 py-2 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer border-t border-[#1C323B]/60 mt-1 rounded-xl"
                               >
                                 <Database size={14} className="text-[#76AEB0]" />
                                 <div>
@@ -1722,7 +1722,7 @@ export default function Investigation() {
                             setTaskDropdownOpen((prev) => !prev);
                             setPlusMenuOpen(false);
                           }}
-                          className={`px-2.5 py-1.5 font-mono text-[10px] text-[#F0F6F8] hover:text-[#12A5B8] bg-[#132127] hover:bg-[#1C323B] border border-[#1C323B] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                          className={`px-3 py-1.5 font-mono text-[10px] text-[#F0F6F8] hover:text-[#12A5B8] bg-[#132127] hover:bg-[#1C323B] border border-[#1C323B] flex items-center gap-1.5 transition-colors cursor-pointer rounded-lg ${
                             taskMode !== "AUTO" ? "border-[#12A5B8] text-[#12A5B8]" : ""
                           }`}
                         >
@@ -1738,7 +1738,7 @@ export default function Investigation() {
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 8, scale: 0.98 }}
                               transition={{ duration: 0.12 }}
-                              className="absolute bottom-full right-0 mb-3 w-60 bg-[#0D171C] border border-[#1C323B] shadow-2xl p-1 font-mono text-xs z-50 rounded-none max-h-72 overflow-y-auto"
+                              className="absolute bottom-full right-0 mb-3 w-60 ios-glass border border-white/[0.12] shadow-2xl p-1.5 font-mono text-xs z-50 rounded-xl max-h-72 overflow-y-auto"
                             >
                               {Object.keys(SPECIALIST_CONFIG).map((mode) => (
                                 <button
@@ -1747,7 +1747,7 @@ export default function Investigation() {
                                     setTaskMode(mode);
                                     setTaskDropdownOpen(false);
                                   }}
-                                  className={`w-full px-2.5 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer border-b border-[#1C323B]/40 last:border-none ${
+                                  className={`w-full px-2.5 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer border-b border-[#1C323B]/40 last:border-none rounded-xl ${
                                     taskMode === mode
                                       ? "bg-[#132127] text-[#12A5B8] font-bold"
                                       : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
@@ -1768,7 +1768,7 @@ export default function Investigation() {
                       {/* ── [MIC] Microphone Button (Functional Web Speech) ── */}
                       <button
                         onClick={toggleSpeechRecognition}
-                        className={`p-2 transition-colors cursor-pointer ${
+                        className={`p-2 transition-colors cursor-pointer rounded-lg ${
                           isListening
                             ? "bg-[#12A5B8] text-[#080E11] animate-pulse"
                             : "text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127]"
@@ -1782,7 +1782,7 @@ export default function Investigation() {
                       <button
                         onClick={() => handleSendQuery()}
                         disabled={isAnalyzing || (!queryText.trim() && !stagedAsset)}
-                        className="w-8 h-8 rounded-none bg-[#12A5B8] hover:bg-[#12A5B8] disabled:opacity-30 text-[#080E11] font-bold flex items-center justify-center transition-all cursor-pointer shadow-md flex-shrink-0"
+                        className="w-8 h-8 rounded-lg bg-[#12A5B8] hover:bg-[#0E7C8A] disabled:opacity-30 text-[#080E11] font-bold flex items-center justify-center transition-all cursor-pointer shadow-md flex-shrink-0"
                         title="Send query"
                       >
                         <Send size={14} />
@@ -1817,7 +1817,7 @@ export default function Investigation() {
 
                 <button
                   onClick={() => setCanvasModalOpen(false)}
-                  className="p-1.5 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127] transition-colors cursor-pointer"
+                  className="p-1.5 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127] transition-colors cursor-pointer rounded-md"
                 >
                   <X size={18} />
                 </button>

@@ -24,6 +24,7 @@ import { ObservationSweep } from "./ObservationSweep";
 import { BiTemporalInvestigator } from "./BiTemporalInvestigator";
 import { OpticalSarFusion } from "./OpticalSarFusion";
 import { EvidenceProofMatrix } from "./EvidenceProofMatrix";
+import { AuthModal } from "./AuthModal";
 
 /**
  * CinematicLanding (SIH26167 · ISRO · SatQuery AI)
@@ -45,6 +46,28 @@ export function CinematicLanding({
   onAttachImagery,
 }) {
   const [activeSection, setActiveSection] = useState("hero");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState("login");
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("satquery_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleOpenAuth = (mode) => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem("satquery_user");
+    } catch {}
+  };
 
   // Track scroll position to coordinate 3D Earth choreography across all 8 stages
   useEffect(() => {
@@ -107,7 +130,7 @@ export function CinematicLanding({
       </div>
 
       {/* ─── 3. SLEEK HIGH-CONTRAST HEADER ─── */}
-      <header className="sticky top-0 z-50 h-14 px-6 md:px-12 bg-[#040708]/90 backdrop-blur-md border-b border-[#1C323B] flex items-center justify-between">
+      <header className="sticky top-0 z-50 h-14 px-6 md:px-12 ios-glass-header flex items-center justify-between">
         
         {/* Brand */}
         <button
@@ -118,14 +141,55 @@ export function CinematicLanding({
           <span className="tracking-wide">SATQUERY AI</span>
         </button>
 
-        {/* Primary Workstation CTA */}
-        <button
-          onClick={() => handleLaunchWorkstation()}
-          className="px-4 py-2 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] active:scale-95 text-[#FFFFFF] font-bold text-xs tracking-wider rounded-lg flex items-center gap-1.5 transition-all cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_15px_rgba(18,165,184,0.3)]"
-        >
-          <span>OPEN WORKSTATION</span>
-          <span className="text-sm leading-none">↗</span>
-        </button>
+        {/* Navigation & Action Controls: Sign Up, Log In & Ask Query */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1.5 ios-glass-card border border-white/[0.1] rounded-md font-mono text-xs flex items-center gap-2 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+                <span className="text-[#FFFFFF] font-bold">{currentUser.name}</span>
+                <span className="text-[#8AA3AD] text-[10px] hidden md:inline">({currentUser.role})</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="px-2.5 py-1.5 ios-glass-btn text-[#8AA3AD] hover:text-[#B9654D] text-xs font-mono rounded-md transition-colors cursor-pointer"
+                title="Log Out"
+              >
+                LOGOUT
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Log In Button */}
+              <button
+                id="login-header-btn"
+                onClick={() => handleOpenAuth("login")}
+                className="px-3.5 py-1.5 ios-glass-btn hover:bg-white/[0.08] text-[#D0E3EA] hover:text-[#FFFFFF] text-xs font-mono font-medium rounded-md transition-all cursor-pointer"
+              >
+                LOG IN
+              </button>
+
+              {/* Sign Up Button */}
+              <button
+                id="signup-header-btn"
+                onClick={() => handleOpenAuth("signup")}
+                className="px-3.5 py-1.5 bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.12] hover:border-[#12A5B8]/50 text-[#FFFFFF] text-xs font-mono font-semibold rounded-md transition-all cursor-pointer shadow-sm"
+              >
+                SIGN UP
+              </button>
+            </>
+          )}
+
+          {/* Primary Workstation CTA */}
+          <button
+            id="ask-query-header-btn"
+            onClick={() => handleLaunchWorkstation()}
+            className="px-4 py-2 ios-glass-primary active:scale-95 text-[#FFFFFF] font-bold text-xs tracking-wider rounded-md flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+          >
+            <span>ASK QUERY</span>
+            <span className="text-sm leading-none">↗</span>
+          </button>
+        </div>
 
       </header>
 
@@ -139,7 +203,7 @@ export function CinematicLanding({
           id="hero-section"
           className="min-h-screen relative flex flex-col justify-center px-6 md:px-14 lg:px-20 py-16 overflow-hidden pointer-events-none"
         >
-          <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-20">
             
             {/* Left Column: Headline & Supporting Text */}
             <div className="lg:col-span-6 flex flex-col justify-center z-30 pointer-events-auto">
@@ -149,19 +213,19 @@ export function CinematicLanding({
                 initial={{ opacity: 0, y: -14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="font-mono text-xs tracking-[0.16em] text-[#12A5B8] uppercase font-bold mb-3 flex items-center gap-2"
+                className="font-mono text-xs tracking-[0.16em] text-[#12A5B8] uppercase font-bold mb-3 flex items-center gap-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]"
               >
-                <span className="w-2 h-2 rounded-full bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
+                <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
                 <span>MULTIMODAL SATELLITE INTELLIGENCE</span>
               </motion.div>
 
-              {/* Display Heading: Space Grotesk */}
+              {/* Display Heading: Sora */}
               <motion.div
                 initial={{ opacity: 0, y: -24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h1 className="font-sans text-[clamp(52px,6.2vw,92px)] font-bold tracking-tight text-[#FFFFFF] leading-[0.96] mb-3">
+                <h1 className="font-heading font-sora text-[clamp(52px,6.2vw,92px)] font-extrabold tracking-tight text-[#FFFFFF] leading-[0.96] mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                   SATQUERY AI
                 </h1>
               </motion.div>
@@ -173,12 +237,12 @@ export function CinematicLanding({
                 transition={{ duration: 0.8, delay: 0.7 }}
                 className="space-y-3"
               >
-                <div className="font-sans text-[clamp(26px,3vw,44px)] font-extrabold text-[#FFFFFF] tracking-tight leading-tight">
+                <div className="font-heading font-sora text-[clamp(26px,3vw,44px)] font-bold text-[#FFFFFF] tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                   ASK EARTH.<br />
-                  <span className="text-[#8AA3AD]">UNDERSTAND IT.</span>
+                  <span className="text-[#A2BAC5] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">UNDERSTAND IT.</span>
                 </div>
 
-                <p className="font-sans text-base sm:text-lg text-[#8AA3AD] max-w-md leading-relaxed pt-1">
+                <p className="font-sans text-base sm:text-lg text-[#D0E3EA] max-w-md leading-relaxed pt-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                   A cinematic Earth-observation intelligence experience. Scroll to begin.
                 </p>
               </motion.div>
@@ -192,18 +256,10 @@ export function CinematicLanding({
               >
                 <button
                   onClick={() => scrollToSection("vqa-section")}
-                  className="px-4 py-2.5 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] active:scale-95 text-[#FFFFFF] font-bold rounded-lg flex items-center gap-2 transition-all cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_15px_rgba(18,165,184,0.25)]"
+                  className="px-4 py-2.5 ios-glass-primary active:scale-95 text-[#FFFFFF] font-bold rounded-md flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(18,165,184,0.25)]"
                 >
                   <span>EXPLORE OBSERVATION JOURNEY</span>
                   <ChevronDown size={14} />
-                </button>
-
-                <button
-                  onClick={() => handleLaunchWorkstation()}
-                  className="px-4 py-2.5 bg-[#0D171C] hover:bg-[#132127] active:scale-95 border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <span>LAUNCH WORKSTATION</span>
-                  <span>↗</span>
                 </button>
               </motion.div>
 
@@ -226,20 +282,20 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="vqa-section"
-          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 pointer-events-none"
         >
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#1C323B] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div>
                 <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                   02 / VQA
                 </div>
-                <h2 className="font-sans text-[clamp(36px,4.2vw,62px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.0]">
+                <h2 className="font-heading font-sora text-[clamp(36px,4.2vw,62px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.0] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   ASK THE IMAGE.
                 </h2>
-                <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-2xl mt-2 leading-relaxed">
+                <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                   Query a single remote-sensing image using natural language to understand land cover, agriculture, infrastructure, urban areas and other visible features.
                 </p>
               </div>
@@ -250,27 +306,19 @@ export function CinematicLanding({
               </div>
             </div>
 
-            {/* Observation Sweep Demonstration */}
+            {/* Observation Sweep Demonstration (VQA: No bounding highlights, pure natural language query) */}
             <ObservationSweep
               imageUrl="/assets/imagery/mumbai_proba.jpg"
               taskType="VQA"
               query="What type of land cover dominates this region?"
               answer="Dense urban residential agglomeration flanked by deep-water harbor logistics docks on the eastern bay and high-salinity tidal inlets."
-              boundingRegions={[
-                { label: "URBAN RESIDENTIAL GRID", confidence: "94.2%", top: "32%", left: "26%", width: "44%", height: "38%" },
-                { label: "MARITIME HARBOR", confidence: "89.6%", top: "44%", left: "56%", width: "24%", height: "26%" },
-              ]}
+              boundingRegions={[]}
               meta={{
                 source: "Bombay Seen by Proba Satellite",
                 coords: "19.0760° N, 72.8777° E",
                 resolution: "5m GSD Multispectral",
                 timestamp: "2024-03-14T06:12:45Z",
               }}
-              onActionClick={() => handleLaunchWorkstation({
-                query: "What type of land cover dominates this region?",
-                mode: "VQA",
-                sampleImage: "/assets/imagery/mumbai_proba.jpg"
-              })}
             />
 
           </div>
@@ -281,20 +329,20 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="grounding-section"
-          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 pointer-events-none"
         >
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#1C323B] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div>
                 <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                   03 / GROUNDING
                 </div>
-                <h2 className="font-sans text-[clamp(34px,4.0vw,58px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.02]">
+                <h2 className="font-heading font-sora text-[clamp(34px,4.0vw,58px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.02] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   FIND WHAT MATTERS.
                 </h2>
-                <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-2xl mt-2 leading-relaxed">
+                <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                   Locate specific objects or regions in satellite imagery and connect the answer directly to visual evidence.
                 </p>
               </div>
@@ -322,11 +370,6 @@ export function CinematicLanding({
                 resolution: "5m GSD Multispectral",
                 timestamp: "2024-03-14T06:12:45Z",
               }}
-              onActionClick={() => handleLaunchWorkstation({
-                query: "Where are the major built-up areas?",
-                mode: "GROUNDING",
-                sampleImage: "/assets/imagery/mumbai_proba.jpg"
-              })}
             />
 
           </div>
@@ -337,20 +380,20 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="nepal-section"
-          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 pointer-events-none"
         >
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#1C323B] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div>
                 <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                   04 / BI-TEMPORAL
                 </div>
-                <h2 className="font-sans text-[clamp(34px,4.0vw,58px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.02]">
+                <h2 className="font-heading font-sora text-[clamp(34px,4.0vw,58px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.02] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   SEE WHAT CHANGED.
                 </h2>
-                <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-2xl mt-2 leading-relaxed">
+                <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                   Compare historical and recent satellite observations to detect spatial difference, landslides, urban expansion, and terrain alteration.
                 </p>
               </div>
@@ -362,13 +405,7 @@ export function CinematicLanding({
             </div>
 
             {/* Interactive Bi-Temporal Investigation Canvas */}
-            <BiTemporalInvestigator
-              onInvestigateInWorkstation={(preset) => handleLaunchWorkstation({
-                query: preset.query,
-                mode: "CHANGE",
-                sampleImage: "/assets/imagery/nepal_2026_08_27.jpg"
-              })}
-            />
+            <BiTemporalInvestigator />
 
           </div>
         </section>
@@ -378,20 +415,20 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="fusion-section"
-          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 pointer-events-none"
         >
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#1C323B] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div>
                 <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                   05 / OPTICAL + SAR
                 </div>
-                <h2 className="font-sans text-[clamp(34px,4.0vw,58px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.02]">
+                <h2 className="font-heading font-sora text-[clamp(34px,4.0vw,58px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.02] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   SEE BEYOND ONE SENSOR.
                 </h2>
-                <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-2xl mt-2 leading-relaxed">
+                <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                   Combine optical and synthetic-aperture radar observations to analyze the same geographic region from complementary sensing perspectives.
                 </p>
               </div>
@@ -403,13 +440,7 @@ export function CinematicLanding({
             </div>
 
             {/* Optical + SAR Fusion System */}
-            <OpticalSarFusion
-              onInvestigateInWorkstation={(preset) => handleLaunchWorkstation({
-                query: preset.query,
-                mode: "FUSION",
-                sampleImage: "/satquery-prism-optical.png"
-              })}
-            />
+            <OpticalSarFusion />
 
           </div>
         </section>
@@ -419,27 +450,25 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="evidence-section"
-          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 pointer-events-none"
         >
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="border-b border-[#1C323B] pb-4">
+            <div className="border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                 06 / EVIDENCE
               </div>
-              <h2 className="font-sans text-[clamp(34px,4.2vw,62px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.0]">
+              <h2 className="font-heading font-sora text-[clamp(34px,4.2vw,62px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.0] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                 SEE THE PROOF.
               </h2>
-              <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-xl mt-2 leading-relaxed">
+              <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-xl mt-2 leading-relaxed">
                 Every finding remains connected to the imagery that supports it through verifiable provenance.
               </p>
             </div>
 
             {/* 6-Pillar Forensic Proof Matrix */}
-            <EvidenceProofMatrix
-              onInvestigatePreset={(preset) => handleLaunchWorkstation(preset)}
-            />
+            <EvidenceProofMatrix />
 
           </div>
         </section>
@@ -449,25 +478,25 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="technical-section"
-          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center px-6 md:px-14 lg:px-20 py-20 pointer-events-none"
         >
           <div className="max-w-7xl w-full mx-auto space-y-8 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="border-b border-[#1C323B] pb-4">
+            <div className="border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                 07 / TECHNICAL SIGNAL
               </div>
-              <h2 className="font-sans text-[clamp(34px,4.2vw,62px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.0]">
+              <h2 className="font-heading font-sora text-[clamp(34px,4.2vw,62px)] font-bold text-[#FFFFFF] tracking-tight mt-1 leading-[1.0] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                 REMOTE-SENSING PIPELINE.
               </h2>
-              <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-2xl mt-2 leading-relaxed">
+              <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                 Deterministic agentic orchestration routing natural language inquiries to calibrated vision-language adapters.
               </p>
             </div>
 
             {/* 1. Architecture Flow Pipeline */}
-            <div className="p-6 bg-[#0D171C] border border-[#1C323B]">
+            <div className="p-6 ios-glass-card border border-white/[0.08] rounded-xl">
               <div className="font-mono text-[10px] text-[#12A5B8] uppercase tracking-widest font-bold mb-4">
                 AGENTIC TASK ROUTING FLOW
               </div>
@@ -480,7 +509,7 @@ export function CinematicLanding({
                   { step: "04", title: "EVIDENCE", desc: "Pixel Localization", sub: "BBox & Diff Raster Masks", color: "#22D3EE" },
                   { step: "05", title: "RESULT", desc: "Calibrated Audit Trace", sub: "SHA-256 Verified Finding", color: "#10B981" },
                 ].map((st) => (
-                  <div key={st.step} className="p-3.5 bg-[#040708] border border-[#1C323B] flex flex-col justify-between">
+                  <div key={st.step} className="p-3.5 bg-[#040708]/80 border border-white/[0.07] flex flex-col justify-between rounded-lg">
                     <div>
                       <span className="text-[9px] text-[#8AA3AD] block">{st.step} · STEP</span>
                       <span className="font-bold text-sm block mt-0.5" style={{ color: st.color }}>{st.title}</span>
@@ -498,7 +527,7 @@ export function CinematicLanding({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left (Col 1-6): Sensor Inputs */}
-              <div className="lg:col-span-6 p-6 bg-[#0D171C] border border-[#1C323B] flex flex-col justify-between">
+              <div className="lg:col-span-6 p-6 ios-glass-card border border-white/[0.08] flex flex-col justify-between rounded-xl">
                 <div>
                   <div className="font-mono text-[10px] text-[#12A5B8] uppercase tracking-widest font-bold mb-2">
                     REMOTE-SENSING SENSOR COMPATIBILITY
@@ -513,7 +542,7 @@ export function CinematicLanding({
                       { sensor: "RESOURCESAT-2A", spec: "LISS-IV (5.8m Multi-Spectral)", use: "Agricultural parcel classification" },
                       { sensor: "SENTINEL-1 & SENTINEL-2", spec: "10m MSI + C-Band GRD Dual-Pass", use: "Bi-temporal change & cross-sensor fusion" },
                     ].map((s) => (
-                      <div key={s.sensor} className="p-2.5 bg-[#040708] border border-[#1C323B] flex items-center justify-between">
+                      <div key={s.sensor} className="p-2.5 bg-[#040708]/80 border border-white/[0.07] flex items-center justify-between rounded-lg">
                         <div>
                           <span className="text-[#FFFFFF] font-bold block">{s.sensor}</span>
                           <span className="text-[#8AA3AD] text-[10px]">{s.use}</span>
@@ -526,7 +555,7 @@ export function CinematicLanding({
               </div>
 
               {/* Right (Col 7-12): Academic Benchmarks */}
-              <div className="lg:col-span-6 p-6 bg-[#0D171C] border border-[#1C323B] flex flex-col justify-between">
+              <div className="lg:col-span-6 p-6 ios-glass-card border border-white/[0.08] flex flex-col justify-between rounded-xl">
                 <div>
                   <div className="font-mono text-[10px] text-[#0E7C8A] uppercase tracking-widest font-bold mb-2">
                     BENCHMARK VALIDATION ACCURACY
@@ -535,22 +564,22 @@ export function CinematicLanding({
                     Calibrated Remote-Sensing Evaluation
                   </h3>
                   <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-                    <div className="p-3 bg-[#040708] border border-[#1C323B]">
+                    <div className="p-3 bg-[#040708]/80 border border-white/[0.07] rounded-lg">
                       <span className="text-[9px] text-[#8AA3AD] uppercase block">GROUNDING mIoU</span>
                       <span className="text-xl font-bold text-[#12A5B8] block mt-1">82.4%</span>
                       <span className="text-[9px] text-[#8AA3AD]">RSIVQA / DIOR Benchmark</span>
                     </div>
-                    <div className="p-3 bg-[#040708] border border-[#1C323B]">
+                    <div className="p-3 bg-[#040708]/80 border border-white/[0.07] rounded-lg">
                       <span className="text-[9px] text-[#8AA3AD] uppercase block">CHANGE F1 SCORE</span>
                       <span className="text-xl font-bold text-[#12A5B8] block mt-1">89.1%</span>
                       <span className="text-[9px] text-[#8AA3AD]">LEVIR-CD / S2Looking</span>
                     </div>
-                    <div className="p-3 bg-[#040708] border border-[#1C323B]">
+                    <div className="p-3 bg-[#040708]/80 border border-white/[0.07] rounded-lg">
                       <span className="text-[9px] text-[#8AA3AD] uppercase block">VQA BLEU-4</span>
                       <span className="text-xl font-bold text-[#22D3EE] block mt-1">94.2%</span>
                       <span className="text-[9px] text-[#8AA3AD]">EarthVQA Benchmark</span>
                     </div>
-                    <div className="p-3 bg-[#040708] border border-[#1C323B]">
+                    <div className="p-3 bg-[#040708]/80 border border-white/[0.07] rounded-lg">
                       <span className="text-[9px] text-[#8AA3AD] uppercase block">CO-REGISTRATION</span>
                       <span className="text-xl font-bold text-[#10B981] block mt-1">&lt; 0.4 px</span>
                       <span className="text-[9px] text-[#8AA3AD]">Sub-pixel GeoTIFF alignment</span>
@@ -574,42 +603,42 @@ export function CinematicLanding({
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="final-section"
-          className="min-h-screen flex flex-col justify-center items-center text-center px-6 md:px-16 py-24 border-t border-[#1C323B] pointer-events-none"
+          className="min-h-screen flex flex-col justify-center items-center text-center px-6 md:px-16 py-24 pointer-events-none"
         >
-          <div className="max-w-3xl mx-auto space-y-6 z-30 pointer-events-auto">
+          <div className="max-w-3xl mx-auto space-y-6 z-30 pointer-events-auto p-8 md:p-12 rounded-xl ios-glass-card border border-white/[0.1]">
             
             <div className="font-mono text-xs tracking-[0.20em] text-[#12A5B8] uppercase font-bold">
               08 / CALL TO ACTION · SIH26167 · ISRO
             </div>
 
-            <h2 className="font-sans text-[clamp(38px,5vw,68px)] font-bold text-[#FFFFFF] tracking-tight leading-[1.02]">
+            <h2 className="font-heading font-sora text-[clamp(38px,5vw,68px)] font-bold text-[#FFFFFF] tracking-tight leading-[1.02] drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
               DON’T JUST GET AN ANSWER.<br />
               <span className="text-[#12A5B8]">SEE THE PROOF.</span>
             </h2>
 
-            <p className="font-sans text-base sm:text-lg text-[#8AA3AD] max-w-xl mx-auto leading-relaxed">
+            <p className="font-sans text-base sm:text-lg text-[#D0E3EA] max-w-xl mx-auto leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               Start an auditable satellite investigation across optical, microwave radar, and bi-temporal remote-sensing scenes.
             </p>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 font-mono text-xs">
               <button
-                onClick={() => handleLaunchWorkstation()}
-                className="px-8 py-3.5 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_20px_rgba(18,165,184,0.35)] rounded-lg"
+                onClick={() => scrollToSection("hero-section")}
+                className="px-6 py-3.5 ios-glass-primary text-[#FFFFFF] font-bold text-xs flex items-center gap-2 transition-all cursor-pointer rounded-md shadow-[0_0_15px_rgba(18,165,184,0.25)]"
               >
-                <span>START INVESTIGATION</span>
-                <span>↗</span>
+                <span>RETURN TO TOP</span>
+                <span>↑</span>
               </button>
 
               <button
                 onClick={onOpenLibrary}
-                className="px-6 py-3.5 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] flex items-center gap-2 transition-colors cursor-pointer rounded-lg"
+                className="px-6 py-3.5 ios-glass-btn text-[#F0F6F8] hover:text-[#FFFFFF] flex items-center gap-2 transition-colors cursor-pointer rounded-md"
               >
                 <Database size={14} className="text-[#12A5B8]" />
                 <span>EXPLORE SATELLITE CATALOG</span>
               </button>
             </div>
 
-            <div className="pt-16 border-t border-[#1C323B]/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-[#8AA3AD]/60 font-mono">
+            <div className="pt-12 border-t border-[#1C323B]/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-[#8AA3AD] font-mono">
               <span>INDIAN SPACE RESEARCH ORGANISATION · SPACE TECHNOLOGY</span>
               <span>AI ANSWERS. IMAGERY PROVES.</span>
             </div>
@@ -618,6 +647,19 @@ export function CinematicLanding({
         </section>
 
       </div>
+
+      {/* Authentication Modal: Log In & Sign Up Workflows */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onAuthSuccess={(user) => {
+          setCurrentUser(user);
+          try {
+            localStorage.setItem("satquery_user", JSON.stringify(user));
+          } catch {}
+        }}
+      />
 
     </div>
   );

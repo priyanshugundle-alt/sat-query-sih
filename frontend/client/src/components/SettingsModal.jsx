@@ -18,7 +18,7 @@ export function SettingsModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-150">
-      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-lg shadow-[0_10px_35px_rgba(0,0,0,0.8)] overflow-hidden font-mono text-xs">
+      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-lg shadow-[0_10px_35px_rgba(0,0,0,0.8)] overflow-hidden font-mono text-xs rounded-2xl">
         {/* Header */}
         <div className="p-4 bg-[#080E11] border-b border-[#1C323B] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -29,7 +29,7 @@ export function SettingsModal({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors"
+            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors rounded-md cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -51,7 +51,7 @@ export function SettingsModal({ isOpen, onClose }) {
                 <div
                   key={m.id}
                   onClick={() => setModelAdapter(m.id)}
-                  className={`p-2.5 border cursor-pointer transition-colors ${
+                  className={`p-2.5 border cursor-pointer transition-colors rounded-xl ${
                     modelAdapter === m.id
                       ? "bg-[#0B4F58]/30 border-[#12A5B8] text-[#FFFFFF]"
                       : "bg-[#080E11] border-[#1C323B] text-[#8AA3AD] hover:border-[#12A5B8]/40"
@@ -104,7 +104,7 @@ export function SettingsModal({ isOpen, onClose }) {
                 <div
                   key={c.id}
                   onClick={() => setCrsProjection(c.id)}
-                  className={`p-2 border cursor-pointer text-center ${
+                  className={`p-2 border cursor-pointer text-center rounded-xl ${
                     crsProjection === c.id
                       ? "bg-[#0B4F58]/30 border-[#12A5B8] text-[#12A5B8] font-bold"
                       : "bg-[#080E11] border-[#1C323B] text-[#8AA3AD]"
@@ -118,7 +118,7 @@ export function SettingsModal({ isOpen, onClose }) {
           </div>
 
           {/* ISRO Defense Audit Trace */}
-          <div className="flex items-center justify-between p-3 bg-[#080E11] border border-[#1C323B]">
+          <div className="flex items-center justify-between p-3 bg-[#080E11] border border-[#1C323B] rounded-xl">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[#12A5B8]" />
               <div>
@@ -142,13 +142,13 @@ export function SettingsModal({ isOpen, onClose }) {
           <Button
             variant="ghost"
             onClick={onClose}
-            className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs h-8"
+            className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs h-8 rounded-xl"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 px-4 shadow-[0_0_15px_rgba(18,165,184,0.3)] transition-all"
+            className="bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 px-4 shadow-[0_0_15px_rgba(18,165,184,0.3)] transition-all rounded-xl"
           >
             Apply Settings
           </Button>

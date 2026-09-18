@@ -10,7 +10,7 @@ export function ReportGenerationModal({ isOpen, onClose, queryResult, imageAsset
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="w-full max-w-lg bg-[#0D171C] border border-[#1C323B] shadow-[0_10px_35px_rgba(0,0,0,0.8)] overflow-hidden font-mono text-[#F0F6F8]">
+      <div className="w-full max-w-lg bg-[#0D171C] border border-[#1C323B] shadow-[0_10px_35px_rgba(0,0,0,0.8)] overflow-hidden font-mono text-[#F0F6F8] rounded-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1C323B] bg-[#080E11]">
           <div className="flex items-center gap-2">
@@ -19,7 +19,7 @@ export function ReportGenerationModal({ isOpen, onClose, queryResult, imageAsset
               CERTIFIED DEFENSE AUDIT REPORT
             </span>
           </div>
-          <button onClick={onClose} className="p-1 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127]">
+          <button onClick={onClose} className="p-1 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] rounded-md cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -30,12 +30,12 @@ export function ReportGenerationModal({ isOpen, onClose, queryResult, imageAsset
           <span>──▶</span>
           <span className="text-[#12A5B8] font-bold">AUDIT TRACE ✓</span>
           <span>──▶</span>
-          <span className="text-[#FFFFFF] bg-[#0B4F58]/40 border border-[#12A5B8]/40 px-1.5 py-0.5 font-bold">REPORT READY ◉</span>
+          <span className="text-[#FFFFFF] bg-[#0B4F58]/40 border border-[#12A5B8]/40 px-2 py-0.5 font-bold rounded-md">REPORT READY ◉</span>
         </div>
 
         {/* Report Content */}
         <div className="p-5 space-y-4">
-          <div className="p-3.5 bg-[#080E11] border border-[#1C323B] flex items-start justify-between">
+          <div className="p-3.5 bg-[#080E11] border border-[#1C323B] flex items-start justify-between rounded-xl">
             <div>
               <div className="text-[9px] uppercase text-[#8AA3AD] font-bold">AUDIT REFERENCE ID</div>
               <div className="text-base font-bold text-[#FFFFFF] mt-0.5">{referenceId}</div>
@@ -50,7 +50,7 @@ export function ReportGenerationModal({ isOpen, onClose, queryResult, imageAsset
             </div>
           </div>
 
-          <div className="p-3 bg-[#080E11] border border-[#1C323B] text-xs font-sans text-[#F0F6F8] leading-relaxed">
+          <div className="p-3 bg-[#080E11] border border-[#1C323B] text-xs font-sans text-[#F0F6F8] leading-relaxed rounded-xl">
             <strong className="text-[#FFFFFF] block font-mono text-[10px] mb-1">FINDING SUMMARY:</strong>
             {queryResult?.answer || "Urban expansion and structural features localized with pixel-level bounding coordinates. Corroborated with multi-spectral reflectance."}
           </div>
@@ -63,7 +63,7 @@ export function ReportGenerationModal({ isOpen, onClose, queryResult, imageAsset
 
         {/* Footer Actions */}
         <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-[#1C323B] bg-[#080E11]">
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs">
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs rounded-xl">
             Close
           </Button>
           <Button 
@@ -72,7 +72,7 @@ export function ReportGenerationModal({ isOpen, onClose, queryResult, imageAsset
               if (onDownloadPdf) onDownloadPdf();
               onClose();
             }}
-            className="bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-bold font-mono text-xs rounded-none shadow-[0_0_12px_rgba(18,165,184,0.3)] transition-all"
+            className="bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-bold font-mono text-xs rounded-xl shadow-[0_0_12px_rgba(18,165,184,0.3)] transition-all"
           >
             <Download size={13} className="mr-1.5" />
             Download PDF Report

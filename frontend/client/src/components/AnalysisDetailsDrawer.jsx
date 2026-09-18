@@ -37,7 +37,7 @@ export function AnalysisDetailsDrawer({
   const sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0D171C] border-l border-[#1C323B] shadow-[0_0_35px_rgba(0,0,0,0.8)] flex flex-col font-mono text-xs animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0D171C] border-l border-[#1C323B] shadow-[0_0_35px_rgba(0,0,0,0.8)] flex flex-col font-mono text-xs animate-in slide-in-from-right duration-200 rounded-l-3xl overflow-hidden">
       {/* Header */}
       <div className="h-12 px-4 bg-[#080E11] border-b border-[#1C323B] flex items-center justify-between">
         <div className="flex items-center gap-2 text-[#12A5B8] font-bold">
@@ -46,7 +46,7 @@ export function AnalysisDetailsDrawer({
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors"
+          className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors rounded-full"
         >
           <X size={16} />
         </button>
@@ -56,7 +56,7 @@ export function AnalysisDetailsDrawer({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         
         {/* 1. Query & Intent */}
-        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2">
+        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2 rounded-xl">
           <div className="text-[9px] text-[#8AA3AD] uppercase font-bold tracking-widest">
             01 · QUERY & INTENT CLASSIFICATION
           </div>
@@ -71,7 +71,7 @@ export function AnalysisDetailsDrawer({
         </div>
 
         {/* 2. Specialist Adapter & Model Backbone */}
-        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2">
+        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2 rounded-xl">
           <div className="text-[9px] text-[#8AA3AD] uppercase font-bold tracking-widest">
             02 · ADAPTER & INFERENCE BACKBONE
           </div>
@@ -90,7 +90,7 @@ export function AnalysisDetailsDrawer({
         </div>
 
         {/* 3. Sensor & Geodetic Metadata */}
-        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2">
+        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2 rounded-xl">
           <div className="text-[9px] text-[#8AA3AD] uppercase font-bold tracking-widest">
             03 · SENSOR & GEODETIC METADATA
           </div>
@@ -113,7 +113,7 @@ export function AnalysisDetailsDrawer({
         </div>
 
         {/* 4. Cryptographic Provenance */}
-        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2">
+        <div className="p-3 bg-[#080E11] border border-[#1C323B] space-y-2 rounded-xl">
           <div className="text-[9px] text-[#8AA3AD] uppercase font-bold tracking-widest flex items-center justify-between">
             <span>04 · CRYPTOGRAPHIC PROVENANCE</span>
             <span className="text-[#12A5B8]">AUDITED ✓</span>
@@ -121,7 +121,7 @@ export function AnalysisDetailsDrawer({
           <div className="text-[9px] text-[#8AA3AD] font-sans">
             Every pixel grounding and prediction hash is recorded for tamper-proof defense verification.
           </div>
-          <div className="p-2 bg-[#0D171C] border border-[#1C323B] text-[9px] text-[#12A5B8] font-mono break-all select-all">
+          <div className="p-2 bg-[#0D171C] border border-[#1C323B] text-[9px] text-[#12A5B8] font-mono break-all select-all rounded-lg">
             {sha256}
           </div>
         </div>
@@ -135,7 +135,7 @@ export function AnalysisDetailsDrawer({
             onClose();
             if (onOpenReport) onOpenReport();
           }}
-          className="px-3 py-1.5 bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_12px_rgba(18,165,184,0.3)]"
+          className="px-3 py-1.5 bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_12px_rgba(18,165,184,0.3)] rounded-xl"
         >
           <FileText size={13} />
           <span>GENERATE AUDIT PDF ↗</span>
@@ -144,7 +144,7 @@ export function AnalysisDetailsDrawer({
         <Button
           variant="ghost"
           onClick={onClose}
-          className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs"
+          className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs rounded-xl"
         >
           Close
         </Button>

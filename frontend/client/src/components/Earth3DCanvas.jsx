@@ -78,28 +78,29 @@ export function Earth3DCanvas({
     const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
     if (stage === "hero") {
-      // Hero: Earth prominently framed, India facing directly at the user
+      // Hero: Earth prominently framed on the right, India facing directly at the user
       focusCoordinates(20.5937, 78.9629, 0.25);
-      targetEarthPos.current.set(isMobile ? 0 : 0.85, isMobile ? -0.20 : 0, 0);
+      targetEarthPos.current.set(isMobile ? 0 : 1.18, isMobile ? 0.35 : 0, 0);
     } else if (stage === "workstation") {
       targetEarthPos.current.set(isMobile ? 0.5 : 1.7, isMobile ? 0.3 : 0.5, 0);
       targetCameraPos.current.set(0, 0, 6.2);
       targetRotation.current = { x: 0.20, y: -2.80 };
     } else if (stage === "vqa" || stage === "grounding") {
       focusCoordinates(19.0760, 72.8777, zoomProgress || 0.65);
-      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : -0.95, 0.05, 0);
     } else if (stage === "nepal") {
       focusCoordinates(28.15, 85.34, zoomProgress || 0.7);
-      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : -0.95, 0.05, 0);
     } else if (stage === "sar") {
       focusCoordinates(28.15, 85.34, zoomProgress || 0.45);
-      targetEarthPos.current.set(isMobile ? 0 : 0.95, 0, -0.2);
+      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0, -0.2);
     } else if (stage === "evidence" || stage === "technical") {
-      targetEarthPos.current.set(isMobile ? 0 : -1.15, 0, -0.3);
+      targetEarthPos.current.set(isMobile ? 0 : -1.25, 0, -0.3);
       targetCameraPos.current.set(0, 0, 5.5);
     } else if (stage === "final_cta") {
-      targetEarthPos.current.set(0, 0.1, 0);
-      targetCameraPos.current.set(0, 0, 4.8);
+      // Curve the horizon smoothly beneath the CTA card without occluding text
+      targetEarthPos.current.set(0, -0.85, -0.4);
+      targetCameraPos.current.set(0, 0, 5.2);
     }
 
     if (targetCoords) {
@@ -131,23 +132,23 @@ export function Earth3DCanvas({
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35;
+    renderer.toneMapping = THREE.LinearToneMapping;
+    renderer.toneMappingExposure = 1.05;
     renderer.setClearColor(0x000000, 0);
     
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 3. Realistic Sunlight & Ambient Illumination
-    const ambientLight = new THREE.AmbientLight(0xdde8f5, 1.3);
+    // 3. Natural Sunlight & Ambient Illumination (Zero color grading or tinted casts)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambientLight);
 
-    // Front-top directional light ensuring India and the visible hemisphere are in vivid daylight
-    const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.6);
+    // Front-top directional light ensuring India and the visible hemisphere are in vivid, natural daylight
+    const sunLight = new THREE.DirectionalLight(0xffffff, 3.2);
     sunLight.position.set(0, 3.2, 5.5);
     scene.add(sunLight);
 
-    const fillLight = new THREE.DirectionalLight(0x386b9c, 0.9);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.45);
     fillLight.position.set(4.0, -1.0, 3.0);
     scene.add(fillLight);
 

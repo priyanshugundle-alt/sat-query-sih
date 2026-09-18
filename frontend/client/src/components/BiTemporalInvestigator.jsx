@@ -42,7 +42,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
           <div
             ref={containerRef}
             onPointerMove={handlePointerMove}
-            className={`relative w-full bg-background border border-card overflow-hidden select-none min-h-[460px] md:min-h-[540px] cursor-ew-resize transition-all duration-700 ${
+            className={`relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[460px] md:min-h-[540px] cursor-ew-resize transition-all duration-700 rounded-xl ios-glass-card ${
               isFollowingChange ? "scale-[1.02] shadow-[0_0_40px_rgba(212,154,58,0.2)]" : ""
             }`}
           >
@@ -92,7 +92,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#22D3EE]" />
 
               {/* Status Pill */}
-              <div className="absolute -top-6 left-0 bg-[#040708]/95 border border-[#12A5B8] px-2 py-0.5 font-mono text-[9px] text-[#FFFFFF] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-md rounded-sm">
+              <div className="absolute -top-6 left-0 bg-[#040708]/95 border border-[#12A5B8] px-2.5 py-0.5 font-mono text-[9px] text-[#FFFFFF] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-md rounded-md">
                 <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full animate-ping" />
                 <span>CHANGE DETECTED</span>
                 <span className="text-[#8AA3AD] font-normal">[DEBRIS / LANDSLIDE]</span>
@@ -105,32 +105,32 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               style={{ left: `${splitPos}%`, transform: "translateX(-50%)" }}
             >
               <div className="w-[1.5px] h-full bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
-              <div className="absolute w-7 h-7 bg-[#040708] border border-[#12A5B8] flex items-center justify-center font-mono text-[10px] text-[#FFFFFF] shadow-xl rounded-sm">
+              <div className="absolute w-7 h-7 bg-[#040708] border border-[#12A5B8] flex items-center justify-center font-mono text-[10px] text-[#FFFFFF] shadow-xl rounded-md">
                 ↔
               </div>
             </div>
 
             {/* Top-Left Date Badge (2023) */}
-            <div className="absolute top-3 left-3 bg-[#040708]/85 border border-[#1C323B] px-3 py-1 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-sm z-30 rounded-sm">
+            <div className="absolute top-3 left-3 bg-[#040708]/85 border border-white/[0.08] px-3 py-1 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-md z-30 rounded-lg shadow-sm">
               <span className="text-[#8AA3AD] block text-[8px]">BEFORE</span>
               <span className="text-[#FFFFFF] font-bold">18 OCT 2023</span>
             </div>
 
             {/* Top-Right Date Badge (2026) */}
-            <div className="absolute top-3 right-3 bg-[#040708]/85 border border-[#1C323B] px-3 py-1 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-sm z-30 text-right rounded-sm">
+            <div className="absolute top-3 right-3 bg-[#040708]/85 border border-white/[0.08] px-3 py-1 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-md z-30 text-right rounded-lg shadow-sm">
               <span className="text-[#8AA3AD] block text-[8px]">AFTER</span>
               <span className="text-[#12A5B8] font-bold">27 AUG 2026</span>
             </div>
 
             {/* Bottom-Left Coordinates Tag */}
-            <div className="absolute bottom-3 left-3 bg-[#040708]/85 border border-[#1C323B] px-2.5 py-1 font-mono text-[9px] text-[#8AA3AD] backdrop-blur-sm z-30 rounded-sm">
+            <div className="absolute bottom-3 left-3 bg-[#040708]/85 border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] text-[#8AA3AD] backdrop-blur-md z-30 rounded-lg shadow-sm">
               SYABRU BESI, NEPAL · 28.15° N, 85.34° E (APPROX)
             </div>
 
           </div>
 
           {/* Temporal Scrubber Control Bar */}
-          <div className="p-3 bg-[#0D171C] border border-[#1C323B] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs">
+          <div className="p-3 ios-glass-card border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs rounded-xl">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <span className="text-[10px] text-[#8AA3AD]">2023</span>
               <input
@@ -147,10 +147,10 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsFollowingChange(!isFollowingChange)}
-                className={`px-3 py-1.5 text-xs font-mono font-bold flex items-center gap-1.5 border transition-all rounded cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-mono font-bold flex items-center gap-1.5 border transition-all rounded-md cursor-pointer ${
                   isFollowingChange
-                    ? "bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] text-[#FFFFFF] border-[#12A5B8]/40 shadow-[0_0_12px_rgba(18,165,184,0.25)]"
-                    : "bg-[#040708] text-[#12A5B8] border-[#1C323B] hover:bg-[#132127]"
+                    ? "ios-glass-primary text-[#FFFFFF] shadow-[0_0_12px_rgba(18,165,184,0.25)]"
+                    : "bg-[#040708] text-[#12A5B8] border-white/[0.1] hover:bg-[#132127]"
                 }`}
               >
                 <span>{isFollowingChange ? "RESET FULL VIEW" : "FOLLOW CHANGE ↗"}</span>
@@ -158,7 +158,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
 
               <button
                 onClick={() => setShowProofModal(true)}
-                className="px-3 py-1.5 bg-[#040708] hover:bg-[#132127] border border-[#1C323B] text-xs font-mono text-[#8AA3AD] hover:text-[#FFFFFF] transition-colors rounded cursor-pointer"
+                className="px-3 py-1.5 ios-glass-btn text-xs font-mono text-[#D0E3EA] hover:text-[#FFFFFF] transition-colors rounded-md cursor-pointer"
               >
                 SHOW ME WHY ↗
               </button>
@@ -168,7 +168,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
         </div>
 
         {/* Right (Col 9-12): Forensic Observation / Interpretation / Conclusion Panel */}
-        <div className="lg:col-span-4 flex flex-col justify-between p-5 bg-[#0D171C] border border-[#1C323B]">
+        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl">
           
           <div className="space-y-4">
             
@@ -183,10 +183,10 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
             </div>
 
             {/* Strict Scientific Separation */}
-            <div className="space-y-2.5 pt-3 border-t border-[#1C323B] font-mono text-xs">
+            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
               
               {/* 1. OBSERVATION */}
-              <div className="p-2.5 bg-[#040708] border-l-2 border-[#8AA3AD]">
+              <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#8AA3AD] rounded-lg">
                 <div className="text-[9px] font-bold text-[#8AA3AD] uppercase tracking-wider mb-0.5">
                   01. SATELLITE OBSERVATION
                 </div>
@@ -196,7 +196,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
 
               {/* 2. MODEL INTERPRETATION */}
-              <div className="p-2.5 bg-[#040708] border-l-2 border-[#12A5B8]">
+              <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#12A5B8] rounded-lg">
                 <div className="text-[9px] font-bold text-[#12A5B8] uppercase tracking-wider mb-0.5">
                   02. MODEL INTERPRETATION
                 </div>
@@ -206,7 +206,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
 
               {/* 3. CONCLUSION */}
-              <div className="p-2.5 bg-[#040708] border-l-2 border-[#0E7C8A]">
+              <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#0E7C8A] rounded-lg">
                 <div className="text-[9px] font-bold text-[#0E7C8A] uppercase tracking-wider mb-0.5">
                   03. AUDIT CONCLUSION
                 </div>
@@ -218,7 +218,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
             </div>
 
             {/* Metadata & Model Confidence */}
-            <div className="pt-2 border-t border-[#1C323B] space-y-1.5 font-mono text-[10px]">
+            <div className="pt-2 border-t border-[#1C323B]/80 space-y-1.5 font-mono text-[10px]">
               <div className="flex justify-between py-0.5">
                 <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
                 <span className="text-[#12A5B8] font-bold">89.4% (CALIBRATED)</span>
@@ -235,18 +235,13 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
 
           </div>
 
-          {/* Action Trigger */}
-          <div className="pt-4 border-t border-[#1C323B] mt-4">
-            <button
-              onClick={() => onInvestigateInWorkstation && onInvestigateInWorkstation({
-                query: "What changed between 2023 and 2026 in Syabru Besi?",
-                mode: "CHANGE"
-              })}
-              className="w-full py-2 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_15px_rgba(18,165,184,0.25)] rounded"
-            >
-              <span>OPEN IN WORKSTATION</span>
-              <span>↗</span>
-            </button>
+          {/* Calibrated Co-registration Indicator */}
+          <div className="pt-4 border-t border-[#1C323B]/80 mt-4 flex items-center justify-between font-mono text-[10px]">
+            <div className="flex items-center gap-2 text-[#12A5B8]">
+              <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
+              <span className="font-bold tracking-wide">TEMPORAL CO-REGISTRATION</span>
+            </div>
+            <span className="text-[#8AA3AD]">&lt; 0.25 PX RESIDUAL</span>
           </div>
 
         </div>
@@ -256,12 +251,12 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
       {/* ─── FORENSIC "SHOW ME WHY" AUDIT MODAL ─── */}
       <AnimatePresence>
         {showProofModal && (
-          <div className="fixed inset-0 z-50 bg-[#040708]/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-[#040708]/85 backdrop-blur-md flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0D171C] border border-[#1C323B] max-w-2xl w-full p-6 font-mono text-xs shadow-2xl space-y-4 rounded-lg"
+              className="ios-glass border border-white/[0.1] max-w-2xl w-full p-6 font-mono text-xs shadow-2xl space-y-4 rounded-xl"
             >
               <div className="flex items-center justify-between border-b border-[#1C323B] pb-3">
                 <div className="flex items-center gap-2 text-[#12A5B8] font-bold">
@@ -277,19 +272,19 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-[#040708] border border-[#1C323B] rounded">
+                <div className="p-3 bg-[#040708]/80 border border-white/[0.06] rounded-lg">
                   <span className="text-[9px] text-[#8AA3AD] block">BEFORE (T1)</span>
                   <span className="font-bold text-[#FFFFFF]">18 OCT 2023</span>
                   <p className="font-sans text-[11px] text-[#8AA3AD] mt-1">Intact riverbed vegetation and road corridor.</p>
                 </div>
-                <div className="p-3 bg-[#040708] border border-[#1C323B] rounded">
+                <div className="p-3 bg-[#040708]/80 border border-white/[0.06] rounded-lg">
                   <span className="text-[9px] text-[#12A5B8] block">AFTER (T2)</span>
                   <span className="font-bold text-[#12A5B8]">27 AUG 2026</span>
                   <p className="font-sans text-[11px] text-[#8AA3AD] mt-1">Massive debris inundation and river reconfiguration.</p>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#040708] border border-[#1C323B] space-y-2 rounded">
+              <div className="p-3 bg-[#040708] border border-[#1C323B] space-y-2 rounded-xl">
                 <div className="flex justify-between">
                   <span className="text-[#8AA3AD]">ROUTED VLM ADAPTER:</span>
                   <span className="text-[#12A5B8]">CDVQA-Siamese (ChangeQA)</span>
@@ -311,7 +306,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setShowProofModal(false)}
-                  className="px-4 py-1.5 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-bold rounded cursor-pointer border border-[#12A5B8]/40 shadow-sm"
+                  className="px-4 py-1.5 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-bold rounded-xl cursor-pointer border border-[#12A5B8]/40 shadow-sm"
                 >
                   CLOSE AUDIT
                 </button>

@@ -63,15 +63,15 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
     <div className="w-full flex flex-col gap-6 font-sans">
       
       {/* ─── CASE SELECTOR TABS ─── */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#1C323B] pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[#1C323B]/80 pb-3">
         {proofCases.map((item, idx) => (
           <button
             key={item.id}
             onClick={() => setActiveProofIndex(idx)}
-            className={`px-3 py-1.5 font-mono text-xs border transition-all ${
+            className={`px-3 py-1.5 font-mono text-xs border transition-all rounded-md cursor-pointer ${
               activeProofIndex === idx
-                ? "bg-[#0E7C8A] text-[#FFFFFF] border-[#12A5B8] font-bold shadow-[0_0_10px_rgba(18,165,184,0.3)]"
-                : "bg-[#080E11] text-[#8AA3AD] border-[#1C323B] hover:text-[#FFFFFF]"
+                ? "ios-glass-primary text-[#FFFFFF] font-bold shadow-[0_0_10px_rgba(18,165,184,0.3)]"
+                : "bg-[#080E11] text-[#8AA3AD] border-white/[0.08] hover:text-[#FFFFFF] hover:bg-[#132127]"
             }`}
           >
             <span>{item.id}</span>
@@ -84,7 +84,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* Left (Col 1-5): Evidence Crop Image */}
-        <div className="lg:col-span-5 relative bg-[#080E11] border border-[#1C323B] overflow-hidden min-h-[360px] flex items-center justify-center">
+        <div className="lg:col-span-5 relative bg-[#080E11] border border-white/[0.08] overflow-hidden min-h-[360px] flex items-center justify-center rounded-xl ios-glass-card">
           <img
             src={currentCase.image}
             alt={currentCase.title}
@@ -93,7 +93,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#080E11] via-transparent to-transparent pointer-events-none" />
 
           {/* Overlay Tag */}
-          <div className="absolute top-3 left-3 bg-[#080E11]/85 border border-[#1C323B] px-2.5 py-1 font-mono text-[10px] text-[#12A5B8] backdrop-blur-sm">
+          <div className="absolute top-3 left-3 bg-[#080E11]/85 border border-white/[0.08] px-2.5 py-1 font-mono text-[10px] text-[#12A5B8] backdrop-blur-md rounded-lg shadow-sm">
             {currentCase.id} / EVIDENCE RECORD
           </div>
 
@@ -108,48 +108,48 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
         </div>
 
         {/* Right (Col 6-12): 6-Pillar Telemetry Grid */}
-        <div className="lg:col-span-7 flex flex-col justify-between p-6 bg-[#0D171C] border border-[#1C323B]">
+        <div className="lg:col-span-7 flex flex-col justify-between p-6 ios-glass-card border border-white/[0.08] rounded-xl">
           
           <div>
-            <div className="flex items-center justify-between font-mono text-[10px] text-[#8AA3AD] pb-3 mb-4 border-b border-[#1C323B]">
+            <div className="flex items-center justify-between font-mono text-[10px] text-[#8AA3AD] pb-3 mb-4 border-b border-[#1C323B]/80">
               <span className="text-[#12A5B8] font-bold uppercase tracking-widest">AUDIT TRAIL / FORENSIC PROOF</span>
               <span>ISRO SIH26167 SPECIFICATION</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-mono text-xs">
               
               {/* 1. WHAT */}
-              <div className="p-3 bg-[#080E11] border border-[#1C323B]">
+              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">01 · WHAT</span>
                 <span className="font-bold text-[#FFFFFF] block text-xs">{currentCase.what}</span>
               </div>
 
               {/* 2. WHERE */}
-              <div className="p-3 bg-[#080E11] border border-[#1C323B]">
+              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">02 · WHERE</span>
                 <span className="font-bold text-[#12A5B8] block text-xs">{currentCase.where}</span>
               </div>
 
               {/* 3. WHEN */}
-              <div className="p-3 bg-[#080E11] border border-[#1C323B]">
+              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">03 · WHEN</span>
                 <span className="font-bold text-[#F0F6F8] block text-xs">{currentCase.when}</span>
               </div>
 
               {/* 4. SOURCE */}
-              <div className="p-3 bg-[#080E11] border border-[#1C323B]">
+              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">04 · SOURCE</span>
                 <span className="font-bold text-[#F0F6F8] block text-xs">{currentCase.source}</span>
               </div>
 
               {/* 5. CONFIDENCE */}
-              <div className="p-3 bg-[#080E11] border border-[#1C323B]">
+              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">05 · MODEL CONFIDENCE</span>
                 <span className="font-bold text-[#12A5B8] block text-xs">{currentCase.confidence}</span>
               </div>
 
               {/* 6. CROSS-MODAL SUPPORT */}
-              <div className="p-3 bg-[#080E11] border border-[#1C323B]">
+              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">06 · CROSS-MODAL SUPPORT</span>
                 <span className="font-bold text-[#12A5B8] block text-xs">{currentCase.crossModal}</span>
               </div>
@@ -157,20 +157,13 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
             </div>
           </div>
 
-          {/* Action Trigger */}
-          <div className="pt-4 border-t border-[#1C323B] mt-4 flex items-center justify-between">
-            <span className="font-mono text-[10px] text-[#8AA3AD]">AI ANSWERS. IMAGERY PROVES.</span>
-            <button
-              onClick={() => onInvestigatePreset && onInvestigatePreset({
-                query: currentCase.what,
-                mode: currentCase.mode,
-                sampleImage: currentCase.image
-              })}
-              className="px-4 py-2 bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(18,165,184,0.3)]"
-            >
-              <span>INSPECT EVIDENCE IN WORKSTATION</span>
-              <span>↗</span>
-            </button>
+          {/* Forensic Audit Status */}
+          <div className="pt-4 border-t border-[#1C323B]/80 mt-4 flex items-center justify-between font-mono text-[10px]">
+            <span className="text-[#8AA3AD]">AI ANSWERS. IMAGERY PROVES.</span>
+            <div className="flex items-center gap-1.5 text-[#12A5B8]">
+              <ShieldCheck size={14} className="text-[#12A5B8]" />
+              <span className="font-bold tracking-wide">CRYPTOGRAPHICALLY AUDITABLE</span>
+            </div>
           </div>
 
         </div>

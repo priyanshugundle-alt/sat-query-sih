@@ -157,7 +157,7 @@ export function SatelliteCanvasViewer({
 
         {/* Center Scientific Mission Card */}
         <div className="relative z-10 max-w-lg text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0D171C] border border-[#1C323B] rounded-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0D171C] border border-[#1C323B] rounded-full">
             <span className="w-1.5 h-1.5 bg-[#12A5B8]" />
             <span className="font-mono text-[9px] tracking-widest text-[#12A5B8] uppercase font-bold">
               NO OBSERVATION
@@ -176,7 +176,7 @@ export function SatelliteCanvasViewer({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={onUploadClick}
-              className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_15px_rgba(18,165,184,0.25)] rounded"
+              className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#12A5B8]/40 shadow-[0_0_15px_rgba(18,165,184,0.25)] rounded-xl"
             >
               <Upload size={14} />
               <span>+ ACQUIRE IMAGERY</span>
@@ -184,7 +184,7 @@ export function SatelliteCanvasViewer({
 
             <button
               onClick={onOpenLibrary}
-              className="w-full sm:w-auto px-4 py-2.5 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer rounded"
+              className="w-full sm:w-auto px-4 py-2.5 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-xl"
             >
               <Database size={14} className="text-[#12A5B8]" />
               <span>BROWSE BENCHMARK SCENES</span>
@@ -216,7 +216,7 @@ export function SatelliteCanvasViewer({
     >
       {/* ─── SINGLE UNIFIED CANVAS METADATA HEADER STRIP ─── */}
       <div className="absolute top-3 left-3 right-3 z-20 pointer-events-none flex items-center justify-between">
-        <div className="px-3 py-1.5 bg-[#0D171C]/95 backdrop-blur-md border border-[#1C323B] font-mono text-xs flex items-center gap-3 shadow-md rounded">
+        <div className="px-3 py-1.5 bg-[#0D171C]/95 backdrop-blur-md border border-[#1C323B] font-mono text-xs flex items-center gap-3 shadow-md rounded-xl">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 bg-[#12A5B8]" />
             <span className="font-bold text-[#FFFFFF] tracking-wide">
@@ -239,7 +239,7 @@ export function SatelliteCanvasViewer({
         </div>
 
         {/* Observation Status Pill */}
-        <div className="px-2.5 py-1 bg-[#0D171C]/90 backdrop-blur-sm border border-[#1C323B] font-mono text-[10px] text-[#8AA3AD] hidden md:flex items-center gap-2 rounded">
+        <div className="px-2.5 py-1 bg-[#0D171C]/90 backdrop-blur-sm border border-[#1C323B] font-mono text-[10px] text-[#8AA3AD] hidden md:flex items-center gap-2 rounded-full">
           <span>1024×1024 PX</span>
           <span className="text-[#1C323B]">·</span>
           <span>ZOOM {Math.round(zoomLevel * 100)}%</span>
@@ -248,7 +248,7 @@ export function SatelliteCanvasViewer({
 
       {/* ─── HUD OVERLAY: BOTTOM-LEFT RASTER DIMENSIONS & TIMESTAMP ─── */}
       <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
-        <div className="px-2.5 py-1 bg-[#0D171C]/90 backdrop-blur-sm border border-[#1C323B] font-mono text-[10px] text-[#8AA3AD] rounded">
+        <div className="px-2.5 py-1 bg-[#0D171C]/90 backdrop-blur-sm border border-[#1C323B] font-mono text-[10px] text-[#8AA3AD] rounded-xl">
           OBSERVATION 2026.08.24 05:42 UTC · 1024×1024 PX · ZOOM {Math.round(zoomLevel * 100)}%
         </div>
       </div>
@@ -257,21 +257,21 @@ export function SatelliteCanvasViewer({
       <div className="sq-interactive-ctrl absolute bottom-3 right-3 z-20 flex items-center gap-1">
         <button 
           onClick={() => setZoomLevel(prev => Math.min(4, prev + 0.25))}
-          className="w-7 h-7 bg-[#0D171C] hover:bg-[#0E7C8A] hover:text-[#FFFFFF] text-[#F0F6F8] border border-[#1C323B] flex items-center justify-center transition-colors rounded cursor-pointer"
+          className="w-7 h-7 bg-[#0D171C] hover:bg-[#0E7C8A] hover:text-[#FFFFFF] text-[#F0F6F8] border border-[#1C323B] flex items-center justify-center transition-colors rounded-lg cursor-pointer"
           title="Zoom In (or mouse wheel)"
         >
           <ZoomIn size={13} />
         </button>
         <button 
           onClick={() => setZoomLevel(prev => Math.max(0.75, prev - 0.25))}
-          className="w-7 h-7 bg-[#0D171C] hover:bg-[#0E7C8A] hover:text-[#FFFFFF] text-[#F0F6F8] border border-[#1C323B] flex items-center justify-center transition-colors rounded cursor-pointer"
+          className="w-7 h-7 bg-[#0D171C] hover:bg-[#0E7C8A] hover:text-[#FFFFFF] text-[#F0F6F8] border border-[#1C323B] flex items-center justify-center transition-colors rounded-lg cursor-pointer"
           title="Zoom Out"
         >
           <ZoomOut size={13} />
         </button>
         <button 
           onClick={resetView}
-          className="w-7 h-7 bg-[#0D171C] hover:bg-[#0E7C8A] hover:text-[#FFFFFF] text-[#F0F6F8] border border-[#1C323B] flex items-center justify-center transition-colors rounded cursor-pointer"
+          className="w-7 h-7 bg-[#0D171C] hover:bg-[#0E7C8A] hover:text-[#FFFFFF] text-[#F0F6F8] border border-[#1C323B] flex items-center justify-center transition-colors rounded-lg cursor-pointer"
           title="Reset View"
         >
           <RotateCcw size={12} />
@@ -303,8 +303,8 @@ export function SatelliteCanvasViewer({
                 alt="T2 Pass" 
                 className="max-h-[660px] w-auto max-w-full object-contain filter contrast-125"
               />
-              <div className="absolute top-[32%] left-[40%] w-28 h-24 border border-[#12A5B8] bg-[#12A5B8]/20 animate-pulse flex items-center justify-center rounded">
-                <span className="bg-[#040708] text-[#12A5B8] font-mono text-[9px] px-2 py-0.5 font-bold rounded">
+              <div className="absolute top-[32%] left-[40%] w-28 h-24 border border-[#12A5B8] bg-[#12A5B8]/20 animate-pulse flex items-center justify-center rounded-xl">
+                <span className="bg-[#040708] text-[#12A5B8] font-mono text-[9px] px-2 py-0.5 font-bold rounded-lg">
                   +14.5% EXPANSION
                 </span>
               </div>
@@ -315,12 +315,12 @@ export function SatelliteCanvasViewer({
               style={{ left: `${sliderPosition}%` }}
               onMouseDown={(e) => { e.stopPropagation(); isDraggingSlider.current = true; }}
             >
-              <div className="w-5 h-5 bg-[#040708] border border-[#12A5B8] flex items-center justify-center text-[#12A5B8] text-[9px] font-bold rounded">
+              <div className="w-5 h-5 bg-[#040708] border border-[#12A5B8] flex items-center justify-center text-[#12A5B8] text-[9px] font-bold rounded-full">
                 ↔
               </div>
             </div>
 
-            <div className="absolute bottom-6 px-3 py-1 bg-[#040708]/90 border border-[#1C323B] text-[10px] font-mono text-[#F0F6F8] shadow z-30 pointer-events-none rounded">
+            <div className="absolute bottom-6 px-3 py-1 bg-[#040708]/90 border border-[#1C323B] text-[10px] font-mono text-[#F0F6F8] shadow z-30 pointer-events-none rounded-xl">
               <span className="text-[#8AA3AD]">BEFORE 2025 (T1)</span>
               <span className="text-[#12A5B8] mx-2">──────●──────</span>
               <span className="text-[#FFFFFF] font-bold">AFTER 2026 (T2) · 3 CHANGES</span>
@@ -332,8 +332,8 @@ export function SatelliteCanvasViewer({
         {analysisMode === "FUSION" && (
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div className="absolute inset-0 bg-[#0E7C8A]/15 mix-blend-color-dodge flex items-center justify-center">
-              <div className="absolute top-[38%] left-[28%] w-40 h-32 border border-[#12A5B8] bg-[#12A5B8]/20 animate-pulse flex flex-col items-center justify-center p-2 rounded">
-                <span className="text-[10px] font-mono font-bold text-[#12A5B8] bg-[#040708] px-2 py-0.5 rounded">
+              <div className="absolute top-[38%] left-[28%] w-40 h-32 border border-[#12A5B8] bg-[#12A5B8]/20 animate-pulse flex flex-col items-center justify-center p-2 rounded-xl">
+                <span className="text-[10px] font-mono font-bold text-[#12A5B8] bg-[#040708] px-2 py-0.5 rounded-lg">
                   SAR C-BAND RADAR
                 </span>
                 <span className="text-[9px] font-mono text-[#F0F6F8] mt-1">
@@ -342,7 +342,7 @@ export function SatelliteCanvasViewer({
               </div>
             </div>
 
-            <div className="absolute top-12 px-3 py-1 bg-[#040708]/90 border border-[#12A5B8] text-[10px] font-mono text-[#F0F6F8] flex items-center gap-2 rounded">
+            <div className="absolute top-12 px-3 py-1 bg-[#040708]/90 border border-[#12A5B8] text-[10px] font-mono text-[#F0F6F8] flex items-center gap-2 rounded-xl">
               <span className="text-[#12A5B8] font-bold">OPTICAL MSI</span>
               <span className="text-[#8AA3AD]">⤹ CONVERGENCE ⤸</span>
               <span className="text-[#22D3EE] font-bold">SAR BACKSCATTER</span>
@@ -388,7 +388,7 @@ export function SatelliteCanvasViewer({
 
                   {/* Target Label, Class & Confidence Tag */}
                   <div 
-                    className={`absolute -top-5 left-0 px-1.5 py-0.5 flex items-center gap-1 font-mono text-[9px] font-bold whitespace-nowrap transition-colors rounded-sm ${
+                    className={`absolute -top-5 left-0 px-1.5 py-0.5 flex items-center gap-1 font-mono text-[9px] font-bold whitespace-nowrap transition-colors rounded-md ${
                       isSelected 
                         ? "bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] text-[#FFFFFF] border border-[#12A5B8]/40" 
                         : "bg-[#040708] text-[#F0F6F8] border border-[#1C323B]"

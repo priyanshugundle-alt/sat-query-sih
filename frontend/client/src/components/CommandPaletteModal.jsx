@@ -66,7 +66,7 @@ export function CommandPaletteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-100">
-      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] overflow-hidden font-mono text-xs rounded-lg">
+      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] overflow-hidden font-mono text-xs rounded-2xl">
         {/* Search Header */}
         <div className="p-3 bg-[#040708] border-b border-[#1C323B] flex items-center gap-3">
           <Search size={15} className="text-[#12A5B8]" />
@@ -78,7 +78,7 @@ export function CommandPaletteModal({
             placeholder="Type a command or search action (Ctrl+K)..."
             className="w-full bg-transparent border-none outline-none text-[#FFFFFF] placeholder:text-[#8AA3AD] font-sans text-xs"
           />
-          <span className="px-1.5 py-0.5 bg-[#132127] border border-[#1C323B] text-[#8AA3AD] text-[9px] rounded">ESC</span>
+          <span className="px-1.5 py-0.5 bg-[#132127] border border-[#1C323B] text-[#8AA3AD] text-[9px] rounded-md">ESC</span>
         </div>
 
         {/* Commands List */}
@@ -97,7 +97,7 @@ export function CommandPaletteModal({
                     cmd.action();
                     onClose();
                   }}
-                  className="px-3 py-2 flex items-center justify-between hover:bg-[#132127] hover:text-[#FFFFFF] text-[#F0F6F8] cursor-pointer transition-colors rounded group"
+                  className="px-3 py-2 flex items-center justify-between hover:bg-[#132127] hover:text-[#FFFFFF] text-[#F0F6F8] cursor-pointer transition-colors rounded-xl group"
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon size={14} className="text-[#8AA3AD] group-hover:text-[#12A5B8] transition-colors" />

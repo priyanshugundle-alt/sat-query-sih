@@ -33,12 +33,12 @@ export function ShowMeWhyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono text-xs rounded-lg">
+      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono text-xs rounded-2xl">
         
         {/* Header */}
         <div className="p-4 bg-[#040708] border-b border-[#1C323B] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-[#0D171C] border border-[#12A5B8]/40 flex items-center justify-center text-[#12A5B8] rounded">
+            <div className="w-7 h-7 bg-[#0D171C] border border-[#12A5B8]/40 flex items-center justify-center text-[#12A5B8] rounded-xl">
               <ShieldCheck size={15} />
             </div>
             <div>
@@ -46,7 +46,7 @@ export function ShowMeWhyModal({
                 <span className="font-bold text-[#FFFFFF] text-xs uppercase tracking-wide">
                   EVIDENCE PROVENANCE AUDIT
                 </span>
-                <span className="px-1.5 py-0.5 bg-[#12A5B8]/15 border border-[#12A5B8]/40 text-[#12A5B8] font-bold text-[9px] rounded">
+                <span className="px-2.5 py-0.5 bg-[#12A5B8]/15 border border-[#12A5B8]/40 text-[#12A5B8] font-bold text-[9px] rounded-md">
                   {targetLabel} · {confidence}% CONFIDENCE
                 </span>
               </div>
@@ -58,7 +58,7 @@ export function ShowMeWhyModal({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors rounded cursor-pointer"
+            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors rounded-md cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -74,7 +74,7 @@ export function ShowMeWhyModal({
             </div>
 
             {/* Step 1: Observation */}
-            <div className="p-3.5 bg-[#040708] border border-[#1C323B] space-y-2 rounded">
+            <div className="p-3.5 bg-[#040708] border border-[#1C323B] space-y-2 rounded-xl">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#12A5B8] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full" />
@@ -93,7 +93,7 @@ export function ShowMeWhyModal({
             </div>
 
             {/* Step 2: Model Interpretation */}
-            <div className="p-3.5 bg-[#040708] border border-[#1C323B] space-y-2 rounded">
+            <div className="p-3.5 bg-[#040708] border border-[#1C323B] space-y-2 rounded-xl">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#22D3EE] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-[#22D3EE] rounded-full" />
@@ -112,7 +112,7 @@ export function ShowMeWhyModal({
             </div>
 
             {/* Step 3: Conclusion */}
-            <div className="p-3.5 bg-[#040708] border border-[#0E7C8A]/50 space-y-2 rounded">
+            <div className="p-3.5 bg-[#040708] border border-[#0E7C8A]/50 space-y-2 rounded-xl">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#0E7C8A] text-[10px] uppercase tracking-wide flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-[#0E7C8A] rounded-full" />
@@ -133,32 +133,32 @@ export function ShowMeWhyModal({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
-              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded-xl">
                 <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">WHAT</span>
                 <span className="font-bold text-[#FFFFFF] text-[11px] truncate block">{targetLabel}</span>
               </div>
 
-              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded-xl">
                 <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">WHERE</span>
                 <span className="font-bold text-[#12A5B8] text-[11px] truncate block">{coords}</span>
               </div>
 
-              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded-xl">
                 <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">WHEN</span>
                 <span className="font-bold text-[#F0F6F8] text-[11px] truncate block">2026.08.24 UTC</span>
               </div>
 
-              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded-xl">
                 <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">SOURCE</span>
                 <span className="font-bold text-[#F0F6F8] text-[11px] truncate block">{sourceSensor}</span>
               </div>
 
-              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded-xl">
                 <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">CONFIDENCE</span>
                 <span className="font-bold text-[#12A5B8] text-[11px] truncate block">{confidence}% (Calibrated)</span>
               </div>
 
-              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded">
+              <div className="p-2.5 bg-[#040708] border border-[#1C323B] rounded-xl">
                 <span className="text-[8px] text-[#8AA3AD] uppercase block mb-0.5">CROSS-MODAL</span>
                 <span className="font-bold text-[#0E7C8A] text-[11px] truncate block">OPTICAL MSI AVAILABLE</span>
               </div>
@@ -166,7 +166,7 @@ export function ShowMeWhyModal({
           </div>
 
           {/* Cryptographic SHA-256 Provenance Tag */}
-          <div className="p-2.5 bg-[#040708] border border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD] rounded">
+          <div className="p-2.5 bg-[#040708] border border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD] rounded-xl">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 size={12} className="text-[#0E7C8A]" />
               <span>SHA-256 PROVENANCE:</span>
@@ -191,7 +191,7 @@ export function ShowMeWhyModal({
 
           <Button
             onClick={onClose}
-            className="bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 px-4 rounded border border-[#12A5B8]/40 shadow-sm cursor-pointer"
+            className="bg-gradient-to-r from-[#0B4F58] to-[#0E7C8A] hover:from-[#0E7C8A] hover:to-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 px-4 rounded-xl border border-[#12A5B8]/40 shadow-sm cursor-pointer"
           >
             Close Audit
           </Button>
