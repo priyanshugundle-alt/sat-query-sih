@@ -50,7 +50,7 @@ export function CommandPaletteModal({
     { id: "upload", label: "Upload Satellite Raster (GeoTIFF / PNG)", icon: Upload, action: onUploadClick, category: "Actions" },
     { id: "catalog", label: "Browse Benchmark Satellite Catalog", icon: Database, action: onOpenLibrary, category: "Actions" },
     { id: "vqa", label: "Switch to Visual QA (GeoChat-VQA)", icon: Eye, action: () => onSelectMode("VQA"), category: "Specialist Tools" },
-    { id: "grounding", label: "Switch to Spatial Grounding (GeoChat-Grounding)", icon: Target, action: () => onSelectMode("GROUNDING"), category: "Specialist Tools" },
+    { id: "grounding", label: "Switch to Spatial Grounding (GroundingDINO)", icon: Target, action: () => onSelectMode("GROUNDING"), category: "Specialist Tools" },
     { id: "change", label: "Switch to Bi-Temporal Change (CDVQA)", icon: Layers, action: () => onSelectMode("CHANGE"), category: "Specialist Tools" },
     { id: "fusion", label: "Switch to Optical + SAR Fusion (EarthGPT)", icon: Activity, action: () => onSelectMode("FUSION"), category: "Specialist Tools" },
     { id: "focus", label: "Toggle Focus Canvas Mode (88% Viewport)", icon: Maximize2, action: onToggleFocus, category: "View" },

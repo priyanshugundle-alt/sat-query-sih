@@ -17,7 +17,7 @@ import {
 import { ScanlineSweep } from "./ScanlineSweep";
 
 /**
- * SatelliteCanvasViewer (ISRO)
+ * SatelliteCanvasViewer (ISRO / SIH26167)
  * 
  * The Earth Observation Scientific Imaging Workstation:
  * - 80–90% Satellite Canvas Viewport
@@ -299,7 +299,7 @@ export function SatelliteCanvasViewer({
               style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
             >
               <img 
-                src={secondaryAsset?.previewUrl || "/assets/imagery/landcover_sample.jpg"} 
+                src={secondaryAsset?.previewUrl || "/satquery-prism-optical.png"} 
                 alt="T2 Pass" 
                 className="max-h-[660px] w-auto max-w-full object-contain filter contrast-125"
               />

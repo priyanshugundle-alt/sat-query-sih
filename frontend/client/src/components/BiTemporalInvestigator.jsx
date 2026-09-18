@@ -42,7 +42,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
           <div
             ref={containerRef}
             onPointerMove={handlePointerMove}
-            className={`relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[460px] md:min-h-[540px] cursor-ew-resize transition-all duration-700 rounded-xl ios-glass-card ${
+            className={`relative w-full bg-background border border-card overflow-hidden select-none min-h-[460px] md:min-h-[540px] cursor-ew-resize transition-all duration-700 ${
               isFollowingChange ? "scale-[1.02] shadow-[0_0_40px_rgba(212,154,58,0.2)]" : ""
             }`}
           >

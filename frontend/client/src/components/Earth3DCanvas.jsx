@@ -95,11 +95,11 @@ const WORLD_RADIUS = 2.25;
     } else if (stage === "vqa" || stage === "grounding") {
       // Mumbai: 19.0760° N, 72.8777° E
       focusCoordinates(19.0760, 72.8777, zoomProgress || 0.65);
-      targetEarthPos.current.set(isMobile ? 0 : -0.95, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
     } else if (stage === "nepal") {
       // Syabru Besi, Nepal: 28.15° N, 85.34° E
       focusCoordinates(28.15, 85.34, zoomProgress || 0.7);
-      targetEarthPos.current.set(isMobile ? 0 : -0.95, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
     } else if (stage === "sar") {
       // Optical + SAR swath
       focusCoordinates(28.15, 85.34, zoomProgress || 0.45);
@@ -112,10 +112,6 @@ const WORLD_RADIUS = 2.25;
       // Final CTA: Earth large and centered
       targetEarthPos.current.set(0, 0.1, 0);
       targetCameraPos.current.set(0, 0, 4.8);
-    } else if (stage === "final_cta") {
-      // Curve the horizon smoothly beneath the CTA card without occluding text
-      targetEarthPos.current.set(0, -0.7, -0.3);
-      targetCameraPos.current.set(0, 0, 5.0);
     }
 
     if (targetCoords) {

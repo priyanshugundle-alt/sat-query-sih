@@ -29,7 +29,7 @@ export const PRESET_SATELLITE_CATALOG = [
     coordinates: "18.5204° N, 73.8567° E",
     cloudCover: "1.2%",
     bands: "B4 (Red), B3 (Green), B2 (Blue), B8 (NIR)",
-    previewUrl: "/assets/imagery/airport_sample.jpg",
+    previewUrl: "/satquery-prism-hero.png",
     recommendedMode: "GROUNDING",
     recommendedQuery: "Locate all vehicles and industrial facilities in this sector.",
     description: "High-resolution optical multispectral tile capturing dense urban infrastructure and rapid peri-urban construction.",
@@ -46,7 +46,7 @@ export const PRESET_SATELLITE_CATALOG = [
     coordinates: "23.0225° N, 72.5714° E",
     cloudCover: "0.0%",
     bands: "Panchromatic + 4 Multispectral bands",
-    previewUrl: "/assets/imagery/mumbai_proba.jpg",
+    previewUrl: "/satquery-prism-hero.png",
     recommendedMode: "VQA",
     recommendedQuery: "Describe visible land-cover, agricultural plots, and urban terrain.",
     description: "ISRO highest-resolution civilian optical asset for fine-grained structural layout and parcel classification.",
@@ -63,8 +63,7 @@ export const PRESET_SATELLITE_CATALOG = [
     coordinates: "26.1445° N, 91.7362° E",
     cloudCover: "3.4%",
     bands: "Dual T1/T2 MSI Reflectance",
-    previewUrl: "/assets/imagery/nepal_2026_08_27.jpg",
-    secondaryUrl: "/assets/imagery/nepal_2023_10_18.jpg",
+    previewUrl: "/satquery-prism-optical.png",
     recommendedMode: "CHANGE",
     recommendedQuery: "What changed between Date 1 and Date 2 in this region?",
     description: "Dual acquisition pair showing monsoon water encroachment, newly formed sandbars, and altered riverbanks.",
@@ -81,8 +80,7 @@ export const PRESET_SATELLITE_CATALOG = [
     coordinates: "18.9220° N, 72.8347° E",
     cloudCover: "78.5% (SAR Penetrated)",
     bands: "C-Band SAR (VV/VH) + Optical RGB",
-    previewUrl: "/assets/imagery/landcover_sar_sample.jpg",
-    secondaryUrl: "/assets/imagery/landcover_sample.jpg",
+    previewUrl: "/satquery-prism-sar.png",
     recommendedMode: "FUSION",
     recommendedQuery: "Corroborate cloudy sector using Sentinel-1 SAR and Sentinel-2 optical data.",
     description: "Co-registered optical and microwave SAR sensor data resolving maritime vessels through monsoon cloud deck.",
@@ -153,7 +151,7 @@ export function SatelliteImageryLibraryModal({
               <button
                 key={tab.id}
                 onClick={() => setFilterModality(tab.id)}
-                className={`px-3 py-1 text-[11px] transition-all border rounded-lg cursor-pointer ${
+                className={`px-2.5 py-1 text-[11px] transition-all border ${
                   filterModality === tab.id
                     ? "bg-[#D49A3A] text-[#0B0D0C] border-[#D49A3A] font-bold shadow-sm"
                     : "bg-[#0B0D0C] text-[#9A9A90] hover:text-[#E9E5DA] border-[#2A2E2B]"

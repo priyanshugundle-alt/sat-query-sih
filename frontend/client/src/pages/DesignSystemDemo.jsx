@@ -336,7 +336,7 @@ export default function DesignSystemDemo() {
         {/* Design Rationale */}
         <div className="mb-12">
           <h2 className="font-serif text-2xl font-semibold text-[#f2ece2] mb-4">
-            Design Rationale & Mission Standards
+            Design Rationale (For SIH Judges)
           </h2>
           <div className="space-y-4">
             <Card>

@@ -97,7 +97,7 @@ const TASK_CONFIGS = {
     title: "Spatial Object Grounding",
     defaultQuery: "Highlight the water body referred to in the query",
     placeholder: "Enter referring expression to localize target features with bounding boxes...",
-    targetEngine: "GeoChat-Grounding (UniRS Adapter)",
+    targetEngine: "GroundingDINO (UniRS Adapter)",
     minFiles: 1,
     maxFiles: 1,
     requiredModalities: ["OPTICAL"],
@@ -2308,7 +2308,7 @@ function SplitImageCompare({
           <img
             src={toWebUrl(img2)}
             alt="After"
-            className="w-full h-full object-cover pointer-events-none"
+            className="w-full h-full object-contain pointer-events-none"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-[#0b1739] text-[#7082aa]">
@@ -2330,7 +2330,7 @@ function SplitImageCompare({
           <img
             src={toWebUrl(img1)}
             alt="Before"
-            className="absolute inset-y-0 left-0 object-cover pointer-events-none"
+            className="absolute inset-y-0 left-0 object-contain pointer-events-none"
             style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
           />
         ) : (

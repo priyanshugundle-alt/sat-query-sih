@@ -29,7 +29,7 @@ export function AnalysisDetailsDrawer({
 
   const queryText = currentResult?.userQuery || "What type of land cover dominates this region?";
   const intent = currentResult?.intentDetected || (analysisMode === "CHANGE" ? "Bi-Temporal Change" : analysisMode === "FUSION" ? "Optical-SAR Fusion" : analysisMode === "VQA" ? "Visual QA" : "Spatial Object Grounding");
-  const specialist = currentResult?.routedTool || (analysisMode === "CHANGE" ? "CDVQA-Siamese (ChangeQA Adapter)" : analysisMode === "FUSION" ? "OpticalSAR-Fusion (EarthGPT Adapter)" : analysisMode === "VQA" ? "GeoChat-VQA (UniRS Adapter)" : "GeoChat-Grounding (UniRS Adapter)");
+  const specialist = currentResult?.routedTool || (analysisMode === "CHANGE" ? "CDVQA-Siamese (ChangeQA Adapter)" : analysisMode === "FUSION" ? "OpticalSAR-Fusion (EarthGPT Adapter)" : analysisMode === "VQA" ? "GeoChat-VQA (UniRS Adapter)" : "GroundingDINO (UniRS Adapter)");
   const modelName = currentResult?.modelUsed || "Qwen2-VL / UniRS-RSVLM (Calibrated Backbone)";
   const sourceSensor = asset?.modality === "SAR" ? "Sentinel-1 C-Band SAR" : asset?.name?.includes("Proba") ? "Proba Satellite HRC" : "Sentinel-2 MSI (0.5m GSD)";
   const crs = "WGS 84 (EPSG:4326) · UTM Zone 43N (EPSG:32643)";

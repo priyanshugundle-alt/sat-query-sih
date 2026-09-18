@@ -17,8 +17,8 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
   const [fusionMode, setFusionMode] = useState("fused"); // 'optical' | 'sar' | 'fused'
   const [blendOpacity, setBlendOpacity] = useState(50); // 0 (100% optical) to 100 (100% SAR)
 
-  const opticalImg = "/assets/imagery/landcover_sample.jpg";
-  const sarImg = "/assets/imagery/landcover_sar_sample.jpg";
+  const opticalImg = "/satquery-prism-optical.png";
+  const sarImg = "/satquery-prism-sar.png";
 
   return (
     <div className="w-full flex flex-col gap-6 font-sans">
@@ -189,12 +189,6 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
                 <span className="text-[#9A9A90]">TARGET ENGINE</span>
                 <span className="text-[#76AEB0]">OpticalSAR-Fusion (EarthGPT)</span>
               </div>
-            </div>
-
-            {/* Specialist Engine */}
-            <div className="pt-2 border-t border-[#1C323B] flex items-center justify-between font-mono text-[9px] text-[#8AA3AD]">
-              <span>SPECIALIST ENGINE</span>
-              <span className="text-[#12A5B8]">OpticalSAR-Fusion (EarthGPT)</span>
             </div>
 
           </div>

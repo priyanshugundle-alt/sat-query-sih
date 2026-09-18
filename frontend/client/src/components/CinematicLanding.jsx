@@ -26,7 +26,7 @@ import { OpticalSarFusion } from "./OpticalSarFusion";
 import { EvidenceProofMatrix } from "./EvidenceProofMatrix";
 
 /**
- * CinematicLanding (ISRO · SatQuery AI)
+ * CinematicLanding (SIH26167 · ISRO · SatQuery AI)
  * 
  * 8-STAGE MASTER EARTH OBSERVATION SPECIFICATION:
  * 
@@ -45,7 +45,6 @@ export function CinematicLanding({
   onAttachImagery,
 }) {
   const [activeSection, setActiveSection] = useState("hero");
-  const [activeSpecialist, setActiveSpecialist] = useState("geochat");
 
   // Track scroll position to coordinate 3D Earth choreography across all 8 stages
   useEffect(() => {
@@ -169,7 +168,7 @@ export function CinematicLanding({
           id="hero-section"
           className="min-h-screen relative flex flex-col justify-center px-6 md:px-14 lg:px-20 py-16 overflow-hidden"
         >
-          <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-20">
+          <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left Column: Headline & Supporting Text */}
             <div className="lg:col-span-6 flex flex-col justify-center z-30">
@@ -185,7 +184,7 @@ export function CinematicLanding({
                 <span>01 / EARTH · REMOTE SENSING VISION-LANGUAGE</span>
               </motion.div>
 
-              {/* Display Heading: Sora */}
+              {/* Display Heading: Space Grotesk */}
               <motion.div
                 initial={{ opacity: 0, y: -24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -297,19 +296,27 @@ export function CinematicLanding({
               </div>
             </div>
 
-            {/* Observation Sweep Demonstration (VQA: No bounding highlights, pure natural language query) */}
+            {/* Observation Sweep Demonstration */}
             <ObservationSweep
               imageUrl="/assets/imagery/mumbai_proba.jpg"
               taskType="VQA"
               query="What type of land cover dominates this region?"
               answer="Dense urban residential agglomeration flanked by deep-water harbor logistics docks on the eastern bay and high-salinity tidal inlets."
-              boundingRegions={[]}
+              boundingRegions={[
+                { label: "URBAN RESIDENTIAL GRID", confidence: "94.2%", top: "32%", left: "26%", width: "44%", height: "38%" },
+                { label: "MARITIME HARBOR", confidence: "89.6%", top: "44%", left: "56%", width: "24%", height: "26%" },
+              ]}
               meta={{
                 source: "Bombay Seen by Proba Satellite",
                 coords: "19.0760° N, 72.8777° E",
                 resolution: "5m GSD Multispectral",
                 timestamp: "2024-03-14T06:12:45Z",
               }}
+              onActionClick={() => handleLaunchWorkstation({
+                query: "What type of land cover dominates this region?",
+                mode: "VQA",
+                sampleImage: "/assets/imagery/mumbai_proba.jpg"
+              })}
             />
 
           </div>
@@ -349,7 +356,7 @@ export function CinematicLanding({
               imageUrl="/assets/imagery/mumbai_proba.jpg"
               taskType="GROUNDING"
               query="Where are the major built-up areas?"
-              answer="GeoChat-Grounding localized 3 distinct high-density industrial and residential clusters with high confidence (91.4% average agreement)."
+              answer="GroundingDINO localized 3 distinct high-density industrial and residential clusters with high confidence (91.4% average agreement)."
               boundingRegions={[
                 { label: "BUILT-UP SECTOR A", confidence: "91.4%", top: "28%", left: "30%", width: "24%", height: "22%" },
                 { label: "BUILT-UP SECTOR B", confidence: "93.1%", top: "52%", left: "28%", width: "30%", height: "26%" },
@@ -361,6 +368,11 @@ export function CinematicLanding({
                 resolution: "5m GSD Multispectral",
                 timestamp: "2024-03-14T06:12:45Z",
               }}
+              onActionClick={() => handleLaunchWorkstation({
+                query: "Where are the major built-up areas?",
+                mode: "GROUNDING",
+                sampleImage: "/assets/imagery/mumbai_proba.jpg"
+              })}
             />
 
           </div>
@@ -396,7 +408,13 @@ export function CinematicLanding({
             </div>
 
             {/* Interactive Bi-Temporal Investigation Canvas */}
-            <BiTemporalInvestigator />
+            <BiTemporalInvestigator
+              onInvestigateInWorkstation={(preset) => handleLaunchWorkstation({
+                query: preset.query,
+                mode: "CHANGE",
+                sampleImage: "/assets/imagery/nepal_2026_08_27.jpg"
+              })}
+            />
 
           </div>
         </section>
@@ -431,7 +449,13 @@ export function CinematicLanding({
             </div>
 
             {/* Optical + SAR Fusion System */}
-            <OpticalSarFusion />
+            <OpticalSarFusion
+              onInvestigateInWorkstation={(preset) => handleLaunchWorkstation({
+                query: preset.query,
+                mode: "FUSION",
+                sampleImage: "/satquery-prism-optical.png"
+              })}
+            />
 
           </div>
         </section>
@@ -459,13 +483,15 @@ export function CinematicLanding({
             </div>
 
             {/* 6-Pillar Forensic Proof Matrix */}
-            <EvidenceProofMatrix />
+            <EvidenceProofMatrix
+              onInvestigatePreset={(preset) => handleLaunchWorkstation(preset)}
+            />
 
           </div>
         </section>
 
         {/* ════════════════════════════════════════════════════════════════
-            07 TECHNICAL PIPELINE — REAL SYSTEM ARCHITECTURE & AGENTIC DISPATCH
+            07 TECHNICAL SIGNAL — REMOTE-SENSING INPUT & AGENTIC ROUTING
             ════════════════════════════════════════════════════════════════ */}
         <section
           id="technical-section"
@@ -540,11 +566,9 @@ export function CinematicLanding({
                         </div>
                         <span className="text-[#D49A3A] text-[10px] font-bold">{s.spec}</span>
                       </div>
-                      <div className="text-[10.5px] mt-1 text-[#D0E3EA]">{spec.task}</div>
-                      <div className="text-[9px] text-[#12A5B8] mt-1 font-semibold">{spec.tag}</div>
-                    </button>
-                  );
-                })}
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Right (Col 7-12): Academic Benchmarks */}
@@ -578,27 +602,14 @@ export function CinematicLanding({
                       <span className="text-[9px] text-[#9A9A90]">Sub-pixel GeoTIFF alignment</span>
                     </div>
                   </div>
-                )}
+                </div>
 
                 <div className="pt-4 border-t border-[#2A2E2B] mt-4 flex items-center justify-between text-[10px] text-[#9A9A90] font-mono">
                   <span>DETERMINISTIC EVALUATION</span>
                   <span className="text-[#D49A3A]">ZERO HALLUCINATION AUDIT</span>
                 </div>
               </div>
-            </div>
 
-            {/* 3. System Architecture Standards Bar */}
-            <div className="p-3 ios-glass-card border border-white/[0.08] rounded-xl flex flex-wrap items-center justify-between gap-3 text-[10px] text-[#8AA3AD] font-mono">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                <span className="text-[#D0E3EA] font-semibold">CORE JAVA 21 HTTP CONTROLLER (:8080)</span>
-                <span className="text-[#8AA3AD] hidden sm:inline">· ZERO SPRING BOOT AUDITABILITY</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span>SQLITE FORENSIC EVIDENCE DB</span>
-                <span className="text-[#12A5B8]">GDAL WGS 84 CALIBRATION</span>
-                <span className="text-[#10B981]">SHA-256 PROVENANCE</span>
-              </div>
             </div>
 
           </div>
@@ -631,8 +642,8 @@ export function CinematicLanding({
                 onClick={() => handleLaunchWorkstation()}
                 className="px-8 py-3.5 bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-lg"
               >
-                <span>RETURN TO TOP</span>
-                <span>↑</span>
+                <span>START INVESTIGATION</span>
+                <span>↗</span>
               </button>
 
               <button
@@ -646,7 +657,7 @@ export function CinematicLanding({
 
             <div className="pt-16 border-t border-[#2A2E2B]/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-[#9A9A90]/60 font-mono">
               <span>INDIAN SPACE RESEARCH ORGANISATION · SPACE TECHNOLOGY</span>
-              <span className="text-[#12A5B8] font-semibold">AI ANSWERS. IMAGERY PROVES.</span>
+              <span>AI ANSWERS. IMAGERY PROVES.</span>
             </div>
 
           </div>

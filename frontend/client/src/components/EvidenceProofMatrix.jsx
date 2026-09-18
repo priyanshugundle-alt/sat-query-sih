@@ -52,7 +52,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
       confidence: "92.8% (Calibrated)",
       crossModal: "CORROBORATED (RADAR DOUBLE-BOUNCE)",
       verdict: "CROSS-MODAL CONFIRMED",
-      image: "/assets/imagery/landcover_sar_sample.jpg",
+      image: "/satquery-prism-optical.png",
       mode: "FUSION",
     },
   ];
@@ -68,7 +68,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
           <button
             key={item.id}
             onClick={() => setActiveProofIndex(idx)}
-            className={`px-3 py-1.5 font-mono text-xs border transition-all rounded-md cursor-pointer ${
+            className={`px-3 py-1.5 font-mono text-xs border transition-all ${
               activeProofIndex === idx
                 ? "bg-[#D49A3A] text-[#0B0D0C] border-[#D49A3A] font-bold"
                 : "bg-[#151817] text-[#9A9A90] border-[#2A2E2B] hover:text-[#E9E5DA]"
@@ -116,7 +116,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
               <span>ISRO SIH26167 SPECIFICATION</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-mono text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
               
               {/* 1. WHAT */}
               <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
