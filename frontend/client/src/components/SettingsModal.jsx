@@ -18,18 +18,18 @@ export function SettingsModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-150">
-      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-lg shadow-[0_10px_35px_rgba(0,0,0,0.8)] overflow-hidden font-mono text-xs">
+      <div className="bg-[#151817] border border-[#2A2E2B] w-full max-w-lg shadow-2xl overflow-hidden font-mono text-xs">
         {/* Header */}
-        <div className="p-4 bg-[#080E11] border-b border-[#1C323B] flex items-center justify-between">
+        <div className="p-4 bg-[#0B0D0C] border-b border-[#2A2E2B] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Sliders size={16} className="text-[#12A5B8]" />
-            <h2 className="text-xs font-bold text-[#FFFFFF] tracking-wide uppercase">
+            <Sliders size={16} className="text-[#D49A3A]" />
+            <h2 className="text-xs font-bold text-[#F3F0E8] tracking-wide uppercase">
               SATQUERY SYSTEM CONFIGURATION
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127] transition-colors"
+            className="p-1.5 text-[#9A9A90] hover:text-[#F3F0E8] hover:bg-[#1D211F] transition-colors"
           >
             <X size={16} />
           </button>
@@ -39,7 +39,7 @@ export function SettingsModal({ isOpen, onClose }) {
         <div className="p-4 space-y-4">
           {/* Vision-Language Specialist Model Engine */}
           <div>
-            <label className="block text-[#8AA3AD] uppercase text-[10px] font-bold mb-1.5">
+            <label className="block text-[#9A9A90] uppercase text-[10px] font-bold mb-1.5">
               VISION-LANGUAGE INFERENCE ADAPTER
             </label>
             <div className="space-y-1.5">
@@ -53,15 +53,15 @@ export function SettingsModal({ isOpen, onClose }) {
                   onClick={() => setModelAdapter(m.id)}
                   className={`p-2.5 border cursor-pointer transition-colors ${
                     modelAdapter === m.id
-                      ? "bg-[#0B4F58]/30 border-[#12A5B8] text-[#FFFFFF]"
-                      : "bg-[#080E11] border-[#1C323B] text-[#8AA3AD] hover:border-[#12A5B8]/40"
+                      ? "bg-[#D49A3A]/15 border-[#D49A3A] text-[#F3F0E8]"
+                      : "bg-[#0B0D0C] border-[#2A2E2B] text-[#9A9A90] hover:border-[#D49A3A]/40"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] text-[#FFFFFF]">{m.name}</span>
-                    {modelAdapter === m.id && <Check size={13} className="text-[#12A5B8]" />}
+                    <span className="font-bold text-[11px] text-[#F3F0E8]">{m.name}</span>
+                    {modelAdapter === m.id && <Check size={13} className="text-[#D49A3A]" />}
                   </div>
-                  <div className="text-[10px] text-[#8AA3AD] font-sans mt-0.5">{m.desc}</div>
+                  <div className="text-[10px] text-[#9A9A90] font-sans mt-0.5">{m.desc}</div>
                 </div>
               ))}
             </div>
@@ -70,10 +70,10 @@ export function SettingsModal({ isOpen, onClose }) {
           {/* Minimum Confidence Cutoff */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[#8AA3AD] uppercase text-[10px] font-bold">
+              <label className="text-[#9A9A90] uppercase text-[10px] font-bold">
                 MINIMUM CONFIDENCE FILTER
               </label>
-              <span className="text-[#12A5B8] font-bold">{confidenceCutoff}%</span>
+              <span className="text-[#D49A3A] font-bold">{confidenceCutoff}%</span>
             </div>
             <input
               type="range"
@@ -82,9 +82,9 @@ export function SettingsModal({ isOpen, onClose }) {
               step="5"
               value={confidenceCutoff}
               onChange={(e) => setConfidenceCutoff(Number(e.target.value))}
-              className="w-full accent-[#12A5B8] cursor-pointer"
+              className="w-full accent-[#D49A3A] cursor-pointer"
             />
-            <div className="flex justify-between text-[9px] text-[#8AA3AD] mt-1">
+            <div className="flex justify-between text-[9px] text-[#9A9A90] mt-1">
               <span>50% (Permissive)</span>
               <span>75% (Balanced)</span>
               <span>95% (Defense Critical)</span>
@@ -93,7 +93,7 @@ export function SettingsModal({ isOpen, onClose }) {
 
           {/* Coordinate Reference System */}
           <div>
-            <label className="block text-[#8AA3AD] uppercase text-[10px] font-bold mb-1.5">
+            <label className="block text-[#9A9A90] uppercase text-[10px] font-bold mb-1.5">
               COORDINATE REFERENCE SYSTEM (CRS)
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -106,8 +106,8 @@ export function SettingsModal({ isOpen, onClose }) {
                   onClick={() => setCrsProjection(c.id)}
                   className={`p-2 border cursor-pointer text-center ${
                     crsProjection === c.id
-                      ? "bg-[#0B4F58]/30 border-[#12A5B8] text-[#12A5B8] font-bold"
-                      : "bg-[#080E11] border-[#1C323B] text-[#8AA3AD]"
+                      ? "bg-[#D49A3A]/15 border-[#D49A3A] text-[#D49A3A] font-bold"
+                      : "bg-[#0B0D0C] border-[#2A2E2B] text-[#9A9A90]"
                   }`}
                 >
                   <div>{c.label}</div>
@@ -118,12 +118,12 @@ export function SettingsModal({ isOpen, onClose }) {
           </div>
 
           {/* ISRO Defense Audit Trace */}
-          <div className="flex items-center justify-between p-3 bg-[#080E11] border border-[#1C323B]">
+          <div className="flex items-center justify-between p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
             <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-[#12A5B8]" />
+              <ShieldCheck size={16} className="text-[#68745C]" />
               <div>
-                <div className="font-bold text-[#FFFFFF] text-[11px]">Cryptographic Defense Audit Trail</div>
-                <div className="text-[10px] text-[#8AA3AD] font-sans">
+                <div className="font-bold text-[#F3F0E8] text-[11px]">Cryptographic Defense Audit Trail</div>
+                <div className="text-[10px] text-[#9A9A90] font-sans">
                   Sign each analysis output with SHA-256 hash & provenance tag
                 </div>
               </div>
@@ -132,23 +132,23 @@ export function SettingsModal({ isOpen, onClose }) {
               type="checkbox"
               checked={enableDefenseAudit}
               onChange={(e) => setEnableDefenseAudit(e.target.checked)}
-              className="accent-[#12A5B8] w-4 h-4 cursor-pointer"
+              className="accent-[#D49A3A] w-4 h-4 cursor-pointer"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-[#080E11] border-t border-[#1C323B] flex items-center justify-end gap-2">
+        <div className="p-3 bg-[#0B0D0C] border-t border-[#2A2E2B] flex items-center justify-end gap-2">
           <Button
             variant="ghost"
             onClick={onClose}
-            className="text-[#8AA3AD] hover:text-[#FFFFFF] font-mono text-xs h-8"
+            className="text-[#9A9A90] hover:text-[#F3F0E8] font-mono text-xs h-8"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-[#0E7C8A] hover:bg-[#12A5B8] text-[#FFFFFF] font-mono font-bold text-xs h-8 px-4 shadow-[0_0_15px_rgba(18,165,184,0.3)] transition-all"
+            className="bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-mono font-bold text-xs h-8 px-4 shadow"
           >
             Apply Settings
           </Button>

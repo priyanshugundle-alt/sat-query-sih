@@ -56,28 +56,28 @@ export const WorkstationBackground = () => {
       time += 0.008;
       ctx.clearRect(0, 0, width, height);
 
-      // Base deep space environment (subtle cyan-black gradients, not flat black)
+      // Base deep space environment (subtle gradients, not flat black)
       const baseGrad = ctx.createRadialGradient(
         width * 0.5, height * 0.5, 0,
         width * 0.5, height * 0.5, Math.max(width, height) * 0.8
       );
-      baseGrad.addColorStop(0, "#0D171C");      // Dark cyan surface
-      baseGrad.addColorStop(0.7, "#080E11");   // Transition cosmic black
-      baseGrad.addColorStop(1, "#040708");     // Void black
+      baseGrad.addColorStop(0, "#151817");      // Subtle graphite
+      baseGrad.addColorStop(0.7, "#0F1211");   // Transition
+      baseGrad.addColorStop(1, "#0B0D0C");     // Obsidian
       ctx.fillStyle = baseGrad;
       ctx.fillRect(0, 0, width, height);
 
       // Sparse stars with subtle twinkle
       stars.forEach(star => {
         const twinkle = 0.6 + 0.4 * Math.sin(time * star.twinkleSpeed * 100 + star.phase);
-        ctx.fillStyle = `rgba(240, 246, 248, ${star.alpha * twinkle * 0.8})`;
+        ctx.fillStyle = `rgba(233, 229, 218, ${star.alpha * twinkle * 0.8})`;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         ctx.fill();
       });
 
       // Subtle orbital elements
-      ctx.strokeStyle = "rgba(18, 165, 184, 0.12)";
+      ctx.strokeStyle = "rgba(212, 154, 58, 0.06)";
       ctx.lineWidth = 0.8;
       ctx.setLineDash([2, 8]);
       ctx.beginPath();
@@ -129,7 +129,7 @@ export const WorkstationBackground = () => {
         <Earth3DCanvas
           stage="workstation"
           visibilityState={visibilityState}
-          className="pointer-events-auto"
+          className="pointer-events-none"
         />
       </div>
     </div>

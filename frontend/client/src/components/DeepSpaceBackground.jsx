@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+﻿import React, { useEffect, useRef } from "react";
 
 /**
  * DeepSpaceBackground — Subtle, Realistic Deep Space Canvas
@@ -43,7 +43,7 @@ export function DeepSpaceBackground({ opacity = 1 }) {
       time += 0.01;
       ctx.clearRect(0, 0, width, height);
 
-      // 1. Subtle galactic dust gradient (Very faint dark cyan / deep cosmic black)
+      // 1. Subtle galactic dust gradient (Very faint #151817 / #1D211F)
       const dustGrad = ctx.createRadialGradient(
         width * 0.45,
         height * 0.5,
@@ -52,9 +52,9 @@ export function DeepSpaceBackground({ opacity = 1 }) {
         height * 0.5,
         width * 0.65
       );
-      dustGrad.addColorStop(0, "rgba(14, 124, 138, 0.12)");
-      dustGrad.addColorStop(0.5, "rgba(11, 79, 88, 0.06)");
-      dustGrad.addColorStop(1, "rgba(4, 7, 8, 0)");
+      dustGrad.addColorStop(0, "rgba(29, 33, 31, 0.28)");
+      dustGrad.addColorStop(0.5, "rgba(21, 24, 23, 0.15)");
+      dustGrad.addColorStop(1, "rgba(11, 13, 12, 0)");
       ctx.fillStyle = dustGrad;
       ctx.fillRect(0, 0, width, height);
 
@@ -63,14 +63,14 @@ export function DeepSpaceBackground({ opacity = 1 }) {
         const star = stars[i];
         const currentAlpha =
           star.alpha * (0.7 + 0.3 * Math.sin(time * star.twinkleSpeed * 100 + star.twinkleOffset));
-        ctx.fillStyle = `rgba(240, 246, 248, ${currentAlpha})`;
+        ctx.fillStyle = `rgba(233, 229, 218, ${currentAlpha})`;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         ctx.fill();
       }
 
       // 3. Subtle orbital path arc
-      ctx.strokeStyle = "rgba(18, 165, 184, 0.12)";
+      ctx.strokeStyle = "rgba(212, 154, 58, 0.08)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 12]);
       ctx.beginPath();
@@ -91,10 +91,24 @@ export function DeepSpaceBackground({ opacity = 1 }) {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#040708]"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#0B0D0C]"
       style={{ opacity, transition: "opacity 1s ease" }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+      {/* Faint corner coordinate ticks */}
+      <div className="absolute top-16 left-8 font-mono text-[9px] text-[#9A9A90]/40 tracking-widest pointer-events-none hidden md:block">
+        ORBITAL TRACK / 687.4 KM · INCL: 98.2°
+      </div>
+      <div className="absolute top-16 right-8 font-mono text-[9px] text-[#9A9A90]/40 tracking-widest pointer-events-none hidden md:block">
+        ISRO RS-VLM / CALIBRATED
+      </div>
+      <div className="absolute bottom-12 left-8 font-mono text-[9px] text-[#9A9A90]/35 tracking-widest pointer-events-none hidden md:block">
+        19.0760° N, 72.8777° E → 28.1500° N, 85.3400° E
+      </div>
+      <div className="absolute bottom-12 right-8 font-mono text-[9px] text-[#9A9A90]/35 tracking-widest pointer-events-none hidden md:block">
+        WGS 84 / MULTIMODAL EVIDENCE ENGINE
+      </div>
     </div>
   );
 }

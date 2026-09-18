@@ -11,9 +11,9 @@ export function ScanlineSweep({ active = true, duration = "2.2s", className = ""
           animationDuration: duration,
         }}
       >
-        <div className="h-10 w-full bg-gradient-to-b from-transparent to-[#12A5B8]/15" />
-        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#22D3EE] to-transparent shadow-[0_0_12px_rgba(18,165,184,0.8)]" />
-        <div className="h-4 w-full bg-gradient-to-b from-[#12A5B8]/10 to-transparent" />
+        <div className="h-10 w-full bg-gradient-to-b from-transparent to-[#D99A2B]/15" />
+        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#F0B84B] to-transparent shadow-[0_0_12px_rgba(217,154,43,0.8)]" />
+        <div className="h-4 w-full bg-gradient-to-b from-[#D99A2B]/10 to-transparent" />
       </div>
     </div>
   );
