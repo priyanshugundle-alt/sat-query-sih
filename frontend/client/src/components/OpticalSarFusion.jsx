@@ -17,8 +17,8 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
   const [fusionMode, setFusionMode] = useState("fused"); // 'optical' | 'sar' | 'fused'
   const [blendOpacity, setBlendOpacity] = useState(50); // 0 (100% optical) to 100 (100% SAR)
 
-  const opticalImg = "/satquery-prism-optical.png";
-  const sarImg = "/satquery-prism-sar.png";
+  const opticalImg = "/assets/imagery/landcover_sample.jpg";
+  const sarImg = "/assets/imagery/landcover_sar_sample.jpg";
 
   return (
     <div className="w-full flex flex-col gap-6 font-sans">

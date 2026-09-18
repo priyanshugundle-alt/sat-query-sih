@@ -45,7 +45,7 @@ export function SettingsModal({ isOpen, onClose }) {
             <div className="space-y-1.5">
               {[
                 { id: "unirs-geochat", name: "UniRS + GeoChat-VQA (ISRO Recommended)", desc: "Specialized multi-spectral remote-sensing vision backbone" },
-                { id: "grounding-dino", name: "GroundingDINO + Qwen2-VL", desc: "Pixel-accurate zero-shot bounding box detector" },
+                { id: "grounding-dino", name: "GeoChat-Grounding + Qwen2-VL", desc: "Pixel-accurate zero-shot bounding box detector" },
                 { id: "cdvqa-siamese", name: "CDVQA-Siamese Bi-Temporal Network", desc: "Dual-pass temporal change subtraction" },
               ].map((m) => (
                 <div

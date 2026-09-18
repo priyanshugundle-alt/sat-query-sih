@@ -52,7 +52,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
       confidence: "92.8% (Calibrated)",
       crossModal: "CORROBORATED (RADAR DOUBLE-BOUNCE)",
       verdict: "CROSS-MODAL CONFIRMED",
-      image: "/satquery-prism-optical.png",
+      image: "/assets/imagery/landcover_sar_sample.jpg",
       mode: "FUSION",
     },
   ];
@@ -113,43 +113,43 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
           <div>
             <div className="flex items-center justify-between font-mono text-[10px] text-[#8AA3AD] pb-3 mb-4 border-b border-[#1C323B]/80">
               <span className="text-[#12A5B8] font-bold uppercase tracking-widest">AUDIT TRAIL / FORENSIC PROOF</span>
-              <span>ISRO SIH26167 SPECIFICATION</span>
+              <span>ISRO SPACE TECHNOLOGY SPECIFICATION</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-mono text-xs">
               
               {/* 1. WHAT */}
-              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
+              <div className="p-3 bg-[#080E11]/35 border border-white/[0.08] rounded-lg backdrop-blur-sm">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">01 · WHAT</span>
                 <span className="font-bold text-[#FFFFFF] block text-xs">{currentCase.what}</span>
               </div>
 
               {/* 2. WHERE */}
-              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
+              <div className="p-3 bg-[#080E11]/35 border border-white/[0.08] rounded-lg backdrop-blur-sm">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">02 · WHERE</span>
                 <span className="font-bold text-[#12A5B8] block text-xs">{currentCase.where}</span>
               </div>
 
               {/* 3. WHEN */}
-              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
+              <div className="p-3 bg-[#080E11]/35 border border-white/[0.08] rounded-lg backdrop-blur-sm">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">03 · WHEN</span>
                 <span className="font-bold text-[#F0F6F8] block text-xs">{currentCase.when}</span>
               </div>
 
               {/* 4. SOURCE */}
-              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
+              <div className="p-3 bg-[#080E11]/35 border border-white/[0.08] rounded-lg backdrop-blur-sm">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">04 · SOURCE</span>
                 <span className="font-bold text-[#F0F6F8] block text-xs">{currentCase.source}</span>
               </div>
 
               {/* 5. CONFIDENCE */}
-              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
+              <div className="p-3 bg-[#080E11]/35 border border-white/[0.08] rounded-lg backdrop-blur-sm">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">05 · MODEL CONFIDENCE</span>
                 <span className="font-bold text-[#12A5B8] block text-xs">{currentCase.confidence}</span>
               </div>
 
               {/* 6. CROSS-MODAL SUPPORT */}
-              <div className="p-3 bg-[#080E11]/80 border border-white/[0.06] rounded-lg">
+              <div className="p-3 bg-[#080E11]/35 border border-white/[0.08] rounded-lg backdrop-blur-sm">
                 <span className="text-[9px] text-[#8AA3AD] uppercase block mb-0.5">06 · CROSS-MODAL SUPPORT</span>
                 <span className="font-bold text-[#12A5B8] block text-xs">{currentCase.crossModal}</span>
               </div>

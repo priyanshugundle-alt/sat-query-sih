@@ -99,7 +99,7 @@ export function ShowMeWhyModal({
                   <span className="w-1.5 h-1.5 bg-[#22D3EE] rounded-full" />
                   <span>02 · MODEL INTERPRETATION (SPECIALIST ADAPTER)</span>
                 </span>
-                <span className="text-[9px] text-[#8AA3AD]">GroundingDINO / UniRS</span>
+                <span className="text-[9px] text-[#8AA3AD]">GeoChat-Grounding / UniRS</span>
               </div>
               <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
                 Visual question-answering backbone cross-referenced spectral signature with built-up industrial warehouse profiles, rejecting agricultural and bare soil classifications.
@@ -172,7 +172,7 @@ export function ShowMeWhyModal({
               <span>SHA-256 PROVENANCE:</span>
               <span className="font-mono text-[#F0F6F8] truncate max-w-xs">{sha256Hash}</span>
             </div>
-            <span className="text-[#12A5B8] font-semibold">ISRO SIH26167 AUDIT COMPLIANT</span>
+            <span className="text-[#12A5B8] font-semibold">ISRO AUDIT COMPLIANT</span>
           </div>
 
         </div>

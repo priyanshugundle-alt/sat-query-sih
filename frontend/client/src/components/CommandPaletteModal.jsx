@@ -50,7 +50,7 @@ export function CommandPaletteModal({
     { id: "upload", label: "Upload Satellite Raster (GeoTIFF / PNG)", icon: Upload, action: onUploadClick, category: "Actions" },
     { id: "catalog", label: "Browse Benchmark Satellite Catalog", icon: Database, action: onOpenLibrary, category: "Actions" },
     { id: "vqa", label: "Switch to Visual QA (GeoChat-VQA)", icon: Eye, action: () => onSelectMode("VQA"), category: "Specialist Tools" },
-    { id: "grounding", label: "Switch to Spatial Grounding (GroundingDINO)", icon: Target, action: () => onSelectMode("GROUNDING"), category: "Specialist Tools" },
+    { id: "grounding", label: "Switch to Spatial Grounding (GeoChat-Grounding)", icon: Target, action: () => onSelectMode("GROUNDING"), category: "Specialist Tools" },
     { id: "change", label: "Switch to Bi-Temporal Change (CDVQA)", icon: Layers, action: () => onSelectMode("CHANGE"), category: "Specialist Tools" },
     { id: "fusion", label: "Switch to Optical + SAR Fusion (EarthGPT)", icon: Activity, action: () => onSelectMode("FUSION"), category: "Specialist Tools" },
     { id: "focus", label: "Toggle Focus Canvas Mode (88% Viewport)", icon: Maximize2, action: onToggleFocus, category: "View" },
@@ -115,7 +115,7 @@ export function CommandPaletteModal({
         {/* Footer */}
         <div className="p-2.5 bg-[#040708] border-t border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD]">
           <span>SATQUERY COMMAND DISPATCHER</span>
-          <span className="text-[#12A5B8] font-bold">SIH26167 · ISRO</span>
+          <span className="text-[#12A5B8] font-bold">ISRO SPACE TECHNOLOGY</span>
         </div>
       </div>
     </div>

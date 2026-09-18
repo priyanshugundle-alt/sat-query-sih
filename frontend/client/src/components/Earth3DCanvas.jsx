@@ -94,13 +94,17 @@ export function Earth3DCanvas({
     } else if (stage === "sar") {
       focusCoordinates(28.15, 85.34, zoomProgress || 0.45);
       targetEarthPos.current.set(isMobile ? 0 : 1.05, 0, -0.2);
-    } else if (stage === "evidence" || stage === "technical") {
-      targetEarthPos.current.set(isMobile ? 0 : -1.25, 0, -0.3);
-      targetCameraPos.current.set(0, 0, 5.5);
+    } else if (stage === "evidence") {
+      targetEarthPos.current.set(isMobile ? 0 : -0.75, 0, -0.2);
+      targetCameraPos.current.set(0, 0, 5.2);
+    } else if (stage === "technical") {
+      // Frame Earth directly behind the technical pipeline so it glows through the translucent glass cards
+      targetEarthPos.current.set(isMobile ? 0 : 0.1, 0.02, -0.15);
+      targetCameraPos.current.set(0, 0, 4.8);
     } else if (stage === "final_cta") {
       // Curve the horizon smoothly beneath the CTA card without occluding text
-      targetEarthPos.current.set(0, -0.85, -0.4);
-      targetCameraPos.current.set(0, 0, 5.2);
+      targetEarthPos.current.set(0, -0.7, -0.3);
+      targetCameraPos.current.set(0, 0, 5.0);
     }
 
     if (targetCoords) {

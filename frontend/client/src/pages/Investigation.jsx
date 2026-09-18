@@ -1,7 +1,7 @@
 /**
  * SatQuery AI — The Conversational Earth Observation Workstation
  *
- * SIH PROBLEM STATEMENT: SIH26167
+ * SATELLITE QUERY & EARTH OBSERVATION INTELLIGENCE SYSTEM
  * ORGANIZATION: Indian Space Research Organisation (ISRO)
  * THEME: Space Technology
  *
@@ -66,7 +66,7 @@ const SPECIALIST_CONFIG = {
   GROUNDING: {
     id: "GROUNDING",
     label: "Spatial Grounding",
-    engine: "GroundingDINO (UniRS Adapter)",
+    engine: "GeoChat-Grounding (UniRS Adapter)",
     sublabel: "BOUNDING BOX ⊞",
   },
   CHANGE: {
@@ -848,7 +848,7 @@ export default function Investigation() {
                         name: preset.sampleImage.includes("mumbai") ? "Bombay Seen by Proba Satellite" : "Syabru Besi Sentinel-2 Pair",
                         previewUrl: preset.sampleImage,
                         modality: preset.mode || "OPTICAL",
-                        date: "11 Sep 2026 · 12:31 PM",
+                        date: new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) + " · " + new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
                         metadata: {
                           format: "GeoTIFF",
                           width: 1024,
@@ -1043,7 +1043,7 @@ export default function Investigation() {
                                 {img.name}
                               </div>
                               <div className="text-[9px] text-[#8AA3AD] truncate mt-0.5">
-                                {img.date || "11 Sep 2026 · 12:31 PM"}
+                                {img.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                               </div>
                               <div className="text-[8px] text-[#76AEB0] font-mono truncate">
                                 In: {img.chatTitle}
@@ -1447,7 +1447,7 @@ export default function Investigation() {
                                       <ImageIcon size={12} />
                                       <span>IMAGE</span>
                                     </span>
-                                    <span>{msg.attachedAsset.date || "11 Sep 2026 · 12:31 PM"}</span>
+                                    <span>{msg.attachedAsset.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}</span>
                                   </div>
 
                                   <div>

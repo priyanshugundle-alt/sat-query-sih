@@ -97,7 +97,7 @@ const TASK_CONFIGS = {
     title: "Spatial Object Grounding",
     defaultQuery: "Highlight the water body referred to in the query",
     placeholder: "Enter referring expression to localize target features with bounding boxes...",
-    targetEngine: "GroundingDINO (UniRS Adapter)",
+    targetEngine: "GeoChat-Grounding (UniRS Adapter)",
     minFiles: 1,
     maxFiles: 1,
     requiredModalities: ["OPTICAL"],
@@ -123,42 +123,7 @@ function formatTraceTimestamp(ts) {
 // Initial query history (empty on clean start, filled by live queries)
 const INITIAL_HISTORY = [];
 
-const DEFAULT_STAGED_ASSETS = [
-  {
-    id: "asset-sample-opt-1",
-    name: "Sentinel-2B_MSI_T43PGQ_B04_B03_B02.png",
-    modality: "OPTICAL",
-    kind: "OPTICAL",
-    included: true,
-    size: "1.03 MB",
-    previewUrl: "/satquery-prism-optical.png",
-    metadata: {
-      crs: "EPSG:32644 (UTM Zone 44N)",
-      resolution: "10m GSD",
-      bands: 4,
-      format: "Multispectral MSI",
-      acquisitionDate: "2024-05-18",
-      georeferenced: true,
-    },
-  },
-  {
-    id: "asset-sample-sar-2",
-    name: "Sentinel-1A_C-SAR_IW_GRDH_1SDV_VV.png",
-    modality: "SAR",
-    kind: "SAR",
-    included: false,
-    size: "1.11 MB",
-    previewUrl: "/satquery-prism-sar.png",
-    metadata: {
-      crs: "EPSG:32644 (UTM Zone 44N)",
-      resolution: "10m Spatial",
-      bands: 2,
-      format: "SAR C-Band Polarimetric",
-      acquisitionDate: "2024-05-19",
-      georeferenced: true,
-    },
-  },
-];
+const DEFAULT_STAGED_ASSETS = [];
 
 export default function Home() {
   const [view, setView] = useState("board"); // 'board' | 'evidence' | 'history'

@@ -17,7 +17,7 @@ import {
 import { ScanlineSweep } from "./ScanlineSweep";
 
 /**
- * SatelliteCanvasViewer (ISRO / SIH26167)
+ * SatelliteCanvasViewer (ISRO)
  * 
  * The Earth Observation Scientific Imaging Workstation:
  * - 80–90% Satellite Canvas Viewport
@@ -149,7 +149,7 @@ export function SatelliteCanvasViewer({
 
         {/* Technical Corner Telemetry */}
         <div className="absolute top-4 left-4 font-mono text-[9px] text-[#8AA3AD]/60 tracking-widest pointer-events-none uppercase">
-          ISRO · SPACE TECHNOLOGY · SIH26167
+          ISRO · SPACE TECHNOLOGY
         </div>
         <div className="absolute top-4 right-4 font-mono text-[9px] text-[#8AA3AD]/60 tracking-widest pointer-events-none uppercase">
           WGS 84 / UTM ZONE 43N · EPSG:32643
@@ -299,7 +299,7 @@ export function SatelliteCanvasViewer({
               style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
             >
               <img 
-                src={secondaryAsset?.previewUrl || "/satquery-prism-optical.png"} 
+                src={secondaryAsset?.previewUrl || "/assets/imagery/landcover_sample.jpg"} 
                 alt="T2 Pass" 
                 className="max-h-[660px] w-auto max-w-full object-contain filter contrast-125"
               />

@@ -1,6 +1,6 @@
 /*
  * SatQuery AI — The Earth Observation Instrument
- * SIH26167 · ISRO · Space Technology
+ * ISRO · Space Technology
  *
  * COLOR PALETTE (Dark Cyan, Pure White & Deep Black):
  *   Deep Black:     #040708 (Cosmic void base)
@@ -108,36 +108,36 @@
 }
 
 /* ════════════════════════════════════════════════════════════════
-   IPHONE / APPLE FROSTED GLASS SYSTEM
+   IPHONE / APPLE FROSTED GLASS SYSTEM (TRANSLUCENT SATELLITE COCKPIT)
    ════════════════════════════════════════════════════════════════ */
 .ios-glass {
-  background: rgba(8, 14, 18, 0.62) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 
-    0 12px 40px 0 rgba(0, 0, 0, 0.45),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
-}
-
-.ios-glass-card {
-  background: rgba(12, 22, 28, 0.58) !important;
-  backdrop-filter: blur(20px) saturate(175%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(175%) !important;
+  background: rgba(8, 14, 18, 0.35) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
   border: 1px solid rgba(255, 255, 255, 0.09) !important;
   box-shadow: 
-    0 16px 44px 0 rgba(0, 0, 0, 0.48),
+    0 12px 40px 0 rgba(0, 0, 0, 0.35),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
-.ios-glass-header {
-  background: rgba(4, 7, 8, 0.72) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
+.ios-glass-card {
+  background: rgba(8, 16, 22, 0.28) !important;
+  backdrop-filter: blur(10px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.4),
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.06) !important;
+    0 16px 44px 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+
+.ios-glass-header {
+  background: rgba(4, 7, 8, 0.50) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .ios-glass-btn {

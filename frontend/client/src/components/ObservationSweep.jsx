@@ -65,13 +65,13 @@ export function ObservationSweep({
     <div className="w-full flex flex-col lg:flex-row gap-6 items-stretch font-sans">
       
       {/* ─── SATELLITE IMAGE VIEWPORT (PRIMARY VISUAL HERO) ─── */}
-      <div className="relative border border-white/[0.08] overflow-hidden rounded-xl ios-glass-card flex-shrink-0 flex items-center justify-center select-none w-fit mx-auto lg:mx-0">
+      <div className="flex-1 relative bg-[#040708] border border-white/[0.08] overflow-hidden min-h-[440px] md:min-h-[520px] flex items-center justify-center group select-none rounded-xl ios-glass-card">
         
-        {/* Real Satellite Image: Displayed unmagnified and uncropped at natural aspect ratio */}
+        {/* Real Satellite Image */}
         <img
           src={imageUrl}
           alt="Satellite Observation"
-          className="max-h-[500px] sm:max-h-[540px] w-auto h-auto max-w-full block select-none"
+          className="w-full h-full object-cover max-h-[640px]"
           loading="eager"
         />
 
@@ -144,181 +144,80 @@ export function ObservationSweep({
         </div>
       </div>
 
-      {/* ─── RIGHT PANEL: DEDICATED FEATURE EXPLANATION OR GROUNDING AUDIT ─── */}
-      {taskType === "VQA" ? (
-        /* VQA FEATURE EXPLANATION PANEL */
-        <div className="flex-1 min-w-0 flex flex-col justify-between p-6 ios-glass-card rounded-xl border border-white/[0.08] space-y-4">
+      {/* ─── TECHNICAL EVIDENCE & VLM ANALYSIS PANEL ─── */}
+      <div className="w-full lg:w-96 flex flex-col justify-between p-5 ios-glass-card rounded-xl border border-white/[0.08]">
+        <div className="space-y-4">
           
-          <div className="space-y-3.5">
-            {/* Feature Header Badge */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#1C323B]/80">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
-                <span className="font-mono text-[10px] text-[#12A5B8] uppercase font-bold tracking-wider">
-                  FEATURE EXPLANATION · VQA
-                </span>
-              </div>
-              <span className="font-mono text-[9px] px-2 py-0.5 rounded-md bg-[#12A5B8]/15 text-[#22D3EE] border border-[#12A5B8]/30">
-                GeoChat + UniRS
-              </span>
+          {/* Natural Language Query */}
+          <div>
+            <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
+              OBSERVATION QUERY / {taskType}
+            </div>
+            <div className="text-sm font-semibold text-[#FFFFFF] leading-snug">
+              "{query}"
+            </div>
+          </div>
+
+          {/* Model Analysis State */}
+          <div className="pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
+            <div className="flex items-center justify-between text-[9px] text-[#8AA3AD] uppercase tracking-wider mb-2">
+              <span>SPECIALIST ENGINE</span>
+              <span className="text-[#12A5B8]">{taskType === "VQA" ? "GeoChat-VQA (UniRS)" : "GeoChat-Grounding (UniRS)"}</span>
             </div>
 
-            {/* Feature Title & Core Narrative */}
-            <div>
-              <h3 className="font-heading font-sora text-lg font-bold text-[#FFFFFF] leading-snug">
-                Natural Language Geospatial Interrogation
-              </h3>
-              <p className="font-sans text-xs text-[#D0E3EA] leading-relaxed mt-1.5">
-                The Vision Question Answering (VQA) engine enables operators to query complex Earth observation scenes using plain natural language—completely removing the need for manual GIS vectorization, spectral band mathematics, or custom Python scripts.
-              </p>
-            </div>
-
-            {/* Key Feature Capabilities */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">
-              <div className="p-2.5 rounded-lg bg-[#040708]/65 border border-white/[0.06]">
-                <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-wider mb-1">
-                  01 · SCENE UNDERSTANDING
-                </div>
-                <p className="text-[11px] text-[#8AA3AD] leading-relaxed">
-                  Automatic zero-shot classification of urban density, land-cover (LULC), vegetation, and shorelines.
-                </p>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-[#040708]/65 border border-white/[0.06]">
-                <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-wider mb-1">
-                  02 · SPATIAL REASONING
-                </div>
-                <p className="text-[11px] text-[#8AA3AD] leading-relaxed">
-                  Correlates coastal geography, logistics docks, road corridors, and structural patterns across the scene.
-                </p>
-              </div>
-            </div>
-
-            {/* Live Interactive Query & Answer Box */}
-            <div className="space-y-2 pt-2 border-t border-[#1C323B]/80">
-              <div className="p-2.5 rounded-lg bg-[#040708]/75 border border-white/[0.06]">
-                <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-wider mb-0.5 flex items-center justify-between">
-                  <span>INPUT QUERY</span>
-                  <span className="text-[#8AA3AD] font-normal">5m GSD OPTICAL</span>
-                </div>
-                <div className="text-xs font-semibold text-[#FFFFFF]">
-                  "{query}"
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {revealed ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3 bg-[#040708]/85 border-l-2 border-[#12A5B8] border-r border-t border-b border-white/[0.06] rounded-lg space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[9px] font-bold text-[#12A5B8] uppercase tracking-wider">
-                        SATQUERY VLM SYNTHESIS
-                      </span>
-                      <span className="font-mono text-[9px] text-[#22D3EE] font-bold">94.2% CONFIDENCE</span>
-                    </div>
+            <AnimatePresence mode="wait">
+              {revealed ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-3"
+                >
+                  <div className="p-3 bg-[#040708]/40 border-l-2 border-[#12A5B8] border-r border-t border-b border-white/[0.06] rounded-lg backdrop-blur-sm">
+                    <span className="text-[9px] font-bold text-[#12A5B8] block mb-1 uppercase tracking-wider">
+                      SATQUERY VLM {taskType === "VQA" ? "ANSWER" : "FINDING"}
+                    </span>
                     <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
                       {answer}
                     </p>
-                  </motion.div>
-                ) : (
-                  <div className="p-3 bg-[#040708]/60 border border-white/[0.06] flex items-center justify-center gap-2 text-[#8AA3AD] text-xs rounded-lg">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B8] animate-ping" />
-                    <span className="font-mono text-[11px]">Sweeping raster bands & reasoning...</span>
                   </div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
 
-          {/* Telemetry & Provenance Footer */}
-          <div className="pt-3 border-t border-[#1C323B]/80 flex items-center justify-between font-mono text-[9.5px]">
-            <div className="flex items-center gap-2 text-[#D0E3EA]">
-              <span className="text-[#8AA3AD]">BACKBONE:</span>
-              <span className="text-[#12A5B8] font-bold">GeoChat-VQA (UniRS)</span>
-            </div>
-            <span className="text-[#8AA3AD]">ISO-19115 PROVENANCE</span>
+                  {/* Audit Evidence Breakdown */}
+                  <div className="space-y-1.5 text-[10px] pt-1">
+                    <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
+                      <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
+                      <span className="text-[#12A5B8] font-bold">91.4% (VERIFIED)</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
+                      <span className="text-[#8AA3AD]">TARGET LOCALIZATION</span>
+                      <span className="text-[#22D3EE]">{taskType === "VQA" ? "Global Scene Context" : "3 Bounding Sectors"}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
+                      <span className="text-[#8AA3AD]">CALIBRATION</span>
+                      <span className="text-[#0E7C8A]">WGS 84 / GSD 5m</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="p-4 bg-[#040708]/30 border border-white/[0.06] flex items-center justify-center gap-2 text-[#8AA3AD] text-xs rounded-lg backdrop-blur-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B8] animate-ping" />
+                  <span className="font-mono text-[11px]">Observation sweep in progress...</span>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
 
         </div>
-      ) : (
-        /* GROUNDING / SPATIAL AUDIT PANEL */
-        <div className="flex-1 min-w-0 flex flex-col justify-between p-6 ios-glass-card rounded-xl border border-white/[0.08]">
-          <div className="space-y-4">
-            
-            {/* Natural Language Query */}
-            <div>
-              <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
-                OBSERVATION QUERY / {taskType}
-              </div>
-              <div className="text-sm font-semibold text-[#FFFFFF] leading-snug">
-                "{query}"
-              </div>
-            </div>
 
-            {/* Model Analysis State */}
-            <div className="pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
-              <div className="flex items-center justify-between text-[9px] text-[#8AA3AD] uppercase tracking-wider mb-2">
-                <span>SPECIALIST ENGINE</span>
-                <span className="text-[#12A5B8]">GroundingDINO (UniRS)</span>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {revealed ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3"
-                  >
-                    <div className="p-3 bg-[#040708]/85 border-l-2 border-[#12A5B8] border-r border-t border-b border-white/[0.06] rounded-lg">
-                      <span className="text-[9px] font-bold text-[#12A5B8] block mb-1 uppercase tracking-wider">
-                        SPATIAL LOCALIZATION FINDING
-                      </span>
-                      <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
-                        {answer}
-                      </p>
-                    </div>
-
-                    {/* Audit Evidence Breakdown */}
-                    <div className="space-y-1.5 text-[10px] pt-1">
-                      <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
-                        <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
-                        <span className="text-[#12A5B8] font-bold">91.4% (VERIFIED)</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
-                        <span className="text-[#8AA3AD]">TARGET LOCALIZATION</span>
-                        <span className="text-[#22D3EE]">3 Bounding Sectors</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
-                        <span className="text-[#8AA3AD]">CALIBRATION</span>
-                        <span className="text-[#0E7C8A]">WGS 84 / GSD 5m</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div className="p-4 bg-[#040708]/60 border border-white/[0.06] flex items-center justify-center gap-2 text-[#8AA3AD] text-xs rounded-lg">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B8] animate-ping" />
-                    <span className="font-mono text-[11px]">Observation sweep in progress...</span>
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
-
+        {/* Verified Telemetry Status */}
+        <div className="pt-4 border-t border-[#1C323B]/80 mt-4 flex items-center justify-between font-mono text-[10px]">
+          <div className="flex items-center gap-2 text-[#12A5B8]">
+            <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
+            <span className="font-bold tracking-wide">VERIFIED {taskType}</span>
           </div>
-
-          {/* Verified Telemetry Status */}
-          <div className="pt-4 border-t border-[#1C323B]/80 mt-4 flex items-center justify-between font-mono text-[10px]">
-            <div className="flex items-center gap-2 text-[#12A5B8]">
-              <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
-              <span className="font-bold tracking-wide">VERIFIED SPATIAL GROUNDING</span>
-            </div>
-            <span className="text-[#8AA3AD]">ISO-19115 PROVENANCE</span>
-          </div>
-
+          <span className="text-[#8AA3AD]">ISO-19115 PROVENANCE</span>
         </div>
-      )}
+
+      </div>
 
     </div>
   );
