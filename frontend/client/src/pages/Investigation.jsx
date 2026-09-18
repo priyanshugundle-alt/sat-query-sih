@@ -1,7 +1,7 @@
 /**
  * SatQuery AI — The Conversational Earth Observation Workstation
  *
- * SIH PROBLEM STATEMENT: SIH26167
+ * SATELLITE QUERY & EARTH OBSERVATION INTELLIGENCE SYSTEM
  * ORGANIZATION: Indian Space Research Organisation (ISRO)
  * THEME: Space Technology
  *
@@ -66,7 +66,7 @@ const SPECIALIST_CONFIG = {
   GROUNDING: {
     id: "GROUNDING",
     label: "Spatial Grounding",
-    engine: "GroundingDINO (UniRS Adapter)",
+    engine: "GeoChat-Grounding (UniRS Adapter)",
     sublabel: "BOUNDING BOX ⊞",
   },
   CHANGE: {
@@ -848,7 +848,7 @@ export default function Investigation() {
                         name: preset.sampleImage.includes("mumbai") ? "Bombay Seen by Proba Satellite" : "Syabru Besi Sentinel-2 Pair",
                         previewUrl: preset.sampleImage,
                         modality: preset.mode || "OPTICAL",
-                        date: "11 Sep 2026 · 12:31 PM",
+                        date: new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) + " · " + new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
                         metadata: {
                           format: "GeoTIFF",
                           width: 1024,
@@ -932,7 +932,7 @@ export default function Investigation() {
                       setSidebarTab("chats");
                       setActiveProjectId(null);
                     }}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer ${
+                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer rounded-lg ${
                       sidebarTab === "chats"
                         ? "bg-[#1D211F] text-[#D49A3A] font-bold border-b border-[#D49A3A]"
                         : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#151817]"
@@ -942,7 +942,7 @@ export default function Investigation() {
                   </button>
                   <button
                     onClick={() => setSidebarTab("images")}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer flex items-center justify-center gap-1 rounded-lg ${
                       sidebarTab === "images"
                         ? "bg-[#1D211F] text-[#D49A3A] font-bold border-b border-[#D49A3A]"
                         : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#151817]"
@@ -957,7 +957,7 @@ export default function Investigation() {
                   </button>
                   <button
                     onClick={() => setSidebarTab("projects")}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer ${
+                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer rounded-lg ${
                       sidebarTab === "projects"
                         ? "bg-[#1D211F] text-[#D49A3A] font-bold border-b border-[#D49A3A]"
                         : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#151817]"
@@ -985,7 +985,7 @@ export default function Investigation() {
                             <div
                               key={conv.id}
                               onClick={() => handleSelectChat(conv.id)}
-                              className={`group px-2.5 py-2 cursor-pointer text-xs truncate flex items-center justify-between transition-colors ${
+                              className={`group px-2.5 py-2 cursor-pointer text-xs truncate flex items-center justify-between transition-colors rounded-xl ${
                                 isActive
                                   ? "bg-[#151817] text-[#D49A3A] font-bold border-l-2 border-[#D49A3A]"
                                   : "text-[#9A9A90] hover:text-[#E9E5DA] hover:bg-[#151817]/60"
@@ -1069,7 +1069,7 @@ export default function Investigation() {
                         return (
                           <div
                             key={proj.id}
-                            className={`p-2.5 border transition-all ${
+                            className={`p-2.5 border transition-all rounded-xl ${
                               isSelected
                                 ? "bg-[#151817] border-[#D49A3A]"
                                 : "bg-[#151817]/60 border-[#2A2E2B] hover:border-[#D49A3A]/40"
@@ -1200,7 +1200,7 @@ export default function Investigation() {
 
                           <button
                             onClick={() => {
-                              toast.info("Personalization: Sensor Preferences & CRS Projection Presets");
+                              toast.info("Personalization settings");
                               setProfileMenuOpen(false);
                             }}
                             className="w-full px-2 py-1.5 text-left text-[#E9E5DA] hover:text-[#D49A3A] hover:bg-[#1D211F] flex items-center gap-2.5 transition-colors cursor-pointer"
@@ -1378,7 +1378,7 @@ export default function Investigation() {
                             transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
                           }}
                           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full mt-3 text-left font-sans"
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-3 text-left font-sans"
                         >
                           {[
                             {
@@ -1447,7 +1447,7 @@ export default function Investigation() {
                                       <ImageIcon size={12} />
                                       <span>IMAGE</span>
                                     </span>
-                                    <span>{msg.attachedAsset.date || "11 Sep 2026 · 12:31 PM"}</span>
+                                    <span>{msg.attachedAsset.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}</span>
                                   </div>
 
                                   <div>
@@ -1768,7 +1768,7 @@ export default function Investigation() {
                       {/* ── [MIC] Microphone Button (Functional Web Speech) ── */}
                       <button
                         onClick={toggleSpeechRecognition}
-                        className={`p-2 transition-colors cursor-pointer ${
+                        className={`p-2 transition-colors cursor-pointer rounded-lg ${
                           isListening
                             ? "bg-[#D49A3A] text-[#0B0D0C] animate-pulse"
                             : "text-[#9A9A90] hover:text-[#D49A3A] hover:bg-[#1D211F]"

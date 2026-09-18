@@ -71,7 +71,7 @@ export function ObservationSweep({
         <img
           src={imageUrl}
           alt="Satellite Observation"
-          className="w-full h-full object-cover md:object-contain max-h-[640px]"
+          className="w-full h-full object-cover max-h-[640px]"
           loading="eager"
         />
 

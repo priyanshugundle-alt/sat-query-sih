@@ -143,7 +143,7 @@ export function EntrySequence({ onComplete }) {
           WGS 84 / EPSG:4326
         </text>
         <text x="28" y="24" fontFamily="'Noto Sans Mono', monospace" fontSize="9" fill="#4D88A8" opacity="0.4">
-          ISRO · SIH26167 · SPACE TECHNOLOGY
+          ISRO · SPACE TECHNOLOGY
         </text>
       </svg>
 

@@ -45,13 +45,13 @@ export function SettingsModal({ isOpen, onClose }) {
             <div className="space-y-1.5">
               {[
                 { id: "unirs-geochat", name: "UniRS + GeoChat-VQA (ISRO Recommended)", desc: "Specialized multi-spectral remote-sensing vision backbone" },
-                { id: "grounding-dino", name: "GroundingDINO + Qwen2-VL", desc: "Pixel-accurate zero-shot bounding box detector" },
+                { id: "grounding-dino", name: "GeoChat-Grounding + Qwen2-VL", desc: "Pixel-accurate zero-shot bounding box detector" },
                 { id: "cdvqa-siamese", name: "CDVQA-Siamese Bi-Temporal Network", desc: "Dual-pass temporal change subtraction" },
               ].map((m) => (
                 <div
                   key={m.id}
                   onClick={() => setModelAdapter(m.id)}
-                  className={`p-2.5 border cursor-pointer transition-colors ${
+                  className={`p-2.5 border cursor-pointer transition-colors rounded-xl ${
                     modelAdapter === m.id
                       ? "bg-[#D49A3A]/15 border-[#D49A3A] text-[#F3F0E8]"
                       : "bg-[#0B0D0C] border-[#2A2E2B] text-[#9A9A90] hover:border-[#D49A3A]/40"
@@ -104,7 +104,7 @@ export function SettingsModal({ isOpen, onClose }) {
                 <div
                   key={c.id}
                   onClick={() => setCrsProjection(c.id)}
-                  className={`p-2 border cursor-pointer text-center ${
+                  className={`p-2 border cursor-pointer text-center rounded-xl ${
                     crsProjection === c.id
                       ? "bg-[#D49A3A]/15 border-[#D49A3A] text-[#D49A3A] font-bold"
                       : "bg-[#0B0D0C] border-[#2A2E2B] text-[#9A9A90]"

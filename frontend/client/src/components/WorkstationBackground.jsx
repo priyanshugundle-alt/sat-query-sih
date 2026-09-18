@@ -1,28 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { Earth3DCanvas } from '@/components/Earth3DCanvas';
-import { useBackground } from '@/context/BackgroundStateContext';
 
 /**
- * WorkstationBackground - 3D Earth embedded in subtle deep space
+ * WorkstationBackground - Subtle deep space environment for Investigation Workstation
  *
- * Creates atmospheric environment that blends Earth → atmosphere → deep space
- * No flat black rectangle effect, natural spatial depth
+ * Creates an atmospheric environment with cosmic black & dark cyan depth and sparse stars,
+ * without rendering the 3D Earth globe.
  */
 export const WorkstationBackground = () => {
-  const { visibilityState } = useBackground();
   const spaceCanvasRef = useRef(null);
-
-  // Earth visibility based on investigation state
-  const earthOpacity = (() => {
-    switch (visibilityState) {
-      case 'empty':       return 0.80;
-      case 'imageLoaded': return 0.60;
-      case 'analyzing':   return 0.50;
-      case 'findingSelected': return 0.40;
-      case 'showMeWhy':   return 0.30;
-      default:            return 0.80;
-    }
-  })();
 
   // Subtle deep space environment with atmospheric depth
   useEffect(() => {
@@ -98,13 +83,12 @@ export const WorkstationBackground = () => {
 
   return (
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-      
       {/* Deep Space Environment Layer */}
       <canvas 
         ref={spaceCanvasRef}
         className="absolute inset-0 w-full h-full"
         style={{ 
-          opacity: earthOpacity * 0.7,
+          opacity: 0.7,
           transition: 'opacity 1.2s ease'
         }}
       />
@@ -135,3 +119,4 @@ export const WorkstationBackground = () => {
     </div>
   );
 };
+
