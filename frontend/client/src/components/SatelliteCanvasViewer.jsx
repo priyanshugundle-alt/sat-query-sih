@@ -17,7 +17,7 @@ import {
 import { ScanlineSweep } from "./ScanlineSweep";
 
 /**
- * SatelliteCanvasViewer (ISRO)
+ * SatelliteCanvasViewer
  * 
  * The Earth Observation Scientific Imaging Workstation:
  * - 80–90% Satellite Canvas Viewport
@@ -149,7 +149,7 @@ export function SatelliteCanvasViewer({
 
         {/* Technical Corner Telemetry */}
         <div className="absolute top-4 left-4 font-mono text-[9px] text-[#8AA3AD]/60 tracking-widest pointer-events-none uppercase">
-          ISRO · SPACE TECHNOLOGY
+          SATELLITE INTELLIGENCE · SPACE TECHNOLOGY
         </div>
         <div className="absolute top-4 right-4 font-mono text-[9px] text-[#8AA3AD]/60 tracking-widest pointer-events-none uppercase">
           WGS 84 / UTM ZONE 43N · EPSG:32643

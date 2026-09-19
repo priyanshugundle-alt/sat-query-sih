@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Radar, Eye, Layers, CheckCircle2, ShieldCheck, Activity } from "lucide-react";
+import { Radar, Eye, Layers, CheckCircle2, ShieldCheck, Activity, Info } from "lucide-react";
 
 /**
  * OpticalSarFusion — Feature 04: Multimodal Optical + SAR Radar Fusion
@@ -27,9 +27,9 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* Left/Center (Col 1-8): Dual Modality Canvas */}
-        <div className="lg:col-span-8 flex flex-col gap-3">
+        <div className="lg:col-span-8 flex flex-col gap-3 h-full">
           
-          <div className="relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[440px] md:min-h-[520px] flex items-center justify-center rounded-xl ios-glass-card">
+          <div className="flex-1 relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[400px] flex items-center justify-center rounded-xl ios-glass-card">
             
             {/* Base Layer: Optical Multispectral */}
             <div className="absolute inset-0">
@@ -87,7 +87,7 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
           </div>
 
           {/* Fusion Controls Bar */}
-          <div className="p-3 ios-glass-card border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs rounded-xl">
+          <div className="p-3 ios-glass-card border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs rounded-xl flex-shrink-0">
             
             {/* View Mode Buttons */}
             <div className="flex items-center gap-1">
@@ -138,10 +138,9 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
         </div>
 
         {/* Right (Col 9-12): Cross-Modal Natural Language Query Panel */}
-        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl">
+        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl space-y-3 h-full">
           
-          <div className="space-y-4">
-            
+          <div>
             {/* Header / Query */}
             <div>
               <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
@@ -152,8 +151,19 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
               </div>
             </div>
 
+            {/* Feature Capability Overview */}
+            <div className="p-2.5 bg-[#080E11]/70 border border-white/[0.06] rounded-lg space-y-1 mt-3">
+              <div className="flex items-center gap-1.5 text-[9px] font-mono text-[#8AA3AD] uppercase font-semibold">
+                <Info size={11} className="text-[#12A5B8]" />
+                <span>HOW THIS FEATURE WORKS</span>
+              </div>
+              <p className="font-sans text-[11px] text-[#D0E3EA] leading-relaxed">
+                Fuses optical multispectral imagery with Sentinel-1 SAR C-band microwave backscatter to corroborate physical structures through cloud cover, smoke, and varying solar illumination.
+              </p>
+            </div>
+
             {/* Scientific Cross-Modal Findings */}
-            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
+            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs mt-3">
               
               <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#12A5B8] rounded-lg">
                 <div className="text-[9px] font-bold text-[#12A5B8] uppercase tracking-wider mb-0.5">
@@ -185,7 +195,7 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
             </div>
 
             {/* Sensor Source Details */}
-            <div className="pt-2 border-t border-[#1C323B] space-y-1 font-mono text-[10px]">
+            <div className="pt-2 border-t border-[#1C323B] space-y-1 font-mono text-[10px] mt-3">
               <div className="flex justify-between">
                 <span className="text-[#8AA3AD]">OPTICAL PASS</span>
                 <span className="text-[#FFFFFF]">Sentinel-2 MSI (10m)</span>
@@ -201,20 +211,11 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
             </div>
 
             {/* Specialist Engine */}
-            <div className="pt-2 border-t border-[#1C323B] flex items-center justify-between font-mono text-[9px] text-[#8AA3AD]">
+            <div className="pt-2 border-t border-[#1C323B] flex items-center justify-between font-mono text-[9px] text-[#8AA3AD] mt-2">
               <span>SPECIALIST ENGINE</span>
               <span className="text-[#12A5B8]">OpticalSAR-Fusion (EarthGPT)</span>
             </div>
 
-          </div>
-
-          {/* Cross-Sensor Coherence Status */}
-          <div className="pt-4 border-t border-[#1C323B] mt-4 flex items-center justify-between font-mono text-[10px]">
-            <div className="flex items-center gap-2 text-[#12A5B8]">
-              <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
-              <span className="font-bold tracking-wide">CROSS-SENSOR COHERENCE</span>
-            </div>
-            <span className="text-[#8AA3AD]">C-BAND + MSI DUAL PASS</span>
           </div>
 
         </div>

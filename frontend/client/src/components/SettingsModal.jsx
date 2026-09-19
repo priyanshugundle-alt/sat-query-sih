@@ -44,7 +44,7 @@ export function SettingsModal({ isOpen, onClose }) {
             </label>
             <div className="space-y-1.5">
               {[
-                { id: "unirs-geochat", name: "UniRS + GeoChat-VQA (ISRO Recommended)", desc: "Specialized multi-spectral remote-sensing vision backbone" },
+                { id: "unirs-geochat", name: "UniRS + GeoChat-VQA (Recommended)", desc: "Specialized multi-spectral remote-sensing vision backbone" },
                 { id: "grounding-dino", name: "GeoChat-Grounding + Qwen2-VL", desc: "Pixel-accurate zero-shot bounding box detector" },
                 { id: "cdvqa-siamese", name: "CDVQA-Siamese Bi-Temporal Network", desc: "Dual-pass temporal change subtraction" },
               ].map((m) => (
@@ -99,7 +99,7 @@ export function SettingsModal({ isOpen, onClose }) {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: "EPSG:4326", label: "WGS 84 (EPSG:4326)", detail: "Decimal Degrees" },
-                { id: "EPSG:32643", label: "UTM Zone 43N (EPSG:32643)", detail: "Meters (ISRO Grid)" },
+                { id: "EPSG:32643", label: "UTM Zone 43N (EPSG:32643)", detail: "Meters (Projected Grid)" },
               ].map((c) => (
                 <div
                   key={c.id}
@@ -117,7 +117,7 @@ export function SettingsModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* ISRO Defense Audit Trace */}
+          {/* Cryptographic Defense Audit Trace */}
           <div className="flex items-center justify-between p-3 bg-[#080E11] border border-[#1C323B] rounded-xl">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[#12A5B8]" />

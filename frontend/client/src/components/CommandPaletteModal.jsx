@@ -54,7 +54,7 @@ export function CommandPaletteModal({
     { id: "change", label: "Switch to Bi-Temporal Change (CDVQA)", icon: Layers, action: () => onSelectMode("CHANGE"), category: "Specialist Tools" },
     { id: "fusion", label: "Switch to Optical + SAR Fusion (EarthGPT)", icon: Activity, action: () => onSelectMode("FUSION"), category: "Specialist Tools" },
     { id: "focus", label: "Toggle Focus Canvas Mode (88% Viewport)", icon: Maximize2, action: onToggleFocus, category: "View" },
-    { id: "report", label: "Generate ISRO / Defense Analysis Report (PDF)", icon: FileText, action: onOpenReport, category: "Outputs" },
+    { id: "report", label: "Generate Defense Analysis Report (PDF)", icon: FileText, action: onOpenReport, category: "Outputs" },
     { id: "settings", label: "System & Model Configuration", icon: Sliders, action: onOpenSettings, category: "System" },
     { id: "orbit", label: "Return to Orbit (Cinematic Landing View)", icon: Globe, action: onReturnToOrbit, category: "Navigation" },
   ];
@@ -115,7 +115,7 @@ export function CommandPaletteModal({
         {/* Footer */}
         <div className="p-2.5 bg-[#040708] border-t border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD]">
           <span>SATQUERY COMMAND DISPATCHER</span>
-          <span className="text-[#12A5B8] font-bold">ISRO SPACE TECHNOLOGY</span>
+          <span className="text-[#12A5B8] font-bold">SPACE TECHNOLOGY</span>
         </div>
       </div>
     </div>

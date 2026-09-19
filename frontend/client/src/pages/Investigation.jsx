@@ -2,12 +2,11 @@
  * SatQuery AI — The Conversational Earth Observation Workstation
  *
  * SATELLITE QUERY & EARTH OBSERVATION INTELLIGENCE SYSTEM
- * ORGANIZATION: Indian Space Research Organisation (ISRO)
  * THEME: Space Technology
  *
  * CHATGPT-INSPIRED WORKSTATION UX WITH SCIENTIFIC SATQUERY IDENTITY:
  * - Clean Left Sidebar: + NEW CHAT, IMAGES, PROJECTS, QUERY HISTORY (Today, Yesterday, 7 Days, Older)
- * - Profile popover at bottom left matching ISRO specialist specifications
+ * - Profile popover at bottom left matching specialist specifications
  * - Clean center conversation stream with inline satellite image cards
  * - Floating bottom composer: [ + ] Ask SatQuery... [AUTO ▾] [MIC] [↑]
  * - Direct evidence inspection with SatelliteCanvasViewer, ShowMeWhyModal, and Certified Reports
@@ -142,7 +141,7 @@ function generateConversationTitle(queryText) {
 
 // Project Taxonomy
 const PROJECTS_CONFIG = [
-  { id: "proj-earth-obs", name: "Earth Observation", description: "Multispectral land-cover & terrain classification", badge: "ISRO-EO" },
+  { id: "proj-earth-obs", name: "Earth Observation", description: "Multispectral land-cover & terrain classification", badge: "SATQUERY-EO" },
   { id: "proj-disaster", name: "Disaster Analysis", description: "Monsoon floods, landslides & slope destabilization", badge: "RAPID-RESP" },
   { id: "proj-urban", name: "Urban Analysis", description: "Infrastructure sprawl, port facilities & built-up grids", badge: "GEO-SURV" },
 ];
@@ -817,8 +816,8 @@ export default function Investigation() {
       {viewMode === "investigation" && <WorkstationBackground />}
 
       <div
-        className={`flex flex-col w-screen text-foreground font-sans ${
-          viewMode === "landing" ? "min-h-screen overflow-y-auto bg-[#080E11]" : "h-screen overflow-hidden select-none bg-transparent"
+        className={`flex flex-col w-full max-w-full overflow-x-hidden text-foreground font-sans ${
+          viewMode === "landing" ? "min-h-screen bg-[#080E11]" : "h-screen overflow-hidden select-none bg-transparent"
         }`}
         style={viewMode !== "landing" ? { position: "relative", zIndex: 10 } : {}}
       >
@@ -898,7 +897,7 @@ export default function Investigation() {
                       SATQUERY AI
                     </span>
                     <span className="text-[9px] font-mono px-2 py-0.5 bg-[#0D171C] text-[#8AA3AD] border border-white/[0.08] rounded-md">
-                      ISRO
+                      EO-AI
                     </span>
                   </div>
 
@@ -1155,7 +1154,7 @@ export default function Investigation() {
                       </div>
                       <div className="truncate">
                         <div className="font-bold text-xs text-[#F0F6F8] truncate">Kadambari Pingle</div>
-                        <div className="text-[10px] text-[#8AA3AD] font-mono truncate">ISRO Specialist · Go</div>
+                        <div className="text-[10px] text-[#8AA3AD] font-mono truncate">Satellite Analyst · Gov</div>
                       </div>
                     </div>
                     <span className="text-[11px] text-[#8AA3AD] font-mono">⬡</span>
@@ -1211,7 +1210,7 @@ export default function Investigation() {
 
                           <button
                             onClick={() => {
-                              toast.info("Kadambari Pingle — Space Applications Centre (SAC), ISRO");
+                              toast.info("Kadambari Pingle — Space Applications Analyst");
                               setProfileMenuOpen(false);
                             }}
                             className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
@@ -1690,7 +1689,7 @@ export default function Investigation() {
                                 <Database size={14} className="text-[#76AEB0]" />
                                 <div>
                                   <div className="font-bold">Browse Benchmark Scenes</div>
-                                  <div className="text-[10px] text-[#8AA3AD] font-mono">ISRO Cartosat-3, Proba, Nepal</div>
+                                  <div className="text-[10px] text-[#8AA3AD] font-mono">Cartosat-3, Proba, Nepal</div>
                                 </div>
                               </button>
                             </motion.div>
@@ -1872,7 +1871,7 @@ export default function Investigation() {
           onReturnToOrbit={() => setViewMode("landing")}
         />
 
-        {/* ─── MODAL 5: ISRO / DEFENSE AUDIT REPORT ─── */}
+        {/* ─── MODAL 5: DEFENSE AUDIT REPORT ─── */}
         <ReportGenerationModal
           isOpen={reportModalOpen}
           onClose={() => setReportModalOpen(false)}
@@ -1881,7 +1880,7 @@ export default function Investigation() {
           onDownloadPdf={() => {
             const currentQId = activeEvidenceResult?.queryId || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult?.queryId || "SQ-2026-CERTIFIED";
             downloadReportPdf(currentQId);
-            toast.success(`ISRO Analysis Report PDF for ${currentQId} generated`);
+            toast.success(`Analysis Report PDF for ${currentQId} generated`);
           }}
         />
 

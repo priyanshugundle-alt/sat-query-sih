@@ -35,7 +35,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
       what: "High-density built-up maritime facility & harbor docks",
       where: "Mumbai Coastline, 19.0760° N, 72.8777° E",
       when: "2024-03-14T06:12:45Z",
-      source: "Proba Satellite / HRC Instrument (TIFF)",
+      source: "Proba Satellite / HRC Instrument",
       confidence: "91.4% (Calibrated)",
       crossModal: "AVAILABLE (OPTICAL MULTISPECTRAL)",
       verdict: "SPATIALLY VERIFIED",
@@ -113,7 +113,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
           <div>
             <div className="flex items-center justify-between font-mono text-[10px] text-[#8AA3AD] pb-3 mb-4 border-b border-[#1C323B]/80">
               <span className="text-[#12A5B8] font-bold uppercase tracking-widest">AUDIT TRAIL / FORENSIC PROOF</span>
-              <span>ISRO SPACE TECHNOLOGY SPECIFICATION</span>
+              <span>SPACE TECHNOLOGY SPECIFICATION</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-mono text-xs">

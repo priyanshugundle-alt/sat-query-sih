@@ -172,7 +172,7 @@ export function ShowMeWhyModal({
               <span>SHA-256 PROVENANCE:</span>
               <span className="font-mono text-[#F0F6F8] truncate max-w-xs">{sha256Hash}</span>
             </div>
-            <span className="text-[#12A5B8] font-semibold">ISRO AUDIT COMPLIANT</span>
+            <span className="text-[#12A5B8] font-semibold">FORENSIC AUDIT COMPLIANT</span>
           </div>
 
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Layers, ArrowRight, ZoomIn, ZoomOut, CheckCircle2, ShieldCheck, Activity, Eye } from "lucide-react";
+import { Layers, ArrowRight, ZoomIn, ZoomOut, CheckCircle2, ShieldCheck, Activity, Eye, Info } from "lucide-react";
 
 /**
  * BiTemporalInvestigator — Cinematic Bi-Temporal Satellite Change Investigation
@@ -37,12 +37,12 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* Left/Center (Col 1-8): Large Interactive Split-Viewer */}
-        <div className="lg:col-span-8 flex flex-col gap-3">
+        <div className="lg:col-span-8 flex flex-col gap-3 h-full">
           
           <div
             ref={containerRef}
             onPointerMove={handlePointerMove}
-            className={`relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[460px] md:min-h-[540px] cursor-ew-resize transition-all duration-700 rounded-xl ios-glass-card ${
+            className={`flex-1 relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[400px] cursor-ew-resize transition-all duration-700 rounded-xl ios-glass-card ${
               isFollowingChange ? "scale-[1.02] shadow-[0_0_40px_rgba(212,154,58,0.2)]" : ""
             }`}
           >
@@ -77,28 +77,6 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               />
             </div>
 
-            {/* Change Detection Spatial Bounding Box & Translucent Overlay */}
-            <div
-              className={`absolute border border-[#12A5B8] bg-[#12A5B8]/15 pointer-events-none z-20 transition-all duration-700 ease-out ${
-                isFollowingChange
-                  ? "top-[25%] left-[28%] w-[48%] h-[50%]"
-                  : "top-[32%] left-[34%] w-[38%] h-[40%]"
-              }`}
-            >
-              {/* Corner brackets */}
-              <div className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#22D3EE]" />
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#22D3EE]" />
-              <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#22D3EE]" />
-              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#22D3EE]" />
-
-              {/* Status Pill */}
-              <div className="absolute -top-6 left-0 bg-[#040708]/95 border border-[#12A5B8] px-2.5 py-0.5 font-mono text-[9px] text-[#FFFFFF] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-md rounded-md">
-                <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full animate-ping" />
-                <span>CHANGE DETECTED</span>
-                <span className="text-[#8AA3AD] font-normal">[DEBRIS / LANDSLIDE]</span>
-              </div>
-            </div>
-
             {/* Draggable Cyan Divider Line */}
             <div
               className="absolute top-0 bottom-0 pointer-events-none z-30 flex items-center justify-center"
@@ -122,15 +100,15 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               <span className="text-[#12A5B8] font-bold">27 AUG 2026</span>
             </div>
 
-            {/* Bottom-Left Coordinates Tag */}
+            {/* Bottom-Left Location Tag */}
             <div className="absolute bottom-3 left-3 bg-[#040708]/85 border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] text-[#8AA3AD] backdrop-blur-md z-30 rounded-lg shadow-sm">
-              SYABRU BESI, NEPAL · 28.15° N, 85.34° E (APPROX)
+              SYABRU BESI, NEPAL
             </div>
 
           </div>
 
           {/* Temporal Scrubber Control Bar */}
-          <div className="p-3 ios-glass-card border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs rounded-xl">
+          <div className="p-3 ios-glass-card border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs rounded-xl flex-shrink-0">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <span className="text-[10px] text-[#8AA3AD]">2023</span>
               <input
@@ -168,10 +146,9 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
         </div>
 
         {/* Right (Col 9-12): Forensic Observation / Interpretation / Conclusion Panel */}
-        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl">
+        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl space-y-3 h-full">
           
-          <div className="space-y-4">
-            
+          <div>
             {/* Header / Query */}
             <div>
               <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
@@ -182,8 +159,19 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
             </div>
 
+            {/* Feature Capability Overview */}
+            <div className="p-2.5 bg-[#040708]/60 border border-white/[0.06] rounded-lg space-y-1 mt-3">
+              <div className="flex items-center gap-1.5 text-[9px] font-mono text-[#8AA3AD] uppercase font-semibold">
+                <Info size={11} className="text-[#12A5B8]" />
+                <span>HOW THIS FEATURE WORKS</span>
+              </div>
+              <p className="font-sans text-[11px] text-[#D0E3EA] leading-relaxed">
+                Co-registers historical (T1) and post-event (T2) satellite passes to isolate genuine terrain alteration and structural destruction from seasonal atmospheric and illumination noise.
+              </p>
+            </div>
+
             {/* Strict Scientific Separation */}
-            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
+            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs mt-3">
               
               {/* 1. OBSERVATION */}
               <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#8AA3AD] rounded-lg">
@@ -218,7 +206,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
             </div>
 
             {/* Metadata & Model Confidence */}
-            <div className="pt-2 border-t border-[#1C323B]/80 space-y-1.5 font-mono text-[10px]">
+            <div className="pt-2 border-t border-[#1C323B]/80 space-y-1.5 font-mono text-[10px] mt-3">
               <div className="flex justify-between py-0.5">
                 <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
                 <span className="text-[#12A5B8] font-bold">89.4% (CALIBRATED)</span>
@@ -233,15 +221,6 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
             </div>
 
-          </div>
-
-          {/* Calibrated Co-registration Indicator */}
-          <div className="pt-4 border-t border-[#1C323B]/80 mt-4 flex items-center justify-between font-mono text-[10px]">
-            <div className="flex items-center gap-2 text-[#12A5B8]">
-              <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
-              <span className="font-bold tracking-wide">TEMPORAL CO-REGISTRATION</span>
-            </div>
-            <span className="text-[#8AA3AD]">&lt; 0.25 PX RESIDUAL</span>
           </div>
 
         </div>

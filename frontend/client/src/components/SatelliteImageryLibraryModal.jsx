@@ -37,7 +37,7 @@ export const PRESET_SATELLITE_CATALOG = [
   {
     id: "cartosat-3-ahmedabad",
     name: "Ahmedabad Industrial and Riverfront Grid",
-    sensor: "ISRO Cartosat-3 MX",
+    sensor: "Cartosat-3 MX",
     modality: "OPTICAL",
     modalityBadge: "HIGH-RES PAN + MULTI",
     gsd: "0.28m PAN / 1.12m MX",
@@ -49,7 +49,7 @@ export const PRESET_SATELLITE_CATALOG = [
     previewUrl: "/assets/imagery/mumbai_proba.jpg",
     recommendedMode: "VQA",
     recommendedQuery: "Describe visible land-cover, agricultural plots, and urban terrain.",
-    description: "ISRO highest-resolution civilian optical asset for fine-grained structural layout and parcel classification.",
+    description: "High-resolution civilian optical asset for fine-grained structural layout and parcel classification.",
   },
   {
     id: "sentinel-2-bitemporal",
@@ -72,7 +72,7 @@ export const PRESET_SATELLITE_CATALOG = [
   {
     id: "risat-1a-mumbai",
     name: "Mumbai Coastal Port and Cloud Penetration",
-    sensor: "ISRO EOS-04 (RISAT-1A) + Sentinel-2",
+    sensor: "EOS-04 (RISAT-1A) + Sentinel-2",
     modality: "FUSION",
     modalityBadge: "OPTICAL + SAR FUSION",
     gsd: "1.0m Fused Hybrid",
@@ -123,7 +123,7 @@ export function SatelliteImageryLibraryModal({
                   SATELLITE IMAGERY LIBRARY
                 </h2>
                 <span className="px-2.5 py-0.5 bg-[#0B4F58]/30 border border-[#12A5B8]/30 text-[9px] text-[#12A5B8] font-bold rounded-md">
-                  ISRO & SENTINEL CATALOG
+                  GLOBAL SATELLITE CATALOG
                 </span>
               </div>
               <p className="text-[11px] text-[#8AA3AD] font-sans mt-0.5">
@@ -209,7 +209,7 @@ export function SatelliteImageryLibraryModal({
                 </div>
               </div>
 
-              {/* Card Body with Required ISRO Metadata */}
+              {/* Card Body with Required Metadata */}
               <div className="p-3.5 flex-1 flex flex-col justify-between bg-[#0D171C]">
                 <div>
                   <h3 className="text-xs font-bold text-[#FFFFFF] font-sans tracking-tight mb-1">
@@ -259,7 +259,7 @@ export function SatelliteImageryLibraryModal({
         {/* Modal Footer */}
         <div className="p-3 bg-[#080E11] border-t border-[#1C323B] flex items-center justify-between text-[11px] text-[#8AA3AD]">
           <span>4 Certified Remote-Sensing Benchmark Scenarios Loaded</span>
-          <span className="text-[#12A5B8]">ISRO EARTH OBSERVATION STANDARDS COMPLIANT</span>
+          <span className="text-[#12A5B8]">EARTH OBSERVATION STANDARDS COMPLIANT</span>
         </div>
       </div>
     </div>

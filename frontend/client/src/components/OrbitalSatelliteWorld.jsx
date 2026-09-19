@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 /**
- * OrbitalSatelliteWorld (ISRO)
+ * OrbitalSatelliteWorld
  * 
  * Background Satellite & Remote-Sensing World:
  * - Subtle realistic satellite silhouettes travelling slowly on orbital arcs

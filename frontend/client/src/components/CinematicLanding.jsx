@@ -9,7 +9,6 @@ import {
   Radar,
   ShieldCheck,
   ChevronDown,
-  MapPin,
   Clock,
   ArrowUpRight,
   Cpu,
@@ -26,7 +25,7 @@ import { OpticalSarFusion } from "./OpticalSarFusion";
 import { EvidenceProofMatrix } from "./EvidenceProofMatrix";
 
 /**
- * CinematicLanding (ISRO · SatQuery AI)
+ * CinematicLanding (SatQuery AI)
  * 
  * 8-STAGE MASTER EARTH OBSERVATION SPECIFICATION:
  * 
@@ -88,7 +87,7 @@ export function CinematicLanding({
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-[#040708] text-[#F0F6F8] font-sans selection:bg-[#0E7C8A] selection:text-[#FFFFFF]">
+    <div className="relative w-full max-w-full overflow-x-hidden min-h-screen bg-[#040708] text-[#F0F6F8] font-sans selection:bg-[#0E7C8A] selection:text-[#FFFFFF]">
       
       {/* ─── 1. DEEP SPACE ENVIRONMENT (SUBTLE STARS & FAINT GALACTIC DUST) ─── */}
       <DeepSpaceBackground opacity={1} />
@@ -225,7 +224,7 @@ export function CinematicLanding({
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
+            <div className="border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div>
                 <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                   02 / VQA
@@ -236,11 +235,6 @@ export function CinematicLanding({
                 <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                   Query a single remote-sensing image using natural language to understand land cover, agriculture, infrastructure, urban areas and other visible features.
                 </p>
-              </div>
-
-              <div className="font-mono text-[11px] text-[#8AA3AD] flex items-center gap-2 flex-shrink-0">
-                <MapPin size={13} className="text-[#12A5B8]" />
-                <span>19.0760° N, 72.8777° E · PROBA SATELLITE (TIFF)</span>
               </div>
             </div>
 
@@ -253,7 +247,6 @@ export function CinematicLanding({
               boundingRegions={[]}
               meta={{
                 source: "Bombay Seen by Proba Satellite",
-                coords: "19.0760° N, 72.8777° E",
                 resolution: "5m GSD Multispectral",
                 timestamp: "2024-03-14T06:12:45Z",
               }}
@@ -304,7 +297,6 @@ export function CinematicLanding({
               ]}
               meta={{
                 source: "Bombay Seen by Proba Satellite",
-                coords: "19.0760° N, 72.8777° E",
                 resolution: "5m GSD Multispectral",
                 timestamp: "2024-03-14T06:12:45Z",
               }}
@@ -720,7 +712,7 @@ export function CinematicLanding({
           <div className="max-w-4xl mx-auto space-y-6 z-30 pointer-events-auto p-4 sm:p-8 text-center">
             
             <div className="font-mono text-xs tracking-[0.22em] text-[#12A5B8] uppercase font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
-              08 / CALL TO ACTION · ISRO EARTH OBSERVATION
+              08 / CALL TO ACTION · EARTH OBSERVATION
             </div>
 
             <h2 className="font-heading font-sora text-[clamp(40px,5.5vw,76px)] font-bold text-[#FFFFFF] tracking-tight leading-[1.0] drop-shadow-[0_4px_24px_rgba(0,0,0,0.98)]">
@@ -751,7 +743,7 @@ export function CinematicLanding({
             </div>
 
             <div className="pt-10 border-t border-white/[0.12] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#D0E3EA] font-mono drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              <span>INDIAN SPACE RESEARCH ORGANISATION · SPACE TECHNOLOGY</span>
+              <span>SATELLITE INTELLIGENCE · SPACE TECHNOLOGY</span>
               <span className="text-[#12A5B8] font-semibold">AI ANSWERS. IMAGERY PROVES.</span>
             </div>
 

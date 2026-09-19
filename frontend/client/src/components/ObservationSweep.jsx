@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, Target, Sparkles, CheckCircle2 } from "lucide-react";
+import { Eye, Target, Sparkles, CheckCircle2, Info } from "lucide-react";
 
 /**
  * ObservationSweep — Signature Scientific Scan Interaction
@@ -24,15 +24,32 @@ export function ObservationSweep({
   ],
   meta = {
     source: "Proba Satellite / HRC Instrument",
-    coords: "19.0760° N, 72.8777° E",
     resolution: "5m GSD Multi-spectral",
     timestamp: "2024-03-14T06:12:45Z",
   },
+  featureTitle = null,
+  featureDescription = null,
   onActionClick = null,
 }) {
   const [scanProgress, setScanProgress] = useState(0);
   const [isScanning, setIsScanning] = useState(true);
   const [revealed, setRevealed] = useState(false);
+
+  const featureInfo = taskType === "VQA" ? {
+    badge: "02 / VISUAL QUESTION ANSWERING",
+    title: "Natural Language Earth Intelligence",
+    description: "Query satellite rasters using everyday language. The RS-VLM analyzes multispectral bands to understand land use, infrastructure, vegetation, and maritime topography without manual GIS labeling.",
+    highlights: ["Zero-Shot RS-VQA", "Multispectral Synthesis", "Deterministic Output"],
+    engine: "GeoChat-VQA (UniRS Adapter)",
+    targetType: "Global Scene Context",
+  } : {
+    badge: "03 / SPATIAL TARGET GROUNDING",
+    title: "Pixel-Level Evidence Localization",
+    description: "Pins answers directly to physical pixels. The model identifies target features mentioned in natural language and draws calibrated bounding boxes with verified confidence scores.",
+    highlights: ["Bounding Box Sectors", "Multi-Target Detection", "Spatial Confidence"],
+    engine: "GeoChat-Grounding (UniRS Adapter)",
+    targetType: "3 Bounding Sectors",
+  };
 
   useEffect(() => {
     let startTime = Date.now();
@@ -65,13 +82,13 @@ export function ObservationSweep({
     <div className="w-full flex flex-col lg:flex-row gap-6 items-stretch font-sans">
       
       {/* ─── SATELLITE IMAGE VIEWPORT (PRIMARY VISUAL HERO) ─── */}
-      <div className="flex-1 relative bg-[#040708] border border-white/[0.08] overflow-hidden min-h-[440px] md:min-h-[520px] flex items-center justify-center group select-none rounded-xl ios-glass-card">
+      <div className="flex-1 relative bg-[#040708] border border-white/[0.08] overflow-hidden min-h-[420px] self-stretch flex items-center justify-center group select-none rounded-xl ios-glass-card">
         
         {/* Real Satellite Image */}
         <img
           src={imageUrl}
           alt="Satellite Observation"
-          className="w-full h-full object-cover max-h-[640px]"
+          className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
 
@@ -130,7 +147,7 @@ export function ObservationSweep({
         {/* Top-Left Telemetry Overlay */}
         <div className="absolute top-3 left-3 bg-[#040708]/85 border border-white/[0.08] px-3 py-1.5 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-md z-20 rounded-lg shadow-sm">
           <div className="text-[#12A5B8] font-bold tracking-wider">{meta.source}</div>
-          <div className="text-[#8AA3AD] text-[9px]">{meta.coords}</div>
+          {meta.coords && <div className="text-[#8AA3AD] text-[9px]">{meta.coords}</div>}
         </div>
 
         {/* Bottom-Right Sweep Controller */}
@@ -145,77 +162,104 @@ export function ObservationSweep({
       </div>
 
       {/* ─── TECHNICAL EVIDENCE & VLM ANALYSIS PANEL ─── */}
-      <div className="w-full lg:w-96 flex flex-col justify-between p-5 ios-glass-card rounded-xl border border-white/[0.08]">
-        <div className="space-y-4">
+      <div className="w-full lg:w-[460px] xl:w-[480px] flex flex-col justify-between p-5 ios-glass-card rounded-xl border border-white/[0.08] shadow-lg space-y-3.5 self-stretch">
           
-          {/* Natural Language Query */}
-          <div>
-            <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
-              OBSERVATION QUERY / {taskType}
+          {/* 1. Feature Identification & Title */}
+          <div className="pb-3 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
+                <span className="font-mono text-[10px] text-[#12A5B8] uppercase font-bold tracking-wider">
+                  {featureInfo.badge}
+                </span>
+              </div>
+              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-white/[0.06] text-[#8AA3AD] border border-white/[0.06] rounded">
+                SPECIALIST RS-VLM
+              </span>
             </div>
-            <div className="text-sm font-semibold text-[#FFFFFF] leading-snug">
+            <h3 className="font-heading font-sora text-base font-bold text-[#FFFFFF] tracking-tight">
+              {featureTitle || featureInfo.title}
+            </h3>
+          </div>
+
+          {/* 2. Feature Capability Explanation Card */}
+          <div className="p-3 bg-[#040708]/50 border border-white/[0.06] rounded-lg space-y-2">
+            <div className="flex items-center gap-1.5 text-[9.5px] font-mono text-[#8AA3AD] uppercase font-semibold">
+              <Info size={12} className="text-[#12A5B8]" />
+              <span>HOW THIS FEATURE WORKS</span>
+            </div>
+            <p className="font-sans text-xs text-[#D0E3EA] leading-relaxed">
+              {featureDescription || featureInfo.description}
+            </p>
+            <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-white/[0.06]">
+              {featureInfo.highlights.map((hl, idx) => (
+                <span
+                  key={idx}
+                  className="font-mono text-[9px] px-1.5 py-0.5 bg-[#12A5B8]/10 text-[#12A5B8] border border-[#12A5B8]/20 rounded"
+                >
+                  {hl}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Live Interactive Query Box */}
+          <div className="p-3 bg-[#040708]/35 border border-white/[0.06] rounded-lg space-y-1">
+            <div className="flex items-center justify-between text-[9px] font-mono">
+              <span className="text-[#12A5B8] font-bold uppercase tracking-wider">
+                DEMONSTRATION QUERY
+              </span>
+              <span className="text-[#8AA3AD]">{featureInfo.engine}</span>
+            </div>
+            <div className="text-xs font-semibold text-[#FFFFFF] leading-snug">
               "{query}"
             </div>
           </div>
 
-          {/* Model Analysis State */}
-          <div className="pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
-            <div className="flex items-center justify-between text-[9px] text-[#8AA3AD] uppercase tracking-wider mb-2">
-              <span>SPECIALIST ENGINE</span>
-              <span className="text-[#12A5B8]">{taskType === "VQA" ? "GeoChat-VQA (UniRS)" : "GeoChat-Grounding (UniRS)"}</span>
-            </div>
-
+          {/* 4. Model Analysis & Findings */}
+          <div>
             <AnimatePresence mode="wait">
               {revealed ? (
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="space-y-3"
+                  className="space-y-2.5"
                 >
-                  <div className="p-3 bg-[#040708]/40 border-l-2 border-[#12A5B8] border-r border-t border-b border-white/[0.06] rounded-lg backdrop-blur-sm">
-                    <span className="text-[9px] font-bold text-[#12A5B8] block mb-1 uppercase tracking-wider">
-                      SATQUERY VLM {taskType === "VQA" ? "ANSWER" : "FINDING"}
+                  <div className="p-3 bg-[#040708]/50 border-l-2 border-[#12A5B8] border-r border-t border-b border-white/[0.06] rounded-lg backdrop-blur-sm">
+                    <span className="text-[9px] font-bold text-[#12A5B8] block mb-1 uppercase tracking-wider font-mono">
+                      SATQUERY VLM {taskType === "VQA" ? "ANSWER" : "DETECTED FINDINGS"}
                     </span>
                     <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
                       {answer}
                     </p>
                   </div>
 
-                  {/* Audit Evidence Breakdown */}
-                  <div className="space-y-1.5 text-[10px] pt-1">
-                    <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
-                      <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
+                  {/* Audit Evidence Breakdown Grid */}
+                  <div className="grid grid-cols-3 gap-2 font-mono text-[10px] p-2 bg-[#040708]/40 border border-white/[0.06] rounded-lg">
+                    <div className="border-r border-white/[0.06] pr-1.5">
+                      <span className="text-[#8AA3AD] block text-[8.5px]">CONFIDENCE</span>
                       <span className="text-[#12A5B8] font-bold">91.4% (VERIFIED)</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
-                      <span className="text-[#8AA3AD]">TARGET LOCALIZATION</span>
-                      <span className="text-[#22D3EE]">{taskType === "VQA" ? "Global Scene Context" : "3 Bounding Sectors"}</span>
+                    <div className="border-r border-white/[0.06] px-1.5">
+                      <span className="text-[#8AA3AD] block text-[8.5px]">LOCALIZATION</span>
+                      <span className="text-[#22D3EE] font-bold">{featureInfo.targetType}</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-[#1C323B]/60">
-                      <span className="text-[#8AA3AD]">CALIBRATION</span>
-                      <span className="text-[#0E7C8A]">WGS 84 / GSD 5m</span>
+                    <div className="pl-1.5">
+                      <span className="text-[#8AA3AD] block text-[8.5px]">CALIBRATION</span>
+                      <span className="text-[#10B981] font-bold">WGS 84 · 5m</span>
                     </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="p-4 bg-[#040708]/30 border border-white/[0.06] flex items-center justify-center gap-2 text-[#8AA3AD] text-xs rounded-lg backdrop-blur-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B8] animate-ping" />
-                  <span className="font-mono text-[11px]">Observation sweep in progress...</span>
+                <div className="p-3.5 bg-[#040708]/40 border border-white/[0.06] flex items-center justify-center gap-2.5 text-[#8AA3AD] text-xs rounded-lg">
+                  <span className="w-2 h-2 rounded-full bg-[#12A5B8] animate-ping" />
+                  <span className="font-mono text-[11px] text-[#D0E3EA]">
+                    Sweeping imagery & synthesizing spatial response...
+                  </span>
                 </div>
               )}
             </AnimatePresence>
           </div>
-
-        </div>
-
-        {/* Verified Telemetry Status */}
-        <div className="pt-4 border-t border-[#1C323B]/80 mt-4 flex items-center justify-between font-mono text-[10px]">
-          <div className="flex items-center gap-2 text-[#12A5B8]">
-            <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />
-            <span className="font-bold tracking-wide">VERIFIED {taskType}</span>
-          </div>
-          <span className="text-[#8AA3AD]">ISO-19115 PROVENANCE</span>
-        </div>
 
       </div>
 

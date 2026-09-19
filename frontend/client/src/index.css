@@ -1,6 +1,6 @@
 /*
  * SatQuery AI — The Earth Observation Instrument
- * ISRO · Space Technology
+ * Space Technology
  *
  * COLOR PALETTE (Dark Cyan, Pure White & Deep Black):
  *   Deep Black:     #040708 (Cosmic void base)
@@ -170,11 +170,43 @@
 }
 
 @layer base {
-  * { border-color: var(--border); }
+  /* ════════════════════════════════════════════════════════════════
+     SCROLLBAR SUPPRESSION: Zero visible scrollbars on bottom or right
+     Retains complete, smooth scrolling via wheel, trackpad & touch.
+     ════════════════════════════════════════════════════════════════ */
+  *, *::before, *::after {
+    border-color: var(--border);
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  *::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    display: none !important;
+    background: transparent !important;
+  }
 
   html {
     background: #080E11;
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100vw;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  html::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   body {
@@ -183,8 +215,18 @@
     font-family: var(--font-sans);
     margin: 0;
     min-width: 320px;
+    max-width: 100vw;
+    overflow-x: hidden;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  body::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   h1, h2, h3, h4, h5, h6, .font-heading, .font-display, .font-sora {
