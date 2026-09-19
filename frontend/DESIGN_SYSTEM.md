@@ -8,45 +8,48 @@ SatQuery AI adopts a **"certified government instrument"** aesthetic — restrai
 
 ## Color System
 
-### Rationale (Dark Cyan, Pure White & Cosmic Deep Black)
+### Rationale (Critical for SIH Judges)
 
-The **SatQuery AI Earth Observation Workstation** is styled with a high-contrast, technical **Dark Cyan, Pure White, and Cosmic Deep Black** palette. This aesthetic pairs deep void blacks with crisp scientific cyan telemetry accents and brilliant white typography for maximum legibility, forensic clarity, and modern mission-control visual impact:
+**Amber/phosphor accent (#e8a33d-#ffb84d)** is the sole "hot" color for live/active states. This follows **MIL-STD-1472 Human Engineering Design Criteria** used in defense and mission-control environments:
 
-- **Cosmic Black & Canvas (#040708, #080E11, #0D171C)** provides deep space contrast and reduces visual noise, allowing satellite imagery to stand out.
-- **Dark Cyan & Bright Cyan (#0B4F58, #0E7C8A, #12A5B8, #22D3EE)** powers interactive controls, telemetry scanlines, bounding boxes, and active status indicators.
-- **Pure White & Soft White (#FFFFFF, #F0F6F8)** ensures crisp, razor-sharp typography for natural-language answers and technical telemetry.
-- **Muted Slate Cyan (#8AA3AD)** provides balanced, non-distracting hierarchy for secondary coordinates, timestamps, and metadata.
-- **Destructive Rust (#B9654D / #EF4444)** is reserved strictly for anomaly alerts and deletion actions.
+- Amber/red instrumentation preserves **night vision** better than blue light
+- Reduces operator eye strain during extended observation
+- Historically used in aircraft cockpits, submarine control rooms, and satellite ground stations
+
+**Desaturated red (#c4453d)** is reserved **strictly** for anomaly callouts and alerts (e.g. "+18% built-up area detected").
 
 ### Color Palette
 
 ```css
-/* Background & Surfaces */
---sq-black-deep:        #040708  /* Cosmic void foundation */
---sq-black:             #080E11  /* Primary background canvas */
---sq-surface:           #0D171C  /* Panels, sidebars, cards, modals */
---sq-surface-elevated:  #132127  /* Elevated cards and popovers */
---sq-border:            #1C323B  /* Sharp technical rule lines */
+/* Background */
+--graphite-950: #0c0c0e  /* Primary background */
+--graphite-900: #0d0d0f  /* Surface */
+--graphite-800: #1a1a1c  /* Cards */
+--graphite-700: #2a2a2d  /* Borders */
 
-/* Cyan Telemetry & Accents */
---sq-dark-cyan:         #0B4F58  /* Rich dark cyan base */
---sq-cyan-primary:      #0E7C8A  /* Primary interactive cyan */
---sq-cyan-bright:       #12A5B8  /* Active telemetry & accent */
---sq-cyan-glow:         rgba(18, 165, 184, 0.25) /* Atmospheric glow */
+/* Accent Colors */
+--amber-live: #ffb84d    /* Active/live states, primary buttons */
+--amber-primary: #e8a33d /* Default accent */
+--red-anomaly: #c4453d   /* Alerts only */
+
+/* Neutral/Inactive */
+--graphite-500: #5c5138  /* Warm grey for inactive states */
+--graphite-400: #7a7460
+--graphite-300: #9a8f7a
 
 /* Typography */
---sq-white:             #FFFFFF  /* Headings, primary hero text, seals */
---sq-white-soft:        #F0F6F8  /* High-contrast body text */
---sq-muted:             #8AA3AD  /* Secondary metadata & timestamps */
---sq-destructive:       #B9654D  /* Anomaly rust & critical alerts */
+--text-primary: #f2ece2  /* Warm off-white for headings */
+--text-body: #c4baa8     /* Warm mid-grey for body */
+--text-muted: #8a7f6d    /* De-emphasized text */
 ```
 
-### What Was Replaced
+### What Was Removed
 
-Migrated away from legacy amber/gold/graphite tokens:
-- Replaced #D49A3A, #D99A2B, #E4B65A, #F0B84B with Dark Cyan (#0B4F58), Primary Cyan (#0E7C8A), and Bright Cyan (#12A5B8, #22D3EE)
-- Replaced #0B0D0C, #151817, #1D211F, #2A2E2B with Deep Black (#040708), Canvas Black (#080E11), Surface (#0D171C), and Border (#1C323B)
-- Replaced #F3F0E8, #E9E5DA, #9A9A90 with Pure White (#FFFFFF), Soft White (#F0F6F8), and Muted Slate (#8AA3AD)
+**All navy/blue tokens** from the previous "Prism Observatory" palette:
+- No #112557 (navy)
+- No #1179ff (blue accent)
+- No #edf5ff (blue backgrounds)
+- No #7846d7 (violet/purple)
 
 ---
 

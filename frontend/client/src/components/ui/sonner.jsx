@@ -22,7 +22,7 @@ const Toaster = ({ ...props }) => {
           color: "rgba(255, 255, 255, 0.92)",
           fontSize: "13px",
           fontWeight: "500",
-          fontFamily: '"Inter", "Sora", ui-sans-serif, system-ui, sans-serif',
+          fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
           gap: "10px",
         },
       }}

@@ -97,7 +97,7 @@ const TASK_CONFIGS = {
     title: "Spatial Object Grounding",
     defaultQuery: "Highlight the water body referred to in the query",
     placeholder: "Enter referring expression to localize target features with bounding boxes...",
-    targetEngine: "GeoChat-Grounding (UniRS Adapter)",
+    targetEngine: "GroundingDINO (UniRS Adapter)",
     minFiles: 1,
     maxFiles: 1,
     requiredModalities: ["OPTICAL"],
@@ -123,14 +123,12 @@ function formatTraceTimestamp(ts) {
 // Initial query history (empty on clean start, filled by live queries)
 const INITIAL_HISTORY = [];
 
-const DEFAULT_STAGED_ASSETS = [];
-
 export default function Home() {
   const [view, setView] = useState("board"); // 'board' | 'evidence' | 'history'
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTaskTab, setActiveTaskTab] = useState("VQA");
   const [queryText, setQueryText] = useState(TASK_CONFIGS.VQA.defaultQuery);
-  const [stagedAssets, setStagedAssets] = useState(DEFAULT_STAGED_ASSETS);
+  const [stagedAssets, setStagedAssets] = useState([]);
 
   // Execution & Backend states
   const [jvmHealth, setJvmHealth] = useState("TESTING...");
@@ -277,27 +275,6 @@ export default function Home() {
     setQueryText(TASK_CONFIGS[tabId].defaultQuery);
     setIsComplete(false);
     setValidationError(null);
-
-    // Auto-adjust default included assets to match requirements
-    setStagedAssets(prev => {
-      const list = prev && prev.length ? prev : DEFAULT_STAGED_ASSETS;
-      if (tabId === "FUSION") {
-        return list.map(a => ({
-          ...a,
-          included: true, // Both optical and SAR included for fusion
-        }));
-      } else if (tabId === "CHANGE") {
-        return list.map((a, idx) => ({
-          ...a,
-          included: idx < 2, // 2 assets for change detection
-        }));
-      } else {
-        return list.map((a, idx) => ({
-          ...a,
-          included: idx === 0, // 1 asset for VQA and GROUNDING
-        }));
-      }
-    });
   };
 
   // Upload handler with client-side GeoTIFF parser and backend upload
@@ -388,13 +365,11 @@ export default function Home() {
       toast.error("Please enter a query prompt.");
       return;
     }
-
-    // Auto-recover if user unselected all assets
-    let currentActive = activeStagedAssets;
-    if (!currentActive || currentActive.length === 0) {
-      setStagedAssets(DEFAULT_STAGED_ASSETS);
-      currentActive = [DEFAULT_STAGED_ASSETS[0]];
-      toast.info("Auto-staged sample satellite scene for analysis.");
+    if (!stagingValidation.isValid) {
+      toast.error("Staging validation error", {
+        description: stagingValidation.message,
+      });
+      return;
     }
 
     setIsRunning(true);
@@ -411,7 +386,7 @@ export default function Home() {
         queryText,
         parameters: {
           taskType: activeTaskTab,
-          modalities: currentActive.map(a => a.modality),
+          modalities: activeStagedAssets.map(a => a.modality),
         },
         frontendAssets: activeStagedAssets,
       });
@@ -441,7 +416,7 @@ export default function Home() {
         confidence: response.confidenceLabel,
         confidenceValue: response.confidence,
         createdAt: new Date().toISOString(),
-        evidenceCount: currentActive.length,
+        evidenceCount: activeStagedAssets.length,
         status: response.status || "VERIFIED",
       };
       const updatedHistory = [newRecord, ...history].slice(0, 20);
@@ -592,50 +567,51 @@ export default function Home() {
   ];
 
   return (
-    <div className="prism-shell min-h-screen flex flex-col text-[#f3f3f3]">
+    <div className="prism-shell min-h-screen flex flex-col text-navy">
       {/* GLOBAL TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 border-b border-white/20 bg-[#054c4c]/85 backdrop-blur-xl px-4 md:px-8 py-3 w-full flex items-center justify-between shadow-md">
+      <header className="sticky top-0 z-40 border-b border-[#dfe7fb] bg-white/85 backdrop-blur-xl px-4 md:px-8 py-3 w-full flex items-center justify-between shadow-xs">
         {/* Left: Menu Button & Brand Mark */}
         <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-2 rounded-lg bg-white/15 border border-white/25 text-white hover:bg-white/25 hover:border-white/40 transition shadow-xs flex items-center gap-2 group cursor-pointer"
+            className="p-2 rounded-lg bg-white border border-[#dfe7fb] text-[#112557] hover:bg-[#EDF5FF] hover:border-[#1179FF] transition shadow-2xs flex items-center gap-2 group cursor-pointer"
             title="Open Navigation Menu"
           >
-            <Menu size={18} className="text-white group-hover:scale-110 transition-transform" />
-            <span className="hidden sm:inline text-xs font-bold text-white">Menu</span>
+            <Menu size={18} className="text-[#1179FF] group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline text-xs font-bold text-navy">Menu</span>
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center text-white border border-white/30 shadow-xs">
+            <div className="h-9 w-9 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#1179FF] border border-[#d2e3fc] shadow-2xs">
               <Orbit size={20} />
             </div>
             <div>
-              <p className="font-editorial text-[18px] md:text-[20px] font-extrabold tracking-tight leading-none text-white">
+              <p className="font-editorial text-[18px] md:text-[20px] font-extrabold tracking-tight leading-none text-navy">
                 SatQuery AI
               </p>
-              <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[#a5f3fc] mt-0.5 font-bold">
+              <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[#7082aa] mt-0.5">
                 Remote-Sensing VLM
               </p>
             </div>
           </div>
         </div>
 
-        {/* Center: Quick Navigation Tabs (From Uiverse.io by mohamedkhire) */}
-        <nav className="hidden md:flex khire-nav">
-          {navTabs.map(({ id, label, icon: Icon }) => {
-            const isActive = view === id;
-            return (
-              <button
-                key={id}
-                onClick={() => setView(id)}
-                className={`khire-tab ${isActive ? "active" : ""}`}
-              >
-                <Icon size={15} className={isActive ? "text-[#088080]" : "text-white/85"} />
-                <span>{label}</span>
-              </button>
-            );
-          })}
+        {/* Center: Quick Navigation Tabs */}
+        <nav className="hidden md:flex items-center bg-[#f2f6fd] p-1 rounded-xl border border-[#e1ebfa]">
+          {navTabs.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setView(id)}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition ${
+                view === id
+                  ? "bg-white text-[#1179FF] shadow-xs"
+                  : "text-[#5a709c] hover:text-[#112557]"
+              }`}
+            >
+              <Icon size={14} className={view === id ? "text-[#1179FF]" : "text-[#7082aa]"} />
+              <span>{label}</span>
+            </button>
+          ))}
         </nav>
 
         {/* Right: Backend Status & JVM Health */}
@@ -646,21 +622,21 @@ export default function Home() {
             <span className="sm:hidden">LIVE</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-white/15 border border-white/25 rounded-lg text-white">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#f6f9fe] border border-[#e1ebfa] rounded-lg">
             <span
               className={`h-2 w-2 rounded-full ${
                 jvmHealth.includes("CONNECTED")
-                  ? "bg-emerald-400 animate-pulse"
+                  ? "bg-emerald-500 animate-pulse"
                   : "bg-red-400"
               }`}
             />
-            <span className="text-[9px] font-mono text-white/90 uppercase tracking-wider font-semibold">
+            <span className="text-[9px] font-mono text-[#7082aa] uppercase tracking-wider">
               {jvmHealth}
             </span>
             <button
               onClick={refreshJvmHealth}
               title="Refresh JVM Health"
-              className="p-0.5 hover:bg-white/20 text-white rounded transition ml-1 cursor-pointer"
+              className="p-0.5 hover:bg-[#EDF5FF] text-[#1179FF] rounded transition ml-1"
             >
               <RefreshCw size={10} />
             </button>
@@ -732,20 +708,6 @@ export default function Home() {
                     )}
                   </button>
                 ))}
-
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      setShowReceipt(true);
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full rounded-xl flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold transition cursor-pointer text-[#007AFF] bg-[#007AFF]/10 hover:bg-[#007AFF]/15 border border-[#007AFF]/25 shadow-2xs"
-                  >
-                    <FileText size={16} className="text-[#007AFF]" />
-                    <span className="flex-1 text-left">Analysis Report Dossier</span>
-                    <span className="text-[10px] font-mono font-semibold bg-[#007AFF]/15 px-1.5 py-0.5 rounded text-[#007AFF]">MODAL</span>
-                  </button>
-                </div>
               </nav>
             </div>
 
@@ -900,48 +862,19 @@ function WorkstationBoard({
   const secondaryAsset = activeStagedAssets[1] || null;
   const showAnalysisPanels = isRunning || isComplete || !!analysisResult;
 
-  // 3D Cube Loader (From Uiverse.io by jeremyssocial)
-  const renderCubeLoader = (label = "Processing...", sublabel = "") => (
-    <div className="flex flex-col items-center justify-center p-3 animate-in fade-in duration-300">
-      <div className="loader-container">
-        <div className="loader-cube">
-          <div className="loader-side front" />
-          <div className="loader-side back" />
-          <div className="loader-side right" />
-          <div className="loader-side left" />
-          <div className="loader-side top" />
-          <div className="loader-side bottom" />
-        </div>
-      </div>
-      {label && (
-        <p className="text-[11px] font-mono font-bold text-[#9fe4e4] tracking-wider uppercase mt-2 animate-pulse text-center">
-          {label}
-        </p>
-      )}
-      {sublabel && (
-        <p className="text-[9px] font-mono text-white/70 mt-0.5 text-center max-w-xs">
-          {sublabel}
-        </p>
-      )}
-    </div>
-  );
-
   // 1. STAGED ASSETS PANEL
   const renderStagedAssets = () => (
-    <article className="sazzad-card shadow-xs">
-      <div className="sazzad-aurora sazzad-aurora-blue" />
-      <div className="sazzad-bg" />
-      <div className="sazzad-content p-3.5 md:p-4">
-        <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#cfe3ff]/80 mb-3 justify-between">
+    <article className="investigation-plane plane-blue rounded-lg p-3.5 md:p-4 shadow-xs">
+      <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#cfe3ff] mb-3 justify-between">
         <div className="flex items-center gap-2">
           <span className="h-5 w-5 rounded-full bg-[#ddecff] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
             01
           </span>
           <div>
-            <h3 className="uiverse-title">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
               Staged Assets
             </h3>
-            <p className="uiverse-subtitle">
+            <p className="text-[9px] text-[#5a709c]">
               Input satellite raster files
             </p>
           </div>
@@ -952,7 +885,7 @@ function WorkstationBoard({
           </span>
           <button
             onClick={onOpenLibrary}
-            className="uiverse-btn text-[10px] font-bold text-[#1179FF] cursor-pointer"
+            className="text-[10px] font-bold text-[#1179FF] hover:underline cursor-pointer"
           >
             Library
           </button>
@@ -1078,47 +1011,42 @@ function WorkstationBoard({
           </div>
         )}
       </div>
-      </div>
     </article>
   );
 
   // 2. COMPOSE QUERY PANEL
   const renderComposeQuery = () => (
-    <article className="sazzad-card shadow-xs">
-      <div className="sazzad-aurora sazzad-aurora-purple" />
-      <div className="sazzad-bg" />
-      <div className="sazzad-content p-4 md:p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-3 flex-wrap gap-2">
+    <article className="investigation-plane plane-white rounded-lg p-4 md:p-5 shadow-xs">
+      <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-full bg-[#f3e8ff] flex items-center justify-center font-mono text-[9px] font-bold text-[#690dc5]">
+          <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
             02
           </span>
           <div>
-            <h3 className="uiverse-title">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
               Compose Query
             </h3>
-            <p className="uiverse-subtitle">
+            <p className="text-[10px] text-[#7082aa]">
               Task-specific reasoning prompt
             </p>
           </div>
         </div>
 
-        {/* Task Tabs: VQA / CHANGE / FUSION / GROUNDING (From Uiverse.io by CPC23) */}
-        <div className="cpc23-tabs-container flex-wrap">
-          {Object.keys(TASK_CONFIGS).map(taskId => {
-            const isActive = activeTaskTab === taskId;
-            return (
-              <button
-                key={taskId}
-                id={`task-tab-${taskId.toLowerCase()}`}
-                onClick={() => onTaskTabChange(taskId)}
-                className={`cpc23-task-btn ${isActive ? "active" : ""}`}
-                title={TASK_CONFIGS[taskId].title}
-              >
-                {TASK_CONFIGS[taskId].tabLabel}
-              </button>
-            );
-          })}
+        {/* Task Tabs: VQA / CHANGE / FUSION / GROUNDING */}
+        <div className="flex bg-[#EDF5FF] p-0.5 rounded-lg border border-[#d5dffa] flex-wrap">
+          {Object.keys(TASK_CONFIGS).map(taskId => (
+            <button
+              key={taskId}
+              onClick={() => onTaskTabChange(taskId)}
+              className={`px-2.5 py-1 font-mono text-[9px] font-bold uppercase rounded-md transition cursor-pointer ${
+                activeTaskTab === taskId
+                  ? "bg-[#112557] text-[#B7F23A] shadow-xs"
+                  : "text-[#7082aa] hover:text-navy"
+              }`}
+            >
+              {TASK_CONFIGS[taskId].tabLabel}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -1148,7 +1076,6 @@ function WorkstationBoard({
           </div>
         </div>
       </div>
-      </div>
     </article>
   );
 
@@ -1167,8 +1094,8 @@ function WorkstationBoard({
       )}
 
       {/* Primary CTA Run Query Action Shelf */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/95 backdrop-blur-xl p-4 border border-white/40 rounded-xl shadow-md">
-        <div className="text-[11px] font-medium text-[#2e4368]">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 border border-[#dfe7fb] rounded-lg shadow-xs">
+        <div className="text-[11px] text-[#5a709c]">
           {isRunning
             ? "Dispatched to JVM model runtime..."
             : isComplete
@@ -1179,35 +1106,24 @@ function WorkstationBoard({
         <div className="flex items-center gap-2">
           <button
             onClick={onRunQuery}
-            disabled={isRunning}
-            className={`btn-sparkle-run ${isRunning ? "is-running" : ""} ${isComplete ? "is-complete" : ""}`}
-            title={
+            disabled={isRunning || !stagingValidation.isValid || !queryText.trim()}
+            className={`secondary-button font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-2 transition cursor-pointer ${
               isRunning
-                ? "Inference execution underway..."
-                : "Execute multimodal satellite observation analysis"
-            }
+                ? "opacity-80 cursor-wait bg-[#EDF5FF]"
+                : stagingValidation.isValid && queryText.trim()
+                ? "bg-[#B7F23A] text-[#112557] hover:bg-[#a6e029] border-none shadow-xs hover:scale-[1.02]"
+                : "opacity-40 cursor-not-allowed bg-gray-100 text-gray-400"
+            }`}
           >
             {isRunning ? (
               <>
-                <Orbit size={18} className="animate-spin text-white" />
-                <span className="text">JVM Running...</span>
+                <Orbit size={16} className="animate-spin text-[#112557]" />
+                <span>JVM Running...</span>
               </>
             ) : (
               <>
-                <svg
-                  height="20"
-                  width="20"
-                  viewBox="0 0 24 24"
-                  className="sparkle"
-                  fill="currentColor"
-                >
-                  <path d="M10,21.236,6.755,14.745.264,11.5,6.755,8.255,10,1.764l3.245,6.491L19.736,11.5l-6.491,3.245ZM18,21l1.5,3L21,21l3-1.5L21,18l-1.5-3L18,18l-3,1.5ZM19.333,4.667,20.5,7l1.167-2.333L24,3.5,21.667,2.333,20.5,0,19.333,2.333,17,3.5Z" />
-                </svg>
-                <span className="text">
-                  {activeTaskTab === "FUSION"
-                    ? "Run Multimodal Analysis"
-                    : "Run Query Analysis"}
-                </span>
+                <Play size={15} fill="currentColor" />
+                <span>Run Query Analysis</span>
               </>
             )}
           </button>
@@ -1215,7 +1131,7 @@ function WorkstationBoard({
           {isComplete && (
             <button
               onClick={onInspectReport}
-              className="primary-button font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-1.5 bg-[#054848] text-white hover:bg-[#088080] border border-[#9FE4E4]/40 hover:shadow-[0_0_15px_rgba(159,228,228,0.4)] cursor-pointer shadow-xs transition-all"
+              className="primary-button font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-1.5 bg-[#112557] text-white hover:bg-[#1c387d] cursor-pointer shadow-xs"
             >
               <FileText size={15} />
               <span>Inspect Report</span>
@@ -1226,23 +1142,17 @@ function WorkstationBoard({
     </div>
   );
 
-  // 4. MULTIMODAL SENSOR ARRAY (From Uiverse.io by SteveBloX)
+  // 4. MULTIMODAL SENSOR ARRAY
   const renderSensorArray = () => (
     <div className="space-y-4">
-      <article className="steveblox-modal-analysis shadow-xl">
-        <div className="flex flex-col w-full h-full">
-          {/* Header / Tabs */}
-        <div className="stage-chrome border-b border-[#e1eafa] flex items-center justify-between p-3 bg-white/70 backdrop-blur-md flex-wrap gap-2 relative z-10">
+      <article className="investigation-plane stage-plane rounded-lg overflow-hidden flex flex-col relative shadow-xs">
+        {/* Header / Tabs */}
+        <div className="stage-chrome border-b border-[#e1eafa] flex items-center justify-between p-3 bg-white flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#7846d7] animate-pulse" />
-            <div>
-              <span className="uiverse-title text-[#7846d7]">
-                Multimodal Analysis
-              </span>
-              <p className="uiverse-subtitle">
-                Sensor Array Observation Viewport
-              </p>
-            </div>
+            <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+            <span className="font-mono text-[9px] font-bold tracking-wider text-[#1179FF] uppercase">
+              Multimodal Sensor Array
+            </span>
           </div>
 
           {/* Media Mode Tabs */}
@@ -1275,16 +1185,6 @@ function WorkstationBoard({
         {/* Central Media Canvas */}
         <div className="relative min-h-[420px] bg-[#112557] overflow-hidden flex items-center justify-center">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
-
-          {/* 3D Cube Loader Overlay when analyzing */}
-          {isRunning && (
-            <div className="absolute inset-0 z-30 bg-[#052828]/85 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
-              {renderCubeLoader(
-                "Processing Satellite Raster Stream",
-                "Decomposing spectral bands & running visual reasoning inference"
-              )}
-            </div>
-          )}
 
           {/* TAB 1: Image View */}
           {activeMediaTab === "image" && (
@@ -1474,11 +1374,10 @@ function WorkstationBoard({
             )}
           </div>
         </div>
-        </div>
       </article>
 
       {/* Raster Overlays Checkbox Toggles */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white/95 backdrop-blur-md p-3 border border-white/60 rounded-xl shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 border border-[#dfe7fb] rounded-lg shadow-xs">
         <span className="text-[10px] font-bold text-navy uppercase tracking-wider">
           Raster Overlays:
         </span>
@@ -1517,18 +1416,15 @@ function WorkstationBoard({
 
   // 5. EXECUTION TRACE
   const renderExecutionTrace = () => (
-    <article className="sazzad-card animate-in fade-in duration-300 shadow-xs">
-      <div className="sazzad-aurora sazzad-aurora-cyan" />
-      <div className="sazzad-bg" />
-      <div className="sazzad-content p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-4">
+    <article className="investigation-plane plane-white rounded-lg p-5 animate-in fade-in duration-300 shadow-xs">
+      <div className="flex items-center justify-between pb-3 border-b border-[#edf1fb] mb-4">
         <div className="flex items-center gap-2">
           <Activity size={16} className="text-[#1179FF]" />
           <div>
-            <h3 className="uiverse-title">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
               Execution Trace
             </h3>
-            <p className="uiverse-subtitle">
+            <p className="text-[10px] text-[#7082aa]">
               Polymorphic route logs
             </p>
           </div>
@@ -1575,8 +1471,11 @@ function WorkstationBoard({
             </div>
           ))
         ) : isRunning ? (
-          <div className="py-4">
-            {renderCubeLoader("Streaming Polymorphic Logs...", "JVM routing telemetry stream dispatched")}
+          <div className="flex flex-col items-center justify-center text-center py-6 text-[#1179FF] space-y-2">
+            <Orbit size={20} className="animate-spin text-[#1179FF]" />
+            <p className="text-[10px] font-mono font-bold">
+              STREAMING POLYMORPHIC LOGS...
+            </p>
           </div>
         ) : (
           <p className="text-[10px] text-[#7082aa] py-6 italic text-center">
@@ -1584,34 +1483,30 @@ function WorkstationBoard({
           </p>
         )}
       </div>
-      </div>
     </article>
   );
 
   // 6. ANALYSIS OUTPUT
   const renderAnalysisOutput = () => (
-    <article className="sazzad-card border transition shadow-xs">
-      <div
-        className={`sazzad-aurora ${
-          isComplete
-            ? analysisResult?.confidence >= 80
-              ? "sazzad-aurora-lime"
-              : "sazzad-aurora-amber"
-            : "sazzad-aurora-teal"
-        }`}
-      />
-      <div className="sazzad-bg" />
-      <div className="sazzad-content p-5">
-        <div className="flex items-center gap-2 pb-3 border-b border-black/10 mb-4 justify-between">
+    <article
+      className={`investigation-plane rounded-lg p-5 border transition shadow-xs ${
+        isComplete
+          ? analysisResult?.confidence >= 80
+            ? "plane-lime"
+            : "plane-yellow"
+          : "plane-white"
+      }`}
+    >
+      <div className="flex items-center gap-2 pb-3 border-b border-black/10 mb-4 justify-between">
         <div className="flex items-center gap-2">
           <span className="h-6 w-6 rounded-full bg-black/5 flex items-center justify-center font-mono text-[9px] font-bold">
             03
           </span>
           <div>
-            <h3 className="uiverse-title">
+            <h3 className="text-xs font-bold uppercase tracking-wider">
               Analysis Output
             </h3>
-            <p className="uiverse-subtitle">
+            <p className="text-[9px] text-[#5a709c]">
               Visual model prediction
             </p>
           </div>
@@ -1641,8 +1536,9 @@ function WorkstationBoard({
           </p>
           <h4 className="font-editorial text-xl md:text-2xl tracking-tight mt-1 font-bold break-words uppercase">
             {isRunning ? (
-              <span className="text-[#088080] flex items-center gap-1.5 animate-pulse">
-                PROCESSING INFERENCE...
+              <span className="text-[#1179FF] flex items-center gap-1.5 animate-pulse">
+                <Orbit size={18} className="animate-spin" />
+                PROCESSING...
               </span>
             ) : isComplete ? (
               analysisResult?.investigatorReport?.verdict ||
@@ -1654,15 +1550,6 @@ function WorkstationBoard({
             )}
           </h4>
         </div>
-
-        {isRunning && (
-          <div className="py-2">
-            {renderCubeLoader(
-              "JVM Polymorphic Inference...",
-              "Evaluating spectral bands through visual reasoning model"
-            )}
-          </div>
-        )}
 
         {/* Confidence Bar */}
         {isComplete && analysisResult && (
@@ -1704,46 +1591,32 @@ function WorkstationBoard({
           </p>
         </div>
 
-        {/* Report Actions: View Glassmorphic Modal & PDF Download */}
+        {/* PDF Download Button */}
         {isComplete && (
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <button
-              onClick={onInspectReport}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#088080]/15 hover:bg-[#088080]/25 text-[#054848] text-[10px] font-bold border border-[#088080]/30 transition cursor-pointer"
-              title="Open iOS Glassmorphic Analysis Report"
-            >
-              <FileText size={13} />
-              <span>Inspect Report</span>
-            </button>
-            <button
-              onClick={onDownloadPdf}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-white hover:bg-[#EDF5FF] text-[#0D1D42] text-[10px] font-bold border border-[#dfe7fb] shadow-2xs transition cursor-pointer"
-            >
-              <Download size={13} />
-              <span>Download PDF</span>
-            </button>
-          </div>
+          <button
+            onClick={onDownloadPdf}
+            className="w-full mt-2 secondary-button justify-center text-[10px] font-bold py-1.5 bg-white hover:bg-[#EDF5FF] cursor-pointer"
+          >
+            <Download size={13} />
+            <span>Download PDF Report</span>
+          </button>
         )}
-      </div>
       </div>
     </article>
   );
 
   // 7. DETECTED FEATURES
   const renderDetectedFeatures = () => (
-    <article className="sazzad-card shadow-xs">
-      <div className="sazzad-aurora sazzad-aurora-rose" />
-      <div className="sazzad-bg" />
-      <div className="sazzad-content p-5">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
+    <article className="investigation-plane plane-white rounded-lg p-5 shadow-xs">
+      <div className="flex items-center gap-2.5 pb-3 border-b border-[#edf1fb] mb-4">
         <span className="h-6 w-6 rounded-full bg-[#EDF5FF] flex items-center justify-center font-mono text-[9px] font-bold text-[#1179FF]">
           04
         </span>
         <div>
-          <h3 className="uiverse-title">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-navy">
             Detected Features
           </h3>
-          <p className="uiverse-subtitle">
+          <p className="text-[10px] text-[#7082aa]">
             Raster classification details
           </p>
         </div>
@@ -1795,56 +1668,47 @@ function WorkstationBoard({
           Highlights populated after analysis execution.
         </p>
       )}
-      </div>
     </article>
   );
 
   // 8. NEXT ANALYSIS STEPS
   const renderNextSteps = () => (
-    <article className="sazzad-card shadow-xs">
-      <div className="sazzad-aurora sazzad-aurora-amber" />
-      <div className="sazzad-bg" />
-      <div className="sazzad-content p-5">
-        <div className="flex items-center gap-2 pb-2 border-b border-[#f4db94] mb-3">
-          <Info size={14} className="text-[#F4B900]" />
-          <span className="uiverse-title text-[#735200]">
-            Next Analysis Steps
-          </span>
-        </div>
-        <p className="text-xs leading-relaxed text-[#735200]">
-          {isComplete
-            ? analysisResult?.investigatorReport?.nextBestEvidence ||
-              currentTask.nextStepSuggestion
-            : "Awaiting model response. The system will recommend next contextual steps here."}
-        </p>
+    <article className="investigation-plane plane-yellow rounded-lg p-5 shadow-xs">
+      <div className="flex items-center gap-2 pb-2 border-b border-[#f4db94] mb-3">
+        <Info size={14} className="text-[#F4B900]" />
+        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#735200]">
+          Next Analysis Steps
+        </span>
       </div>
+      <p className="text-xs leading-relaxed text-[#735200]">
+        {isComplete
+          ? analysisResult?.investigatorReport?.nextBestEvidence ||
+            currentTask.nextStepSuggestion
+          : "Awaiting model response. The system will recommend next contextual steps here."}
+      </p>
     </article>
   );
 
   return (
     <div className="space-y-6">
       {/* Workstation Header */}
-      <section className="uiverse-hero-card p-6 md:p-8">
-        <div className="c-txt flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
-            <p className="eyebrow uiverse-hero-badge px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border inline-block w-fit">
-              Workstation Console
-            </p>
-          </div>
-          <h1 className="font-editorial uiverse-hero-title text-[38px] md:text-[54px] tracking-tight leading-[1.05] font-bold">
-            Satellite Vision-Language Console
-          </h1>
-          <p className="max-w-[780px] uiverse-hero-desc text-sm md:text-base leading-relaxed">
-            Agentic remote-sensing workbench for optical and SAR Earth observation imagery.
-            Validates coordinate reference bands, decomposes polymorphic queries, and streams
-            real-time polymorphic execution trace telemetry.
-          </p>
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+          <p className="eyebrow text-[#1179FF]">Workstation Console</p>
         </div>
+        <h1 className="font-editorial text-[38px] md:text-[54px] tracking-tight leading-[1.05] text-navy font-bold">
+          Satellite Vision-Language Console
+        </h1>
+        <p className="max-w-[760px] text-sm md:text-base leading-relaxed text-[#5a709c]">
+          Agentic remote-sensing workbench for optical and SAR Earth observation imagery.
+          Validates coordinate reference bands, decomposes polymorphic queries, and streams
+          real-time polymorphic execution trace telemetry.
+        </p>
       </section>
 
       {/* 5-Step Workflow Stepper */}
-      <section className="w-full bg-white/95 backdrop-blur-xl border border-white/40 rounded-2xl p-4 md:px-6 md:py-4 shadow-xl overflow-x-auto">
+      <section className="w-full bg-white border border-[#dfe7fb] rounded-xl p-4 md:px-6 md:py-4 shadow-xs overflow-x-auto">
         <div className="flex items-center justify-between min-w-[740px]">
           {[
             { num: "01", label: "Query", detail: "Task & Prompt" },
@@ -1866,10 +1730,10 @@ function WorkstationBoard({
                   <div
                     className={`h-[38px] w-[38px] rounded-full flex items-center justify-center font-mono text-xs font-bold shrink-0 transition-all duration-200 ${
                       isDone
-                        ? "bg-[#088080] text-white shadow-xs"
+                        ? "bg-[#112557] text-white shadow-xs"
                         : isActive
-                        ? "bg-[#054848] text-[#B7F23A] border-2 border-[#9FE4E4] shadow-[0_0_0_4px_rgba(159,228,228,0.35)]"
-                        : "bg-[#F0F4F8] text-[#7082aa]"
+                        ? "bg-[#2563EB] text-white shadow-[0_0_0_5px_rgba(37,99,235,0.2)]"
+                        : "bg-[#F3F4F6] text-[#9CA3AF]"
                     }`}
                   >
                     {isDone ? <Check size={16} className="stroke-[2.5]" /> : step.num}
@@ -1877,10 +1741,10 @@ function WorkstationBoard({
 
                   {/* Text: Title + Subtitle */}
                   <div className="flex flex-col text-left">
-                    <span className="text-xs md:text-sm font-bold text-[#0D1D42] leading-tight">
+                    <span className="text-xs md:text-sm font-bold text-[#112557] leading-tight">
                       {step.label}
                     </span>
-                    <span className="text-[10px] md:text-[11px] text-[#2E4368] leading-tight mt-0.5 whitespace-nowrap">
+                    <span className="text-[10px] md:text-[11px] text-[#6B7280] leading-tight mt-0.5 whitespace-nowrap">
                       {step.detail}
                     </span>
                   </div>
@@ -1888,7 +1752,7 @@ function WorkstationBoard({
 
                 {/* Single thin 2px horizontal connector line between steps */}
                 {!isLast && (
-                  <div className={`flex-1 h-[2px] mx-4 min-w-[20px] ${isDone ? "bg-[#088080]" : "bg-[#E5E7EB]"}`} />
+                  <div className="flex-1 h-[2px] bg-[#E5E7EB] mx-4 min-w-[20px]" />
                 )}
               </div>
             );
@@ -1918,11 +1782,11 @@ function WorkstationBoard({
       {/* (Appears below the main workbench when query analysis is executed) */}
       {/* ========================================================= */}
       {showAnalysisPanels && (
-        <section className="space-y-4 pt-4 border-t border-white/20 animate-in fade-in slide-in-from-bottom-4 duration-400">
+        <section className="space-y-4 pt-4 border-t border-[#dfe7fb] animate-in fade-in slide-in-from-bottom-4 duration-400">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#9fe4e4] animate-pulse" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+              <span className="h-2 w-2 rounded-full bg-[#1179FF] animate-pulse" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-navy">
                 Inference Results & Execution Telemetry
               </h2>
             </div>
@@ -2255,79 +2119,49 @@ function ReportModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center ios-glass-overlay p-4 sm:p-6 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#112557]/50 p-5 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      onClick={e => {
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
-      <div className="receipt-modal ios-glass-modal w-full max-w-[740px] flex flex-col animate-in zoom-in-95 duration-250">
-        {/* iOS Dynamic Island / Grab Handle Pill */}
-        <div className="pt-3 pb-0 flex justify-center">
-          <div className="w-10 h-1.5 rounded-full bg-black/15" />
-        </div>
-
-        {/* Modal Header */}
-        <div className="receipt-header pt-3 pb-5 px-6 sm:px-8">
+      <div className="receipt-modal w-full max-w-[740px] bg-white rounded-lg shadow-2xl flex flex-col animate-scale-up border border-[#dce5fb]">
+        <div className="receipt-header border-b border-[#edf1fb] p-6 bg-gradient-to-r from-[#F8FBFF] to-[#fffefc] flex justify-between items-start">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#007AFF]/12 text-[#007AFF] border border-[#007AFF]/25 shadow-2xs">
-                <Orbit size={11} />
-                <span>Query Analysis Report</span>
-              </span>
-              <span className="font-mono text-[9px] text-[#7082aa] font-semibold">
-                ID: {queryId || "Active"}
-              </span>
-            </div>
-            <h3 className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#112557]">
+            <p className="eyebrow text-[#1179FF]">Query Analysis Report</p>
+            <h3 className="font-editorial text-3xl font-bold tracking-tight text-navy mt-1">
               {taskConfig.title}
             </h3>
           </div>
           <button
-            className="ios-close-btn shrink-0 ml-4"
+            className="p-1 hover:bg-[#EDF5FF] text-[#7082aa] hover:text-navy rounded border border-[#dfe7fb] bg-white transition"
             onClick={onClose}
             aria-label="Close report"
           >
-            <X size={16} className="stroke-[2.5]" />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="grid gap-5 p-6 sm:p-8 md:grid-cols-[1.1fr_.9fr]">
-          {/* Left Column: Query & Predictions */}
-          <div className="space-y-4">
-            {/* User Query Card */}
-            <div className="ios-glass-card p-4 space-y-1.5">
-              <p className="eyebrow text-[#7082aa] text-[10px] font-bold uppercase tracking-wider">User Query</p>
-              <p className="text-sm font-semibold text-[#112557] leading-snug">
+        <div className="grid gap-6 p-6 md:grid-cols-[1.1fr_.9fr]">
+          <div className="space-y-5">
+            <div>
+              <p className="eyebrow text-[#7082aa]">User Query</p>
+              <p className="mt-1 text-sm font-semibold text-navy">
                 "{queryText}"
               </p>
             </div>
 
-            {/* VLM Model Prediction Card */}
-            <div className="ios-glass-card p-4 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <p className="eyebrow text-[#7082aa] text-[10px] font-bold uppercase tracking-wider">VLM Model Prediction</p>
-                <span className="font-mono text-[9px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-2 py-0.5 rounded-full">
-                  {taskConfig.targetEngine}
-                </span>
-              </div>
-              <p className="font-editorial text-lg sm:text-xl leading-snug tracking-tight text-[#112557] font-bold">
+            <div>
+              <p className="eyebrow text-[#7082aa]">VLM Model Prediction</p>
+              <p className="mt-1 font-editorial text-xl leading-snug tracking-tight text-navy font-bold">
                 {isComplete ? analysisResult?.answer : "N/A"}
               </p>
             </div>
 
-            {/* Metadata Integrity Banner */}
-            <div className="bg-[#34C759]/12 border border-[#34C759]/30 backdrop-blur-md px-4 py-3 text-xs leading-relaxed text-[#1e612f] rounded-2xl space-y-2 shadow-2xs">
-              <div className="flex items-start gap-2.5">
-                <Check size={16} className="shrink-0 text-[#248A3D] mt-0.5 stroke-[2.5]" />
-                <span>
-                  <strong>Metadata Integrity:</strong> Staged files include verified coordinate reference bands. JSON report contains full cryptographic audit trace logs.
-                </span>
-              </div>
+            <div className="bg-[#f5ffd9] border-l-3 border-[#B7F23A] px-4 py-3 text-xs leading-relaxed text-[#43681b] rounded-r space-y-1">
+              <p>
+                <strong>Metadata Integrity:</strong> Staged files include verified coordinate reference bands. JSON report contains full audit trace logs.
+              </p>
               {primaryMeta && (
-                <div className="pt-2 border-t border-[#34C759]/25 font-mono text-[10px] space-y-0.5 text-[#1a5328]">
+                <div className="pt-2 border-t border-[#B7F23A]/40 font-mono text-[10px] space-y-0.5 text-[#2d4d10]">
                   <p><strong>Sensor Platform:</strong> {primaryMeta.sensorPlatform || "Sentinel-2 MSI"}</p>
                   <p><strong>Acquisition Date:</strong> {primaryMeta.acquisitionDate || "2026-09-02"}</p>
                   <p><strong>Raster Dims:</strong> {primaryMeta.width || 1024}×{primaryMeta.height || 1024}px ({primaryMeta.bands || 3}B)</p>
@@ -2338,52 +2172,47 @@ function ReportModal({
             </div>
           </div>
 
-          {/* Right Column: Telemetry Profile */}
-          <div className="ios-glass-card p-5 flex flex-col justify-between space-y-5">
+          <div className="receipt-side bg-[#F8FBFF] border border-[#dce5fb] p-5 rounded-lg flex flex-col justify-between space-y-4">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-black/[0.06]">
-                <p className="eyebrow text-[#7082aa] text-[10px] font-bold uppercase tracking-wider">Telemetry Profile</p>
-                <span className="h-2 w-2 rounded-full bg-[#34C759] animate-pulse" />
-              </div>
-
-              <div className="space-y-2.5 text-xs mt-3">
-                <div className="flex justify-between items-center py-1 border-b border-black/[0.04]">
+              <p className="eyebrow text-[#7082aa]">Telemetry Profile</p>
+              <div className="space-y-2 text-xs border-b border-[#edf1fb] pb-3 mt-2">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Query ID:</span>
-                  <span className="font-mono font-bold text-[#112557] text-[11px]">
+                  <span className="font-mono font-bold text-navy text-[11px]">
                     {queryId || analysisResult?.queryId || "q-active"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-black/[0.04]">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Date & Time:</span>
-                  <span className="font-mono text-[10px] font-bold text-[#007AFF]">
+                  <span className="font-mono text-[10px] font-bold text-[#1179FF]">
                     {analysisResult?.timestamp || new Date().toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-black/[0.04]">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Task Route:</span>
-                  <span className="font-mono font-bold text-[#112557] bg-black/[0.04] px-2 py-0.5 rounded-md">
+                  <span className="font-mono font-bold text-navy">
                     {taskConfig.tabLabel}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-black/[0.04]">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Target Engine:</span>
-                  <span className="font-mono text-[10px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-2 py-0.5 rounded-md">
+                  <span className="font-mono text-[10px] font-bold text-[#1179FF]">
                     {taskConfig.targetEngine}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-black/[0.04]">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Staged Files:</span>
-                  <span className="font-mono font-bold text-[#112557]">
+                  <span className="font-mono font-bold text-navy">
                     {stagedAssets.length} active
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-black/[0.04]">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Confidence:</span>
-                  <span className="font-mono font-bold text-[#248A3D] bg-[#34C759]/15 px-2 py-0.5 rounded-md">
+                  <span className="font-mono font-bold text-emerald-700">
                     {analysisResult?.confidenceLabel || "HIGH (92%)"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-1">
+                <div className="flex justify-between items-center">
                   <span className="text-[#7082aa]">Runtime:</span>
                   <span className="font-mono font-bold text-[#7846D7]">
                     JVM PROXIED
@@ -2392,11 +2221,10 @@ function ReportModal({
               </div>
             </div>
 
-            {/* Apple Action Buttons */}
-            <div className="space-y-2.5 pt-2">
+            <div className="space-y-2">
               <button
                 onClick={onDownloadPdf}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-b from-[#007AFF] to-[#0066d6] hover:from-[#0a84ff] hover:to-[#0071eb] active:scale-[0.98] text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow-[0_4px_14px_rgba(0,122,255,0.35),inset_0_1px_1px_rgba(255,255,255,0.35)] transition-all cursor-pointer"
+                className="primary-button w-full justify-center bg-[#112557] text-white hover:bg-[#1c387d] text-xs font-bold py-2 rounded-md cursor-pointer"
               >
                 <FileText size={14} />
                 <span>Download PDF Report</span>
@@ -2404,7 +2232,7 @@ function ReportModal({
 
               <button
                 onClick={onDownloadJson}
-                className="w-full flex items-center justify-center gap-2 bg-white/75 hover:bg-white active:scale-[0.98] text-[#007AFF] text-xs font-semibold py-2.5 px-4 rounded-xl border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all cursor-pointer"
+                className="secondary-button w-full justify-center text-xs font-bold py-2 rounded-md cursor-pointer"
               >
                 <Download size={14} />
                 <span>Download JSON Telemetry</span>
@@ -2413,7 +2241,7 @@ function ReportModal({
               {onDownloadGeoJson && (
                 <button
                   onClick={onDownloadGeoJson}
-                  className="w-full flex items-center justify-center gap-2 bg-white/75 hover:bg-white active:scale-[0.98] text-[#34C759] text-xs font-semibold py-2.5 px-4 rounded-xl border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all cursor-pointer"
+                  className="w-full justify-center text-xs font-bold py-2 rounded-md bg-[#EDF5FF] text-[#1179FF] hover:bg-[#d8e8fc] border border-[#d2e3fc] flex items-center gap-1.5 cursor-pointer transition"
                 >
                   <MapPin size={14} />
                   <span>Download GeoJSON Spatial</span>
@@ -2480,7 +2308,7 @@ function SplitImageCompare({
           <img
             src={toWebUrl(img2)}
             alt="After"
-            className="w-full h-full object-cover pointer-events-none"
+            className="w-full h-full object-contain pointer-events-none"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-[#0b1739] text-[#7082aa]">
@@ -2502,7 +2330,7 @@ function SplitImageCompare({
           <img
             src={toWebUrl(img1)}
             alt="Before"
-            className="absolute inset-y-0 left-0 object-cover pointer-events-none"
+            className="absolute inset-y-0 left-0 object-contain pointer-events-none"
             style={{ width: containerWidth, maxWidth: "none", height: "100%" }}
           />
         ) : (
