@@ -22,6 +22,7 @@ import { ObservationSweep } from "./ObservationSweep";
 import { BiTemporalInvestigator } from "./BiTemporalInvestigator";
 import { OpticalSarFusion } from "./OpticalSarFusion";
 import { EvidenceProofMatrix } from "./EvidenceProofMatrix";
+import { AuthModal } from "./AuthModal";
 
 /**
  * CinematicLanding (SatQuery AI)
@@ -44,6 +45,9 @@ export function CinematicLanding({
 }) {
   const [activeSection, setActiveSection] = useState("hero");
   const [activeSpecialist, setActiveSpecialist] = useState("geochat");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("signin");
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Track scroll position to coordinate 3D Earth choreography across all 8 stages
   useEffect(() => {
@@ -117,15 +121,48 @@ export function CinematicLanding({
           <span className="tracking-wide">SATQUERY AI</span>
         </button>
 
-        {/* Primary Workstation CTA (Sole Workstation Entry Point on Landing Page) */}
-        <button
-          id="ask-query-header-btn"
-          onClick={() => handleLaunchWorkstation()}
-          className="px-4 py-2 ios-glass-primary active:scale-95 text-[#FFFFFF] font-bold text-xs tracking-wider rounded-md flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(18,165,184,0.3)]"
-        >
-          <span>ASK QUERY</span>
-          <span className="text-sm leading-none">↗</span>
-        </button>
+        {/* Right Navigation & Action CTAs */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {currentUser ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#040708]/60 border border-white/[0.1] rounded-md font-mono text-xs text-[#D0E3EA]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+              <span className="text-[#12A5B8] font-bold">{currentUser.name}</span>
+            </div>
+          ) : (
+            <>
+              <button
+                id="header-sign-in-btn"
+                onClick={() => {
+                  setAuthMode("signin");
+                  setAuthModalOpen(true);
+                }}
+                className="px-3 sm:px-3.5 py-1.5 font-mono text-xs text-[#FFFFFF] hover:text-[#12A5B8] bg-[#040708]/70 hover:bg-[#040708]/95 border border-white/[0.18] hover:border-[#12A5B8] rounded-md transition-all cursor-pointer backdrop-blur-sm shadow-sm"
+              >
+                SIGN IN
+              </button>
+              <button
+                id="header-log-in-btn"
+                onClick={() => {
+                  setAuthMode("login");
+                  setAuthModalOpen(true);
+                }}
+                className="px-3 sm:px-3.5 py-1.5 font-mono text-xs text-[#FFFFFF] hover:text-[#12A5B8] bg-[#040708]/70 hover:bg-[#040708]/95 border border-white/[0.18] hover:border-[#12A5B8] rounded-md transition-all cursor-pointer backdrop-blur-sm shadow-sm"
+              >
+                LOG IN
+              </button>
+            </>
+          )}
+
+          {/* Primary Workstation CTA (Sole Workstation Entry Point on Landing Page) */}
+          <button
+            id="ask-query-header-btn"
+            onClick={() => handleLaunchWorkstation()}
+            className="px-3.5 sm:px-4 py-2 ios-glass-primary active:scale-95 text-[#FFFFFF] font-bold text-xs tracking-wider rounded-md flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+          >
+            <span>ASK QUERY</span>
+            <span className="text-sm leading-none">↗</span>
+          </button>
+        </div>
 
       </header>
 
@@ -745,6 +782,16 @@ export function CinematicLanding({
         </section>
 
       </div>
+
+      {/* ─── 5. AUTHENTICATION MODAL (SIGN IN / LOG IN) ─── */}
+      <AuthModal
+        isOpen={authModalOpen}
+        initialMode={authMode}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={(user) => {
+          setCurrentUser(user);
+        }}
+      />
 
     </div>
   );
