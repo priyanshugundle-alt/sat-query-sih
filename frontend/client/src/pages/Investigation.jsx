@@ -48,6 +48,7 @@ import { ShowMeWhyModal } from "@/components/ShowMeWhyModal";
 import { AnalysisDetailsDrawer } from "@/components/AnalysisDetailsDrawer";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import PersonalizationModal from "@/components/PersonalizationModal";
+import SatQueryLogo from "@/components/SatQueryLogo";
 import { useLanguage } from "@/context/LanguageContext";
 
 // ─────────────────────────────────────────────────────────────────
@@ -1000,7 +1001,7 @@ export default function Investigation() {
                 {/* ── Top Header: Brand + Collapse ── */}
                 <div className="p-3 border-b border-[#1C323B]/80 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
+                    <SatQueryLogo size={20} variant="icon" className="shadow-[0_0_8px_rgba(18,165,184,0.3)]" />
                     <span className="font-chillax text-xs font-bold tracking-wider text-[#FFFFFF]">
                       SATQUERY AI
                     </span>
@@ -1547,6 +1548,9 @@ export default function Investigation() {
                           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                           className="text-center space-y-2 mb-3"
                         >
+                          <div className="flex justify-center mb-3">
+                            <SatQueryLogo size={48} variant="icon" className="shadow-[0_0_24px_rgba(18,165,184,0.35)]" />
+                          </div>
                           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0D171C] border border-white/[0.08] font-mono text-[10px] text-[#12A5B8] uppercase tracking-wider rounded-md">
                             <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full" />
                             <span>EARTH OBSERVATION AGENTIC WORKSTATION</span>

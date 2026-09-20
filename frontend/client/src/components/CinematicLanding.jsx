@@ -23,6 +23,7 @@ import { BiTemporalInvestigator } from "./BiTemporalInvestigator";
 import { OpticalSarFusion } from "./OpticalSarFusion";
 import { EvidenceProofMatrix } from "./EvidenceProofMatrix";
 import { AuthModal } from "./AuthModal";
+import SatQueryLogo from "./SatQueryLogo";
 
 /**
  * CinematicLanding (SatQuery AI)
@@ -116,10 +117,10 @@ export function CinematicLanding({
         {/* Brand */}
         <button
           onClick={() => scrollToSection("hero-section")}
-          className="flex items-center gap-2.5 text-[#FFFFFF] font-bold text-base hover:text-[#12A5B8] transition-colors cursor-pointer"
+          className="flex items-center gap-2.5 text-[#FFFFFF] font-bold text-base hover:text-[#12A5B8] transition-colors cursor-pointer group"
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-[#12A5B8] shadow-[0_0_10px_#12A5B8]" />
-          <span className="tracking-wide">SATQUERY AI</span>
+          <SatQueryLogo size={28} variant="icon" className="shadow-[0_0_12px_rgba(18,165,184,0.35)] group-hover:scale-105 transition-transform" />
+          <span className="tracking-wide font-sora">SATQUERY AI</span>
         </button>
 
         {/* Right Navigation & Action CTAs */}

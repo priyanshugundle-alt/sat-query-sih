@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Lock, Mail, User, ArrowRight, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import SatQueryLogo from "./SatQueryLogo";
 
 export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }) {
   // Mode: "signup" vs "login"
@@ -111,7 +112,8 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
         </button>
 
         {/* Clean Title */}
-        <div className="w-full text-center pb-1 pt-1">
+        <div className="w-full flex flex-col items-center justify-center pb-1 pt-1 gap-2">
+          <SatQueryLogo size={36} variant="icon" className="shadow-[0_0_14px_rgba(18,165,184,0.35)]" />
           <h2 className="sq_title font-heading text-xl font-bold tracking-tight text-white">
             {mode === "signup" ? "Sign Up" : "Log In"}
           </h2>
