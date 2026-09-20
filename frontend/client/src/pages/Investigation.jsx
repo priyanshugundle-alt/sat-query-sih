@@ -1286,7 +1286,6 @@ export default function Investigation() {
                         }))}
                       </div>
                     )}
-                  )}
                 </div>
 
                 {/* ── Bottom Profile Menu (Screenshot 2 UX Reference) ── */}
