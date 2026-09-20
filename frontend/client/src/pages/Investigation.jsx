@@ -13,7 +13,7 @@
  * - Persistent 3D Earth subtle orbital background
  */
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Upload, Paperclip, Send, Mic, MicOff,
@@ -24,7 +24,7 @@ import {
   Layers, Search, Globe, ArrowUpRight, Check, X,
   Maximize2, Eye, ShieldCheck, Target, Radar, Activity,
   Database, RefreshCw, PanelLeftClose, PanelLeftOpen, Trash2,
-  Sun, Moon
+  Sun, Moon, ArrowLeft
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -227,8 +227,8 @@ export default function Investigation() {
     toast.info("Logged out from workstation.");
   };
 
-  // ── Browser Back-Button Guard ──────────────────────────────────────
-  // Prevent returning to landing page via back button while authenticated
+  // ── Browser Back-Button Guard & Left-Arrow Navigation ───────────────
+  // Clicking browser left arrow back button opens a New Chat and keeps session in workstation
   useEffect(() => {
     if (currentUser && viewMode === "investigation") {
       window.history.pushState({ page: "investigation" }, "", window.location.href);
@@ -237,9 +237,12 @@ export default function Investigation() {
         if (currentUser) {
           window.history.pushState({ page: "investigation" }, "", window.location.href);
           setViewMode("investigation");
-          toast.info("Session locked in Workstation. Use 'LOG OUT' to return to landing page.", {
-            id: "back-button-guard",
-          });
+          setActiveChatId(null);
+          setStagedAsset(null);
+          setQueryText("");
+          setIsAnalyzing(false);
+          setRoutingStage(null);
+          toast.info("Opened New Chat", { id: "new-chat-nav" });
         }
       };
 
@@ -1398,6 +1401,20 @@ export default function Investigation() {
                         <PanelLeftOpen size={16} />
                       </button>
                     )}
+
+                    {/* Left Arrow Back Button (Opens New Chat) */}
+                    <button
+                      id="header-back-new-chat-btn"
+                      onClick={() => {
+                        handleNewChat();
+                        toast.info("Opened New Chat");
+                      }}
+                      className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border border-white/[0.08] transition-colors rounded-md cursor-pointer flex items-center gap-1.5"
+                      title="Left Arrow Back Button: Open New Chat"
+                    >
+                      <ArrowLeft size={14} className="text-[#12A5B8]" />
+                      <span className="text-[10px] hidden sm:inline font-mono">NEW CHAT</span>
+                    </button>
 
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="font-bold text-sm text-[#FFFFFF] truncate font-sans">
