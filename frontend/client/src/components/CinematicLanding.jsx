@@ -106,7 +106,7 @@ export function CinematicLanding({
       </div>
 
       {/* ─── 3. SLEEK HIGH-CONTRAST HEADER ─── */}
-      <header className="sticky top-0 z-50 h-14 px-6 md:px-12 ios-glass-header flex items-center justify-between">
+      <header className="sticky top-0 z-50 h-14 px-6 md:px-12 bg-transparent flex items-center justify-between pointer-events-auto">
         
         {/* Brand */}
         <button
