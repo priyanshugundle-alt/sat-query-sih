@@ -1034,13 +1034,13 @@ export default function Investigation() {
                 </div>
 
                 {/* ── Section Switcher Tabs: CHATS / IMAGES / PROJECTS ── */}
-                <div className="px-3 pt-1 pb-2 flex gap-1 font-chillax text-[11px] border-b border-[#1C323B]/60">
+                <div className="px-3 pt-1.5 pb-2 flex gap-1 font-sans text-[11px] border-b border-[#1C323B]/60">
                   <button
                     onClick={() => {
                       setSidebarTab("chats");
                       setActiveProjectId(null);
                     }}
-                    className={`flex-1 py-1.5 px-2 text-center font-chillax tracking-wider text-[11px] cursor-pointer rounded-lg sq-sidebar-tab ${
+                    className={`flex-1 py-1.5 px-2 text-center font-sans font-medium tracking-wide text-[11px] cursor-pointer rounded-full sq-sidebar-tab ${
                       sidebarTab === "chats"
                         ? "sq-sidebar-tab-active"
                         : "text-[#8AA3AD]"
@@ -1050,7 +1050,7 @@ export default function Investigation() {
                   </button>
                   <button
                     onClick={() => setSidebarTab("images")}
-                    className={`flex-1 py-1.5 px-2 text-center font-chillax tracking-wider text-[11px] cursor-pointer flex items-center justify-center gap-1.5 rounded-lg sq-sidebar-tab ${
+                    className={`flex-1 py-1.5 px-2 text-center font-sans font-medium tracking-wide text-[11px] cursor-pointer flex items-center justify-center gap-1.5 rounded-full sq-sidebar-tab ${
                       sidebarTab === "images"
                         ? "sq-sidebar-tab-active"
                         : "text-[#8AA3AD]"
@@ -1058,14 +1058,14 @@ export default function Investigation() {
                   >
                     <span>IMAGES</span>
                     {allImagesAcrossChats.length > 0 && (
-                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-md font-sans">
+                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-full font-sans">
                         {allImagesAcrossChats.length}
                       </span>
                     )}
                   </button>
                   <button
                     onClick={() => setSidebarTab("projects")}
-                    className={`flex-1 py-1.5 px-2 text-center font-chillax tracking-wider text-[11px] cursor-pointer rounded-lg sq-sidebar-tab ${
+                    className={`flex-1 py-1.5 px-2 text-center font-sans font-medium tracking-wide text-[11px] cursor-pointer rounded-full sq-sidebar-tab ${
                       sidebarTab === "projects"
                         ? "sq-sidebar-tab-active"
                         : "text-[#8AA3AD]"
@@ -1100,7 +1100,7 @@ export default function Investigation() {
                             >
                               <div className="flex items-center gap-2 truncate min-w-0">
                                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${isActive ? "bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" : "bg-[#8AA3AD]/40 group-hover:bg-[#12A5B8]"}`} />
-                                <span className="truncate font-sans">{conv.title}</span>
+                                <span className="truncate font-sans font-medium">{conv.title}</span>
                               </div>
                               <button
                                 onClick={(e) => handleDeleteChat(e, conv.id)}
@@ -1121,7 +1121,7 @@ export default function Investigation() {
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "images" && (
                     <div className="space-y-2">
-                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-chillax">
+                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-sans">
                         ALL UPLOADED SATELLITE IMAGERY
                       </div>
                       {allImagesAcrossChats.length === 0 ? (
@@ -1148,7 +1148,7 @@ export default function Investigation() {
                               className="w-10 h-10 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg transition-transform duration-300"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="text-[11px] font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] truncate font-chillax">
+                              <div className="text-[11px] font-semibold text-[#F0F6F8] group-hover:text-[#12A5B8] truncate font-sans">
                                 {img.name}
                               </div>
                               <div className="text-[9px] text-[#8AA3AD] truncate mt-0.5 font-sans">
@@ -1169,7 +1169,7 @@ export default function Investigation() {
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "projects" && (
                     <div className="space-y-3 font-sans">
-                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-chillax">
+                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-sans">
                         PROJECTS
                       </div>
                       {PROJECTS_CONFIG.map((proj) => {
@@ -1178,25 +1178,25 @@ export default function Investigation() {
                         return (
                           <div
                             key={proj.id}
-                            className={`p-2.5 border transition-all rounded-xl sq-project-card ${
+                            className={`p-3 border transition-all rounded-xl sq-project-card ${
                               isSelected
-                                ? "bg-[#0D171C] border-[#12A5B8] shadow-[0_0_15px_rgba(18,165,184,0.15)]"
-                                : "bg-[#0D171C]/60 border-[#1C323B]"
+                                ? "bg-[#0D171C] border-[#12A5B8] shadow-[0_4px_20px_rgba(0,0,0,0.4),0_0_12px_rgba(18,165,184,0.18)]"
+                                : "bg-[#0D171C]/70 border-[#1C323B] hover:border-[#12A5B8]/40"
                             }`}
                           >
                             <div
                               onClick={() => setActiveProjectId(isSelected ? null : proj.id)}
-                              className="flex items-center justify-between cursor-pointer"
+                              className="flex items-start justify-between cursor-pointer gap-2"
                             >
-                              <div>
-                                <span className="font-bold text-xs text-[#F0F6F8] block font-chillax">
+                              <div className="min-w-0 flex-1">
+                                <span className="font-bold text-xs text-[#F0F6F8] block font-sans tracking-wide leading-tight group-hover:text-[#12A5B8] transition-colors">
                                   {proj.name}
                                 </span>
-                                <span className="text-[9px] text-[#8AA3AD] block mt-0.5 font-sans">
+                                <span className="text-[10px] text-[#8AA3AD] block mt-1 font-sans leading-normal">
                                   {proj.description}
                                 </span>
                               </div>
-                              <span className="text-[9px] px-2 py-0.5 bg-[#080E11] text-[#12A5B8] border border-white/[0.08] rounded-md font-sans">
+                              <span className="text-[9px] font-mono px-2 py-0.5 bg-[#0B1A20] text-[#12A5B8] border border-[#12A5B8]/30 rounded-md whitespace-nowrap flex-shrink-0 font-semibold tracking-wider">
                                 {proj.badge}
                               </span>
                             </div>
