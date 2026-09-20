@@ -1,3 +1,7 @@
+@import url('https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=stardom@400&f[]=gambarino@400&f[]=melodrama@400,500,600,700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
 /*
  * SatQuery AI — The Earth Observation Instrument
  * Space Technology
@@ -17,9 +21,6 @@
  *   Muted:          #8AA3AD (Secondary metadata & timestamps)
  *   Destructive:    #B9654D (Warning / anomaly rust)
  */
-
-@import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -79,13 +80,19 @@
   --color-input: var(--sq-surface);
   --color-ring: var(--sq-cyan-bright);
 
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Sora", sans-serif;
-  --font-display: "Sora", sans-serif;
-  --font-sora: "Sora", sans-serif;
-  --font-inter: "Inter", sans-serif;
+  /* Indian Type Foundry Typography System */
+  --font-chillax: "Chillax", "Space Grotesk", "Inter", sans-serif;
+  --font-stardom: "Stardom", "Gambarino", Georgia, serif;
+  --font-gambarino: "Gambarino", "Stardom", Georgia, serif;
+  --font-melodrama: "Melodrama", "Stardom", Georgia, serif;
+
+  --font-sans: "Chillax", "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Chillax", "Stardom", "Sora", sans-serif;
+  --font-display: "Stardom", "Chillax", "Gambarino", serif;
+  --font-sora: "Chillax", "Sora", sans-serif;
+  --font-inter: "Chillax", "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", "Noto Sans Mono", ui-monospace, monospace;
-  --font-serif: Georgia, serif;
+  --font-serif: "Stardom", "Gambarino", "Melodrama", Georgia, serif;
 }
 
 :root {
@@ -105,6 +112,23 @@
   --accent-foreground: #040708;
   --destructive: #B9654D;
   --destructive-foreground: #FFFFFF;
+}
+
+/* Indian Type Foundry Utility Font Classes */
+.font-chillax {
+  font-family: "Chillax", "Space Grotesk", sans-serif;
+}
+
+.font-stardom {
+  font-family: "Stardom", "Gambarino", Georgia, serif;
+}
+
+.font-gambarino {
+  font-family: "Gambarino", "Stardom", Georgia, serif;
+}
+
+.font-melodrama {
+  font-family: "Melodrama", "Stardom", Georgia, serif;
 }
 
 /* ════════════════════════════════════════════════════════════════
