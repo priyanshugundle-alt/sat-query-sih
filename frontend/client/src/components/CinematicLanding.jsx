@@ -146,16 +146,14 @@ export function CinematicLanding({
           </button>
 
           {/* Primary Workstation CTA (Sole Workstation Entry Point on Landing Page) */}
-          <div className="button-wrap">
-            <div className="button-shadow" />
-            <button
-              id="ask-query-header-btn"
-              onClick={() => handleLaunchWorkstation()}
-              className="ask-query-btn"
-            >
-              <span>ASK QUERY ↗</span>
-            </button>
-          </div>
+          <button
+            id="ask-query-header-btn"
+            onClick={() => handleLaunchWorkstation()}
+            className="px-3.5 sm:px-4 py-2 ios-glass-primary active:scale-95 text-[#FFFFFF] font-bold text-xs tracking-wider rounded-md flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+          >
+            <span>ASK QUERY</span>
+            <span className="text-sm leading-none">↗</span>
+          </button>
         </div>
 
       </header>
