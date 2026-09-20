@@ -102,9 +102,10 @@ export function Earth3DCanvas({
       targetEarthPos.current.set(isMobile ? 0 : 0.1, 0.02, -0.15);
       targetCameraPos.current.set(0, 0, 4.8);
     } else if (stage === "final_cta") {
-      // Curve the horizon smoothly beneath the CTA card without occluding text
-      targetEarthPos.current.set(0, -0.7, -0.3);
-      targetCameraPos.current.set(0, 0, 5.0);
+      // Final CTA: Earth placed directly in the middle so it is fully visible
+      focusCoordinates(20.5937, 78.9629, 0);
+      targetEarthPos.current.set(0, 0, 0);
+      targetCameraPos.current.set(0, 0, isMobile ? 6.5 : 5.7);
     }
 
     if (targetCoords) {
