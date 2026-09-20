@@ -57,19 +57,6 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
               />
             </div>
 
-            {/* Radar Corroboration Bounding Targets */}
-            <div className="absolute top-[32%] left-[38%] w-[26%] h-[28%] border border-[#12A5B8] bg-[#12A5B8]/15 pointer-events-none z-20">
-              <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-[#12A5B8]" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-[#12A5B8]" />
-              <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-[#12A5B8]" />
-              <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#12A5B8]" />
-
-              <div className="absolute -top-6 left-0 bg-[#080E11]/90 border border-[#12A5B8] px-2 py-0.5 font-mono text-[9px] text-[#12A5B8] font-bold flex items-center gap-1.5 whitespace-nowrap rounded-md">
-                <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full animate-ping" />
-                <span>SAR BACKSCATTER CO-REGISTERED</span>
-              </div>
-            </div>
-
             {/* Top-Left Sensor Mode Tag */}
             <div className="absolute top-3 left-3 bg-[#080E11]/85 border border-white/[0.08] px-3 py-1 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-md z-30 rounded-lg shadow-sm">
               <span className="text-[#12A5B8] font-bold block">

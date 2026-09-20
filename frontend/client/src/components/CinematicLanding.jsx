@@ -6,7 +6,6 @@ import {
   Layers,
   Eye,
   Target,
-  Radar,
   ShieldCheck,
   ChevronDown,
   Clock,
@@ -350,7 +349,7 @@ export function CinematicLanding({
           <div className="max-w-7xl w-full mx-auto space-y-6 pointer-events-auto">
             
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
+            <div className="border border-white/[0.08] pb-4 ios-glass-card p-4 sm:p-5 rounded-xl">
               <div>
                 <div className="font-mono text-[10px] sm:text-[11px] text-[#12A5B8] uppercase tracking-[0.16em] font-bold">
                   05 / OPTICAL + SAR
@@ -361,11 +360,6 @@ export function CinematicLanding({
                 <p className="font-sans text-sm sm:text-base text-[#D0E3EA] max-w-2xl mt-2 leading-relaxed">
                   Combine optical and synthetic-aperture radar observations to analyze the same geographic region from complementary sensing perspectives.
                 </p>
-              </div>
-
-              <div className="font-mono text-[11px] text-[#8AA3AD] flex items-center gap-2 flex-shrink-0">
-                <Radar size={13} className="text-[#12A5B8]" />
-                <span>SENTINEL-1 C-BAND + SENTINEL-2 MSI</span>
               </div>
             </div>
 
