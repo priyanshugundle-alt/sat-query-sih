@@ -153,7 +153,7 @@ export function CinematicLanding({
               onClick={() => handleLaunchWorkstation()}
               className="ask-query-btn"
             >
-              <span>ASK QUERY ↗</span>
+              <span>Ask Query</span>
             </button>
           </div>
         </div>
