@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Radar, Eye, Layers, CheckCircle2, ShieldCheck, Activity, Info } from "lucide-react";
+import { Eye, Layers, CheckCircle2, ShieldCheck, Activity, Info } from "lucide-react";
 
 /**
  * OpticalSarFusion — Feature 04: Multimodal Optical + SAR Radar Fusion
@@ -63,12 +63,6 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
                 {fusionMode === "optical" ? "OPTICAL (SENTINEL-2 MSI)" : fusionMode === "sar" ? "SAR (SENTINEL-1 C-BAND)" : "FUSED CROSS-MODAL VIEW"}
               </span>
               <span className="text-[#8AA3AD] text-[9px]">SAME GEOGRAPHIC FOOTPRINT / EPSG:32643</span>
-            </div>
-
-            {/* Bottom-Right Cross-Modal Indicator */}
-            <div className="absolute bottom-3 right-3 bg-[#080E11]/85 border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] text-[#12A5B8] backdrop-blur-md z-30 flex items-center gap-1.5 rounded-lg shadow-sm">
-              <Radar size={12} />
-              <span>RADAR PENETRATION ACTIVE</span>
             </div>
 
           </div>
