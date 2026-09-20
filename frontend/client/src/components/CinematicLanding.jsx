@@ -42,6 +42,7 @@ export function CinematicLanding({
   onStartInvestigation,
   onOpenLibrary,
   onAttachImagery,
+  onLoginSuccess,
 }) {
   const [activeSection, setActiveSection] = useState("hero");
   const [activeSpecialist, setActiveSpecialist] = useState("geochat");
@@ -123,35 +124,26 @@ export function CinematicLanding({
 
         {/* Right Navigation & Action CTAs */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {currentUser ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#040708]/60 border border-white/[0.1] rounded-md font-mono text-xs text-[#D0E3EA]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-              <span className="text-[#12A5B8] font-bold">{currentUser.name}</span>
-            </div>
-          ) : (
-            <>
-              <button
-                id="header-sign-in-btn"
-                onClick={() => {
-                  setAuthMode("signin");
-                  setAuthModalOpen(true);
-                }}
-                className="px-3 sm:px-3.5 py-1.5 font-mono text-xs text-[#FFFFFF] hover:text-[#12A5B8] bg-[#040708]/70 hover:bg-[#040708]/95 border border-white/[0.18] hover:border-[#12A5B8] rounded-md transition-all cursor-pointer backdrop-blur-sm shadow-sm"
-              >
-                SIGN IN
-              </button>
-              <button
-                id="header-log-in-btn"
-                onClick={() => {
-                  setAuthMode("login");
-                  setAuthModalOpen(true);
-                }}
-                className="px-3 sm:px-3.5 py-1.5 font-mono text-xs text-[#FFFFFF] hover:text-[#12A5B8] bg-[#040708]/70 hover:bg-[#040708]/95 border border-white/[0.18] hover:border-[#12A5B8] rounded-md transition-all cursor-pointer backdrop-blur-sm shadow-sm"
-              >
-                LOG IN
-              </button>
-            </>
-          )}
+          <button
+            id="header-sign-up-btn"
+            onClick={() => {
+              setAuthMode("signup");
+              setAuthModalOpen(true);
+            }}
+            className="px-3 sm:px-3.5 py-1.5 font-mono text-xs text-[#FFFFFF] hover:text-[#12A5B8] bg-[#040708]/70 hover:bg-[#040708]/95 border border-white/[0.18] hover:border-[#12A5B8] rounded-md transition-all cursor-pointer backdrop-blur-sm shadow-sm"
+          >
+            SIGN UP
+          </button>
+          <button
+            id="header-log-in-btn"
+            onClick={() => {
+              setAuthMode("login");
+              setAuthModalOpen(true);
+            }}
+            className="px-3 sm:px-3.5 py-1.5 font-mono text-xs text-[#FFFFFF] hover:text-[#12A5B8] bg-[#040708]/70 hover:bg-[#040708]/95 border border-white/[0.18] hover:border-[#12A5B8] rounded-md transition-all cursor-pointer backdrop-blur-sm shadow-sm"
+          >
+            LOG IN
+          </button>
 
           {/* Primary Workstation CTA (Sole Workstation Entry Point on Landing Page) */}
           <button
@@ -790,6 +782,11 @@ export function CinematicLanding({
         onClose={() => setAuthModalOpen(false)}
         onSuccess={(user) => {
           setCurrentUser(user);
+          if (onLoginSuccess) {
+            onLoginSuccess(user);
+          } else {
+            onStartInvestigation();
+          }
         }}
       />
 

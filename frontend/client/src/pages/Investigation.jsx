@@ -23,7 +23,8 @@ import {
   HelpCircle, LogOut, ExternalLink, FileText, CheckCircle2,
   Layers, Search, Globe, ArrowUpRight, Check, X,
   Maximize2, Eye, ShieldCheck, Target, Radar, Activity,
-  Database, RefreshCw, PanelLeftClose, PanelLeftOpen, Trash2
+  Database, RefreshCw, PanelLeftClose, PanelLeftOpen, Trash2,
+  Sun, Moon
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -45,6 +46,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { CommandPaletteModal } from "@/components/CommandPaletteModal";
 import { ShowMeWhyModal } from "@/components/ShowMeWhyModal";
 import { AnalysisDetailsDrawer } from "@/components/AnalysisDetailsDrawer";
+import { UserProfileModal } from "@/components/UserProfileModal";
 
 // ─────────────────────────────────────────────────────────────────
 // SPECIALIST ENGINES CONFIGURATION
@@ -147,8 +149,104 @@ const PROJECTS_CONFIG = [
 ];
 
 export default function Investigation() {
+  // ── Authentication & User Session ──────────────────────────────────
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("satquery_auth_user");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn("Could not read satquery_auth_user", e);
+    }
+    return null;
+  });
+
+  // ── Workstation-Only Theme ('dark' | 'light') ──────────────────────
+  const [workstationTheme, setWorkstationTheme] = useState(() => {
+    try {
+      return localStorage.getItem("satquery_workstation_theme") || "dark";
+    } catch (e) {
+      return "dark";
+    }
+  });
+
+  const toggleWorkstationTheme = () => {
+    const next = workstationTheme === "dark" ? "light" : "dark";
+    setWorkstationTheme(next);
+    try {
+      localStorage.setItem("satquery_workstation_theme", next);
+    } catch (e) {}
+    toast.info(`Workstation switched to ${next.toUpperCase()} mode`);
+  };
+
   // ── View Mode: 'landing' vs 'investigation' ────────────────────────
-  const [viewMode, setViewMode] = useState("landing");
+  // If user is already logged in, enter investigation workstation directly
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem("satquery_auth_user");
+      if (saved) return "investigation";
+    } catch (e) {}
+    return "landing";
+  });
+
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // Derive user initials
+  const userInitials = useMemo(() => {
+    if (!currentUser?.name) return "SA";
+    return currentUser.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }, [currentUser]);
+
+  // Handle successful login or sign-up
+  const handleLoginSuccess = (userData) => {
+    try {
+      localStorage.setItem("satquery_auth_user", JSON.stringify(userData));
+      if (userData?.name) localStorage.setItem("satquery_last_name", userData.name);
+      if (userData?.email) localStorage.setItem("satquery_last_email", userData.email);
+    } catch (e) {}
+    setCurrentUser(userData);
+    setViewMode("investigation");
+    window.history.pushState({ page: "investigation" }, "", window.location.href);
+    toast.success(`Welcome, ${userData?.name || "Analyst"}. Workstation active.`);
+  };
+
+  // Handle explicit logout
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("satquery_auth_user");
+    } catch (e) {}
+    setCurrentUser(null);
+    setViewMode("landing");
+    setProfileMenuOpen(false);
+    setProfileModalOpen(false);
+    window.history.pushState({ page: "landing" }, "", "/");
+    toast.info("Logged out from workstation.");
+  };
+
+  // ── Browser Back-Button Guard ──────────────────────────────────────
+  // Prevent returning to landing page via back button while authenticated
+  useEffect(() => {
+    if (currentUser && viewMode === "investigation") {
+      window.history.pushState({ page: "investigation" }, "", window.location.href);
+
+      const handlePopState = () => {
+        if (currentUser) {
+          window.history.pushState({ page: "investigation" }, "", window.location.href);
+          setViewMode("investigation");
+          toast.info("Session locked in Workstation. Use 'LOG OUT' to return to landing page.", {
+            id: "back-button-guard",
+          });
+        }
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
+  }, [currentUser, viewMode]);
 
   // ── Sidebar & Layout State ────────────────────────────────────────
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -867,6 +965,7 @@ export default function Investigation() {
                 }}
                 onOpenLibrary={() => setImageryLibraryOpen(true)}
                 onAttachImagery={handleFileUpload}
+                onLoginSuccess={handleLoginSuccess}
               />
             </motion.div>
           ) : (
@@ -879,7 +978,9 @@ export default function Investigation() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="flex h-full w-full overflow-hidden relative"
+              className={`flex h-full w-full overflow-hidden relative ${
+                workstationTheme === "light" ? "workstation-light" : ""
+              }`}
             >
               {/* ══════════════════════════════════════════════════════════
                   1. LEFT SIDEBAR (CHATGPT LAYOUT · SATQUERY PALETTE)
@@ -1149,12 +1250,16 @@ export default function Investigation() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-[#B9654D] text-[#FFFFFF] font-bold text-xs flex items-center justify-center flex-shrink-0">
-                        KP
+                      <div className="w-7 h-7 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-xs flex items-center justify-center flex-shrink-0 font-mono">
+                        {userInitials}
                       </div>
                       <div className="truncate">
-                        <div className="font-bold text-xs text-[#F0F6F8] truncate">Kadambari Pingle</div>
-                        <div className="text-[10px] text-[#8AA3AD] font-mono truncate">Satellite Analyst · Gov</div>
+                        <div className="font-bold text-xs text-[#F0F6F8] truncate">
+                          {currentUser?.name || "SatQuery Analyst"}
+                        </div>
+                        <div className="text-[10px] text-[#8AA3AD] font-mono truncate">
+                          {currentUser?.role || "Satellite Analyst"} · {currentUser?.organization ? "NRSC / ISRO" : "Gov"}
+                        </div>
                       </div>
                     </div>
                     <span className="text-[11px] text-[#8AA3AD] font-mono">⬡</span>
@@ -1171,21 +1276,56 @@ export default function Investigation() {
                         className="absolute bottom-full left-2 right-2 mb-2 bg-[#0D171C] border border-[#1C323B] shadow-2xl p-1 font-sans text-xs z-50 rounded-2xl overflow-hidden"
                       >
                         {/* Profile Header Item */}
-                        <div className="p-2 flex items-center justify-between hover:bg-[#132127] cursor-pointer transition-colors border-b border-[#1C323B]/60 pb-2 rounded-xl">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-[#B9654D] text-[#FFFFFF] font-bold text-[10px] flex items-center justify-center">
-                              KP
+                        <div
+                          onClick={() => {
+                            setProfileModalOpen(true);
+                            setProfileMenuOpen(false);
+                          }}
+                          className="p-2 flex items-center justify-between hover:bg-[#132127] cursor-pointer transition-colors border-b border-[#1C323B]/60 pb-2 rounded-xl"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-6 h-6 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-[10px] flex items-center justify-center font-mono flex-shrink-0">
+                              {userInitials}
                             </div>
-                            <div>
-                              <div className="font-bold text-[#F0F6F8] text-xs leading-tight">Kadambari Pingle</div>
-                              <div className="text-[10px] text-[#8AA3AD] font-mono leading-tight">Go</div>
+                            <div className="truncate">
+                              <div className="font-bold text-[#F0F6F8] text-xs leading-tight truncate">
+                                {currentUser?.name || "SatQuery Analyst"}
+                              </div>
+                              <div className="text-[10px] text-[#8AA3AD] font-mono leading-tight truncate">
+                                {currentUser?.email || "analyst@isro.gov.in"}
+                              </div>
                             </div>
                           </div>
-                          <ChevronRight size={14} className="text-[#8AA3AD]" />
+                          <ChevronRight size={14} className="text-[#8AA3AD] flex-shrink-0" />
                         </div>
 
-                        {/* Top Group: Upgrade / Personalization / Profile / Settings */}
+                        {/* Top Group: Profile / Theme Toggle / Upgrade / Settings */}
                         <div className="py-1 space-y-0.5">
+                          <button
+                            onClick={() => {
+                              setProfileModalOpen(true);
+                              setProfileMenuOpen(false);
+                            }}
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
+                          >
+                            <User size={14} className="text-[#12A5B8]" />
+                            <span>View Profile</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              toggleWorkstationTheme();
+                              setProfileMenuOpen(false);
+                            }}
+                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center justify-between transition-colors cursor-pointer rounded-xl"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {workstationTheme === "dark" ? <Sun size={14} className="text-[#12A5B8]" /> : <Moon size={14} className="text-[#0E7C8A]" />}
+                              <span>Theme: {workstationTheme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                            </div>
+                            <span className="text-[9px] font-mono uppercase text-[#8AA3AD]">{workstationTheme}</span>
+                          </button>
+
                           <button
                             onClick={() => {
                               toast.info("SatQuery Pro: Full Multi-Modal Sentinel + Cartosat Archive Access");
@@ -1195,28 +1335,6 @@ export default function Investigation() {
                           >
                             <Sparkles size={14} className="text-[#12A5B8]" />
                             <span>Upgrade plan</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              toast.info("Personalization settings");
-                              setProfileMenuOpen(false);
-                            }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
-                          >
-                            <Sliders size={14} className="text-[#8AA3AD]" />
-                            <span>Personalization</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              toast.info("Kadambari Pingle — Space Applications Analyst");
-                              setProfileMenuOpen(false);
-                            }}
-                            className="w-full px-2 py-1.5 text-left text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
-                          >
-                            <User size={14} className="text-[#8AA3AD]" />
-                            <span>Profile</span>
                           </button>
 
                           <button
@@ -1251,12 +1369,8 @@ export default function Investigation() {
                           </button>
 
                           <button
-                            onClick={() => {
-                              setViewMode("landing");
-                              setProfileMenuOpen(false);
-                              toast.info("Logged out to orbital perspective");
-                            }}
-                            className="w-full px-2 py-1.5 text-left text-[#B9654D] hover:bg-[#132127] flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
+                            onClick={handleLogout}
+                            className="w-full px-2 py-1.5 text-left text-[#FF5454] hover:bg-[#FF5454]/10 flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl"
                           >
                             <LogOut size={14} />
                             <span>Log out</span>
@@ -1303,6 +1417,20 @@ export default function Investigation() {
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
+                    {/* Workstation Light / Dark Theme Toggle */}
+                    <button
+                      onClick={toggleWorkstationTheme}
+                      className="p-1.5 text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border border-white/[0.08] transition-colors rounded-md cursor-pointer flex items-center gap-1.5"
+                      title={`Switch to ${workstationTheme === "dark" ? "Light" : "Dark"} Mode (Workstation only)`}
+                    >
+                      {workstationTheme === "dark" ? (
+                        <Sun size={14} className="text-[#12A5B8]" />
+                      ) : (
+                        <Moon size={14} className="text-[#0E7C8A]" />
+                      )}
+                      <span className="text-[10px] hidden md:inline uppercase">{workstationTheme}</span>
+                    </button>
+
                     <button
                       onClick={() => setReportModalOpen(true)}
                       className="px-3 py-1 text-[11px] text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#0D171C] border border-white/[0.08] transition-colors flex items-center gap-1.5 cursor-pointer rounded-md"
@@ -1311,14 +1439,43 @@ export default function Investigation() {
                       <span className="hidden sm:inline">AUDIT REPORT ↗</span>
                     </button>
 
-                    <button
-                      onClick={() => setViewMode("landing")}
-                      className="px-3 py-1 text-[11px] text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border border-white/[0.08] transition-colors flex items-center gap-1.5 cursor-pointer rounded-md"
-                      title="Return to 3D Orbit Landing"
-                    >
-                      <Globe size={13} className="text-[#12A5B8]" />
-                      <span>ORBIT / LANDING ↗</span>
-                    </button>
+                    {currentUser ? (
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        {/* Operator Profile Pill */}
+                        <button
+                          onClick={() => setProfileModalOpen(true)}
+                          className="px-2.5 py-1 bg-[#0D171C] hover:bg-[#132127] border border-white/[0.1] rounded-md flex items-center gap-2 transition-colors cursor-pointer text-xs"
+                          title="Open Operator Profile"
+                        >
+                          <div className="w-4 h-4 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-[9px] flex items-center justify-center font-mono">
+                            {userInitials}
+                          </div>
+                          <span className="font-semibold text-[#F0F6F8] truncate max-w-[110px] font-sans">
+                            {currentUser.name}
+                          </span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+                        </button>
+
+                        {/* Workstation Logout Button */}
+                        <button
+                          onClick={handleLogout}
+                          className="px-2.5 py-1 text-[11px] text-[#FF5454]/90 hover:text-[#FF5454] hover:bg-[#FF5454]/10 border border-[#FF5454]/25 rounded-md transition-colors flex items-center gap-1.5 cursor-pointer font-mono font-bold"
+                          title="Log out from workstation"
+                        >
+                          <LogOut size={12} />
+                          <span className="hidden sm:inline">LOG OUT</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setViewMode("landing")}
+                        className="px-3 py-1 text-[11px] text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border border-white/[0.08] transition-colors flex items-center gap-1.5 cursor-pointer rounded-md"
+                        title="Return to 3D Orbit Landing"
+                      >
+                        <Globe size={13} className="text-[#12A5B8]" />
+                        <span>ORBIT / LANDING ↗</span>
+                      </button>
+                    )}
                   </div>
                 </header>
 
@@ -1902,6 +2059,14 @@ export default function Investigation() {
           asset={canvasActiveAsset || activeConversation?.stagedAssets?.[0]}
           analysisMode={taskMode === "AUTO" ? "GROUNDING" : taskMode}
           onOpenReport={() => setReportModalOpen(true)}
+        />
+
+        {/* ─── MODAL 7: OPERATOR CREDENTIALS & PROFILE ─── */}
+        <UserProfileModal
+          isOpen={profileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
+          user={currentUser}
+          onLogout={handleLogout}
         />
       </div>
     </BackgroundProvider>
