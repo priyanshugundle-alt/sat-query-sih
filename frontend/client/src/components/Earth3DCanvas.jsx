@@ -11,9 +11,10 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
  * - Normalized GLB loading for /assets/earth/Earth_1_12756.glb
  * - PBR directional sun lighting, natural day/night terminator, and Rayleigh scattering atmospheric limb
  * - Reusable spherical coordinate targeting: focusCoordinates(lat, lon, zoom)
- * - 3D Surface-attached pulsing amber scientific pin
- * - Orbiting satellite model with observation trajectory
- * - Reversible, continuous scroll-driven camera physics (lerp & damping)
+ * - Mouse & Touch interactive revolvable globe (click and drag to rotate)
+ * - Calibrated India centering on page open
+ * - Clean photorealistic planet with no artificial pin/pointer overlay
+ * - Continuous, reversible scroll-driven camera physics
  */
 export function Earth3DCanvas({
   stage = "hero", // 'hero' | 'vqa' | 'grounding' | 'nepal' | 'sar' | 'evidence' | 'final_cta' | 'workstation'
@@ -23,56 +24,50 @@ export function Earth3DCanvas({
   size = "large", // "large" for landing, "small" for workstation background
   visibilityState = "empty", // empty, imageLoaded, analyzing, findingSelected, showMeWhy
 }) {
-  console.log('Earth3DCanvas RENDER', { stage, size, visibilityState, className });
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const earthGroupRef = useRef(null);
-  const pinGroupRef = useRef(null);
-  const satelliteGroupRef = useRef(null);
   const animFrameRef = useRef(null);
   const reduced = useReducedMotion();
+
   // Reduced motion and visibility handling
   const pausedRef = useRef(false);
 
-// Pause animation when tab is hidden
-useEffect(() => {
-  const handleVisibility = () => {
+  // Mouse drag & interaction tracking
+  const isDragging = useRef(false);
+  const prevMousePos = useRef({ x: 0, y: 0 });
+  const isUserInteracting = useRef(false);
+  const spinVelocity = useRef({ x: 0, y: 0 });
+  const lastInteractionTime = useRef(0);
+
+  // Pause animation when tab is hidden
+  useEffect(() => {
+    const handleVisibility = () => {
+      pausedRef.current = document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
     pausedRef.current = document.hidden;
-  };
-  document.addEventListener('visibilitychange', handleVisibility);
-  // Set initial state
-  pausedRef.current = document.hidden;
-  return () => document.removeEventListener('visibilitychange', handleVisibility);
-}, []);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
-// Target world radius
-const WORLD_RADIUS = 2.25;
+  // Target world radius
+  const WORLD_RADIUS = 2.25;
 
-
-  // Transform states for smooth damping - centered on the massive Afro-Eurasian landmass
-  const currentRotation = useRef({ x: 0.20, y: 0.95 });
-  const targetRotation = useRef({ x: 0.20, y: 0.95 });
+  // Transform states for smooth damping - centered directly on India (20.59° N, 78.96° E)
+  const currentRotation = useRef({ x: 0.38, y: 1.50 });
+  const targetRotation = useRef({ x: 0.38, y: 1.50 });
   const currentCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
   const targetCameraPos = useRef(new THREE.Vector3(0, 0, 5.2));
-  const currentEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
-  const targetEarthPos = useRef(new THREE.Vector3(1.15, 0.05, 0));
-
-  // Convert lat/lon to 3D Cartesian coordinates on sphere
-  const latLonToVector3 = useCallback((lat, lon, radius = WORLD_RADIUS) => {
-    const phi = (90 - lat) * (Math.PI / 180);
-    const theta = (lon + 180) * (Math.PI / 180);
-    const x = -(radius * Math.sin(phi) * Math.cos(theta));
-    const z = radius * Math.sin(phi) * Math.sin(theta);
-    const y = radius * Math.cos(phi);
-    return new THREE.Vector3(x, y, z);
-  }, [WORLD_RADIUS]);
+  const currentEarthPos = useRef(new THREE.Vector3(0.85, 0, 0));
+  const targetEarthPos = useRef(new THREE.Vector3(0.85, 0, 0));
 
   // Rotate Earth to center specific lat/lon toward camera
   const focusCoordinates = useCallback((lat, lon, zoom = 0) => {
-    const rotY = -((lon + 90) * (Math.PI / 180));
-    const rotX = (lat * (Math.PI / 180)) * 0.45;
+    // Calibrated for Earth_1_12756.glb: centers target lat/lon directly towards camera
+    const rotY = ((180 - lon) - 15.0) * (Math.PI / 180);
+    const rotX = (lat * (Math.PI / 180)) * 1.05;
     targetRotation.current = { x: rotX, y: rotY };
     const dist = 5.4 - zoom * 2.2;
     targetCameraPos.current.set(0, 0, dist);
@@ -83,39 +78,34 @@ const WORLD_RADIUS = 2.25;
     const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
     if (stage === "hero") {
-      // Hero: Earth prominently framed on the right side
-      targetEarthPos.current.set(isMobile ? 0 : 1.15, isMobile ? -0.30 : 0.05, 0);
-      targetCameraPos.current.set(0, 0, 5.2);
-      targetRotation.current = { x: 0.20, y: 0.95 };
+      // Hero: Earth prominently framed on the right, India facing directly at the user
+      focusCoordinates(20.5937, 78.9629, 0.25);
+      targetEarthPos.current.set(isMobile ? 0 : 1.18, isMobile ? 0.35 : 0, 0);
     } else if (stage === "workstation") {
-      // Workstation: Earth visible upper-right
       targetEarthPos.current.set(isMobile ? 0.5 : 1.7, isMobile ? 0.3 : 0.5, 0);
       targetCameraPos.current.set(0, 0, 6.2);
       targetRotation.current = { x: 0.20, y: -2.80 };
     } else if (stage === "vqa" || stage === "grounding") {
-      // Mumbai: 19.0760° N, 72.8777° E
       focusCoordinates(19.0760, 72.8777, zoomProgress || 0.65);
-      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : -0.95, 0.05, 0);
     } else if (stage === "nepal") {
-      // Syabru Besi, Nepal: 28.15° N, 85.34° E
       focusCoordinates(28.15, 85.34, zoomProgress || 0.7);
-      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : -0.95, 0.05, 0);
     } else if (stage === "sar") {
-      // Optical + SAR swath
       focusCoordinates(28.15, 85.34, zoomProgress || 0.45);
       targetEarthPos.current.set(isMobile ? 0 : 1.05, 0, -0.2);
     } else if (stage === "evidence") {
-      // Evidence background anchor
-      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0, -0.3);
-      targetCameraPos.current.set(0, 0, 5.5);
+      targetEarthPos.current.set(isMobile ? 0 : -0.75, 0, -0.2);
+      targetCameraPos.current.set(0, 0, 5.2);
     } else if (stage === "technical") {
-      // Technical signal background anchor
-      targetEarthPos.current.set(isMobile ? 0 : 0, 0, -0.5);
-      targetCameraPos.current.set(0, 0, 6.0);
-    } else if (stage === "final_cta") {
-      // Final CTA: Earth large and centered
-      targetEarthPos.current.set(0, 0.1, 0);
+      // Frame Earth directly behind the technical pipeline so it glows through the translucent glass cards
+      targetEarthPos.current.set(isMobile ? 0 : 0.1, 0.02, -0.15);
       targetCameraPos.current.set(0, 0, 4.8);
+    } else if (stage === "final_cta") {
+      // Final CTA: Earth placed directly in the middle so it is fully visible
+      focusCoordinates(20.5937, 78.9629, 0);
+      targetEarthPos.current.set(0, 0, 0);
+      targetCameraPos.current.set(0, 0, isMobile ? 6.5 : 5.7);
     }
 
     if (targetCoords) {
@@ -147,25 +137,23 @@ const WORLD_RADIUS = 2.25;
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35;
-    
-    // Transparent background - no flat black rectangle
+    renderer.toneMapping = THREE.LinearToneMapping;
+    renderer.toneMappingExposure = 1.05;
     renderer.setClearColor(0x000000, 0);
     
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 3. Realistic Sunlight & Ambient Illumination (Land is clear, radiant and rich)
-    const ambientLight = new THREE.AmbientLight(0xdde8f5, 1.2);
+    // 3. Natural Sunlight & Ambient Illumination (Zero color grading or tinted casts)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambientLight);
 
-    // Sun positioned from the front-top to illuminate the Indian subcontinent & Asia with golden daylit clarity
-    const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.4);
-    sunLight.position.set(-1.0, 3.5, 5.5);
+    // Front-top directional light ensuring India and the visible hemisphere are in vivid, natural daylight
+    const sunLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    sunLight.position.set(0, 3.2, 5.5);
     scene.add(sunLight);
 
-    const fillLight = new THREE.DirectionalLight(0x386b9c, 0.8);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.45);
     fillLight.position.set(4.0, -1.0, 3.0);
     scene.add(fillLight);
 
@@ -207,92 +195,7 @@ const WORLD_RADIUS = 2.25;
     const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
     earthGroup.add(atmosphereMesh);
 
-    console.log('✓ Added 3D atmospheric sphere around Earth');
-
-    // 5. Pin Root Group
-    const pinGroup = new THREE.Group();
-    earthGroup.add(pinGroup);
-    pinGroupRef.current = pinGroup;
-
-    const create3DPin = (lat, lon, label) => {
-      while (pinGroup.children.length > 0) {
-        pinGroup.remove(pinGroup.children[0]);
-      }
-
-      const pinPos = latLonToVector3(lat, lon, WORLD_RADIUS * 1.008);
-      const pinSubGroup = new THREE.Group();
-      pinSubGroup.position.copy(pinPos);
-      pinSubGroup.lookAt(new THREE.Vector3(0, 0, 0));
-
-      const dotGeo = new THREE.SphereGeometry(0.045, 16, 16);
-      const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A });
-      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
-      pinSubGroup.add(dotMesh);
-
-      const ringGeo = new THREE.RingGeometry(0.08, 0.105, 32);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: 0xE4B65A,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.9,
-      });
-      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-      ringMesh.name = "pulseRing";
-      pinSubGroup.add(ringMesh);
-
-      const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.75 });
-      const linePoints = [
-        new THREE.Vector3(-0.16, 0, 0), new THREE.Vector3(0.16, 0, 0),
-        new THREE.Vector3(0, -0.16, 0), new THREE.Vector3(0, 0.16, 0),
-      ];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
-      const crosshair = new THREE.LineSegments(lineGeo, lineMat);
-      pinSubGroup.add(crosshair);
-
-      pinGroup.add(pinSubGroup);
-    };
-
-    // 6. Orbital Satellite System (Satellite + Elliptical Path)
-    const satGroup = new THREE.Group();
-    scene.add(satGroup);
-    satelliteGroupRef.current = satGroup;
-
-    // Elliptical Orbit Track Line
-    const orbitCurve = new THREE.EllipseCurve(0, 0, 3.2, 1.4, 0, 2 * Math.PI, false, 0);
-    const orbitPoints = orbitCurve.getPoints(120);
-    const orbitGeo = new THREE.BufferGeometry().setFromPoints(
-      orbitPoints.map(p => new THREE.Vector3(p.x, p.y * 0.7, p.y * 0.9))
-    );
-    const orbitMat = new THREE.LineBasicMaterial({
-      color: 0xD49A3A,
-      transparent: true,
-      opacity: 0.22,
-    });
-    const orbitLine = new THREE.Line(orbitGeo, orbitMat);
-    orbitLine.rotation.x = Math.PI / 5;
-    orbitLine.rotation.z = -Math.PI / 12;
-    earthGroup.add(orbitLine);
-
-    // Micro Satellite Mesh
-    const satBodyGeo = new THREE.BoxGeometry(0.06, 0.04, 0.04);
-    const satBodyMat = new THREE.MeshStandardMaterial({ color: 0xE9E5DA, metalness: 0.8, roughness: 0.2 });
-    const satBody = new THREE.Mesh(satBodyGeo, satBodyMat);
-
-    const panelGeo = new THREE.BoxGeometry(0.14, 0.005, 0.05);
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x1A365D, metalness: 0.9, roughness: 0.1 });
-    const panelLeft = new THREE.Mesh(panelGeo, panelMat);
-    panelLeft.position.set(-0.1, 0, 0);
-    const panelRight = new THREE.Mesh(panelGeo, panelMat);
-    panelRight.position.set(0.1, 0, 0);
-
-    const satellite = new THREE.Group();
-    satellite.add(satBody);
-    satellite.add(panelLeft);
-    satellite.add(panelRight);
-    satellite.scale.set(1.2, 1.2, 1.2);
-    satGroup.add(satellite);
-
-    // 7. Load GLB Earth Model
+    // 5. Load GLB Earth Model
     const loader = new GLTFLoader();
     const assetPath = "/assets/earth/Earth_1_12756.glb";
 
@@ -323,7 +226,6 @@ const WORLD_RADIUS = 2.25;
         });
 
         earthGroup.add(earthModel);
-        create3DPin(19.0760, 72.8777, "MUMBAI");
       },
       undefined,
       (error) => {
@@ -336,11 +238,97 @@ const WORLD_RADIUS = 2.25;
         });
         const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
         earthGroup.add(sphereMesh);
-        create3DPin(19.0760, 72.8777, "MUMBAI");
       }
     );
 
-    // 8. Window Resize Handler
+    // 6. Interactive Raycasting & Mouse / Touch Revolving Controls
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const checkHover = (clientX, clientY) => {
+      if (!container || !camera || !earthGroup) return false;
+      const rect = container.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return false;
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(earthGroup.children, true);
+      return intersects.length > 0;
+    };
+
+    const onPointerDown = (e) => {
+      // Left click or touch only
+      if (e.button !== undefined && e.button !== 0) return;
+
+      isDragging.current = true;
+      isUserInteracting.current = true;
+      lastInteractionTime.current = performance.now();
+      prevMousePos.current = { x: e.clientX, y: e.clientY };
+      spinVelocity.current = { x: 0, y: 0 };
+
+      try {
+        container.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      container.style.cursor = "grabbing";
+    };
+
+    const onPointerMove = (e) => {
+      if (isDragging.current) {
+        const deltaX = e.clientX - prevMousePos.current.x;
+        const deltaY = e.clientY - prevMousePos.current.y;
+
+        // Smooth rotation sensitivity
+        const sensitivity = 0.0055;
+        targetRotation.current.y += deltaX * sensitivity;
+        targetRotation.current.x += deltaY * sensitivity;
+        // Clamp vertical tilt to prevent inverted polar spin
+        targetRotation.current.x = Math.max(-1.25, Math.min(1.25, targetRotation.current.x));
+
+        // Track velocity for inertia release
+        spinVelocity.current = {
+          x: deltaX * 0.0035,
+          y: deltaY * 0.0035,
+        };
+
+        prevMousePos.current = { x: e.clientX, y: e.clientY };
+        lastInteractionTime.current = performance.now();
+      } else {
+        const overEarth = checkHover(e.clientX, e.clientY);
+        container.style.cursor = overEarth ? "grab" : "default";
+      }
+    };
+
+    const onPointerUp = (e) => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      lastInteractionTime.current = performance.now();
+      try {
+        container.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+      const overEarth = checkHover(e.clientX, e.clientY);
+      container.style.cursor = overEarth ? "grab" : "default";
+    };
+
+    const onDoubleClick = (e) => {
+      if (checkHover(e.clientX, e.clientY)) {
+        if (stage === "hero") {
+          focusCoordinates(20.5937, 78.9629, 0.25);
+        } else {
+          targetRotation.current = { x: 0.16, y: -2.40 };
+          targetCameraPos.current.set(0, 0, 5.2);
+        }
+        spinVelocity.current = { x: 0, y: 0 };
+        isUserInteracting.current = false;
+      }
+    };
+
+    container.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    container.addEventListener("dblclick", onDoubleClick);
+
+    // 7. Window Resize Handler
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       const w = container.clientWidth || window.innerWidth;
@@ -351,138 +339,80 @@ const WORLD_RADIUS = 2.25;
     };
     window.addEventListener("resize", handleResize);
 
-    // 9. Render & Animation Loop
+    // 8. Render & Animation Loop
     let clock = new THREE.Clock();
     const animate = () => {
-  // If reduced motion is preferred, skip updates that cause motion
-  if (reduced) {
-    renderer.render(scene, camera);
-    animFrameRef.current = requestAnimationFrame(animate);
-    return;
-  }
-  // If tab is hidden, pause dynamic updates but still render static frame
-  if (pausedRef.current) {
-    renderer.render(scene, camera);
-    animFrameRef.current = requestAnimationFrame(animate);
-    return;
-  }
-
-  const time = clock.getElapsedTime();
-
-  currentEarthPos.current.lerp(targetEarthPos.current, 0.045);
-  earthGroup.position.copy(currentEarthPos.current);
-
-  currentCameraPos.current.lerp(targetCameraPos.current, 0.045);
-  camera.position.copy(currentCameraPos.current);
-
-  currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.04;
-  currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.04;
-
-  // Subtle, realistic planetary movement that keeps the landmass centered in view
-  const slowDrift = (stage === "hero" || stage === "final_cta" || stage === "workstation") ? Math.sin(time * 0.15) * 0.08 : 0;
-
-  earthGroup.rotation.x = currentRotation.current.x;
-  earthGroup.rotation.y = currentRotation.current.y + slowDrift;
-
-  const satAngle = time * 0.35;
-  const satX = Math.cos(satAngle) * 3.1;
-  const satY = Math.sin(satAngle) * 1.3;
-  const satZ = Math.sin(satAngle * 0.8) * 1.1;
-  satellite.position.set(
-    currentEarthPos.current.x + satX,
-    currentEarthPos.current.y + satY,
-    currentEarthPos.current.z + satZ
-  );
-  satellite.lookAt(currentEarthPos.current);
-
-  if (pinGroup) {
-    const pulse = (Math.sin(time * 3.6) + 1) * 0.5;
-    pinGroup.traverse((child) => {
-      if (child.name === "pulseRing") {
-        child.scale.set(1 + pulse * 0.45, 1 + pulse * 0.45, 1);
-        child.material.opacity = 0.95 - pulse * 0.55;
+      if (reduced) {
+        renderer.render(scene, camera);
+        animFrameRef.current = requestAnimationFrame(animate);
+        return;
       }
-    });
-  }
+      if (pausedRef.current) {
+        renderer.render(scene, camera);
+        animFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
 
-  renderer.render(scene, camera);
-  animFrameRef.current = requestAnimationFrame(animate);
-};
-  // start the animation loop
-  animate();
+      const time = clock.getElapsedTime();
 
-  // cleanup on unmount
-  return () => {
-    window.removeEventListener("resize", handleResize);
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    if (renderer.domElement && container.contains(renderer.domElement)) {
-      container.removeChild(renderer.domElement);
-    }
-    renderer.dispose();
-  };
+      // Inertia & Momentum physics when user releases drag
+      if (!isDragging.current) {
+        if (Math.abs(spinVelocity.current.x) > 0.00003 || Math.abs(spinVelocity.current.y) > 0.00003) {
+          targetRotation.current.y += spinVelocity.current.x;
+          targetRotation.current.x += spinVelocity.current.y;
+          targetRotation.current.x = Math.max(-1.25, Math.min(1.25, targetRotation.current.x));
+          spinVelocity.current.x *= 0.94; // fluid friction damping
+          spinVelocity.current.y *= 0.94;
+        } else {
+          spinVelocity.current = { x: 0, y: 0 };
+        }
 
-  }, [WORLD_RADIUS, latLonToVector3]);
+        // Resume subtle planetary drift after 3.5s idle
+        const timeSinceTouch = performance.now() - lastInteractionTime.current;
+        if (timeSinceTouch > 3500) {
+          isUserInteracting.current = false;
+          targetRotation.current.y += 0.0007;
+        }
+      }
 
-  // Update Pin when target coordinates or stage change
-  useEffect(() => {
-    if (!pinGroupRef.current) return;
-    const pinGroup = pinGroupRef.current;
+      currentEarthPos.current.lerp(targetEarthPos.current, 0.045);
+      earthGroup.position.copy(currentEarthPos.current);
 
-    while (pinGroup.children.length > 0) {
-      pinGroup.remove(pinGroup.children[0]);
-    }
+      currentCameraPos.current.lerp(targetCameraPos.current, 0.045);
+      camera.position.copy(currentCameraPos.current);
 
-    let lat = 19.0760;
-    let lon = 72.8777;
-    let label = "MUMBAI";
+      currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.1;
+      currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.1;
 
-    if (stage === "nepal" || stage === "sar") {
-      lat = 28.15;
-      lon = 85.34;
-      label = "SYABRU BESI / NEPAL";
-    } else if (targetCoords) {
-      lat = targetCoords.lat;
-      lon = targetCoords.lon;
-      label = targetCoords.label || "TARGET";
-    }
+      earthGroup.rotation.x = currentRotation.current.x;
+      earthGroup.rotation.y = currentRotation.current.y;
 
-    const pinPos = latLonToVector3(lat, lon, WORLD_RADIUS * 1.008);
-    const pinSubGroup = new THREE.Group();
-    pinSubGroup.position.copy(pinPos);
-    pinSubGroup.lookAt(new THREE.Vector3(0, 0, 0));
+      renderer.render(scene, camera);
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
 
-    const dotGeo = new THREE.SphereGeometry(0.045, 16, 16);
-    const dotMat = new THREE.MeshBasicMaterial({ color: 0xD49A3A });
-    const dotMesh = new THREE.Mesh(dotGeo, dotMat);
-    pinSubGroup.add(dotMesh);
+    animate();
 
-    const ringGeo = new THREE.RingGeometry(0.08, 0.105, 32);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0xE4B65A,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.9,
-    });
-    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-    ringMesh.name = "pulseRing";
-    pinSubGroup.add(ringMesh);
+    return () => {
+      container.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      container.removeEventListener("dblclick", onDoubleClick);
+      window.removeEventListener("resize", handleResize);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (renderer.domElement && container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
 
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xD49A3A, transparent: true, opacity: 0.75 });
-    const linePoints = [
-      new THREE.Vector3(-0.16, 0, 0), new THREE.Vector3(0.16, 0, 0),
-      new THREE.Vector3(0, -0.16, 0), new THREE.Vector3(0, 0.16, 0),
-    ];
-    const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
-    const crosshair = new THREE.LineSegments(lineGeo, lineMat);
-    pinSubGroup.add(crosshair);
-
-    pinGroup.add(pinSubGroup);
-  }, [stage, targetCoords, WORLD_RADIUS, latLonToVector3]);
+  }, [WORLD_RADIUS, reduced]);
 
   return (
     <div
       ref={mountRef}
-      className={`w-full h-full relative overflow-hidden pointer-events-none ${className}`}
+      className={`w-full h-full relative overflow-hidden pointer-events-auto cursor-grab active:cursor-grabbing ${className}`}
       style={
         size === "small"
           ? {

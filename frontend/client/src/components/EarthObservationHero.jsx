@@ -39,18 +39,6 @@ export function EarthObservationHero() {
         </g>
       </svg>
 
-      <div className="absolute top-20 left-8 font-mono text-[10px] text-[#687078] tracking-widest opacity-60">
-        LAT 18°31'13"N • LON 73°51'24"E • GSD 0.5M
-      </div>
-      <div className="absolute top-20 right-8 font-mono text-[10px] text-[#687078] tracking-widest opacity-60">
-        SENTINEL-2 / LANDSAT-9 • ORBIT INC 98.62°
-      </div>
-      <div className="absolute bottom-12 left-8 font-mono text-[10px] text-[#687078] tracking-widest opacity-60">
-        WGS 84 / UTM ZONE 43N • EPSG:32643
-      </div>
-      <div className="absolute bottom-12 right-8 font-mono text-[10px] text-[#687078] tracking-widest opacity-60">
-        SATQUERY SATELLITE INTELLIGENCE
-      </div>
     </div>
   );
 }

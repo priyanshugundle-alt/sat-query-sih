@@ -1,6 +1,6 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Radar, Eye, Layers, CheckCircle2, ShieldCheck, Activity } from "lucide-react";
+import { Eye, Layers, CheckCircle2, ShieldCheck, Activity, Info } from "lucide-react";
 
 /**
  * OpticalSarFusion — Feature 04: Multimodal Optical + SAR Radar Fusion
@@ -17,8 +17,8 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
   const [fusionMode, setFusionMode] = useState("fused"); // 'optical' | 'sar' | 'fused'
   const [blendOpacity, setBlendOpacity] = useState(50); // 0 (100% optical) to 100 (100% SAR)
 
-  const opticalImg = "/satquery-prism-optical.png";
-  const sarImg = "/satquery-prism-sar.png";
+  const opticalImg = "/assets/imagery/landcover_sample.jpg";
+  const sarImg = "/assets/imagery/landcover_sar_sample.jpg";
 
   return (
     <div className="w-full flex flex-col gap-6 font-sans">
@@ -27,9 +27,9 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* Left/Center (Col 1-8): Dual Modality Canvas */}
-        <div className="lg:col-span-8 flex flex-col gap-3">
+        <div className="lg:col-span-8 flex flex-col gap-3 h-full">
           
-          <div className="relative w-full bg-[#0B0D0C] border border-[#2A2E2B] overflow-hidden select-none min-h-[440px] md:min-h-[520px] flex items-center justify-center">
+          <div className="flex-1 relative w-full bg-[#080E11] border border-white/[0.08] overflow-hidden select-none min-h-[400px] flex items-center justify-center rounded-xl ios-glass-card">
             
             {/* Base Layer: Optical Multispectral */}
             <div className="absolute inset-0">
@@ -57,60 +57,41 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
               />
             </div>
 
-            {/* Radar Corroboration Bounding Targets */}
-            <div className="absolute top-[32%] left-[38%] w-[26%] h-[28%] border border-[#76AEB0] bg-[#76AEB0]/15 pointer-events-none z-20">
-              <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-[#76AEB0]" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-[#76AEB0]" />
-              <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-[#76AEB0]" />
-              <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#76AEB0]" />
-
-              <div className="absolute -top-6 left-0 bg-[#0B0D0C]/90 border border-[#76AEB0] px-2 py-0.5 font-mono text-[9px] text-[#76AEB0] font-bold flex items-center gap-1.5 whitespace-nowrap">
-                <span className="w-1.5 h-1.5 bg-[#76AEB0] rounded-full animate-ping" />
-                <span>SAR BACKSCATTER CO-REGISTERED</span>
-              </div>
-            </div>
-
             {/* Top-Left Sensor Mode Tag */}
-            <div className="absolute top-3 left-3 bg-[#0B0D0C]/85 border border-[#2A2E2B] px-3 py-1 font-mono text-[10px] text-[#E9E5DA] backdrop-blur-sm z-30">
-              <span className="text-[#D49A3A] font-bold block">
+            <div className="absolute top-3 left-3 bg-[#080E11]/85 border border-white/[0.08] px-3 py-1 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-md z-30 rounded-lg shadow-sm">
+              <span className="text-[#12A5B8] font-bold block">
                 {fusionMode === "optical" ? "OPTICAL (SENTINEL-2 MSI)" : fusionMode === "sar" ? "SAR (SENTINEL-1 C-BAND)" : "FUSED CROSS-MODAL VIEW"}
               </span>
-              <span className="text-[#9A9A90] text-[9px]">SAME GEOGRAPHIC FOOTPRINT / EPSG:32643</span>
-            </div>
-
-            {/* Bottom-Right Cross-Modal Indicator */}
-            <div className="absolute bottom-3 right-3 bg-[#0B0D0C]/85 border border-[#76AEB0] px-2.5 py-1 font-mono text-[9px] text-[#76AEB0] backdrop-blur-sm z-30 flex items-center gap-1.5">
-              <Radar size={12} />
-              <span>RADAR PENETRATION ACTIVE</span>
+              <span className="text-[#8AA3AD] text-[9px]">SAME GEOGRAPHIC FOOTPRINT / EPSG:32643</span>
             </div>
 
           </div>
 
           {/* Fusion Controls Bar */}
-          <div className="p-3 bg-[#151817] border border-[#2A2E2B] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs">
+          <div className="p-3 ios-glass-card border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs rounded-xl flex-shrink-0">
             
             {/* View Mode Buttons */}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setFusionMode("optical")}
-                className={`px-3 py-1 text-xs border transition-colors ${
-                  fusionMode === "optical" ? "bg-[#D49A3A] text-[#0B0D0C] border-[#D49A3A] font-bold" : "bg-[#0B0D0C] text-[#9A9A90] border-[#2A2E2B]"
+                className={`px-3 py-1.5 text-xs border transition-all rounded-md cursor-pointer ${
+                  fusionMode === "optical" ? "ios-glass-primary text-[#FFFFFF] font-bold shadow-[0_0_10px_rgba(18,165,184,0.3)]" : "bg-[#080E11] text-[#8AA3AD] border-white/[0.1] hover:text-[#FFFFFF]"
                 }`}
               >
                 OPTICAL
               </button>
               <button
                 onClick={() => setFusionMode("sar")}
-                className={`px-3 py-1 text-xs border transition-colors ${
-                  fusionMode === "sar" ? "bg-[#76AEB0] text-[#0B0D0C] border-[#76AEB0] font-bold" : "bg-[#0B0D0C] text-[#9A9A90] border-[#2A2E2B]"
+                className={`px-3 py-1.5 text-xs border transition-all rounded-md cursor-pointer ${
+                  fusionMode === "sar" ? "bg-[#0B4F58] text-[#FFFFFF] border-[#12A5B8] font-bold shadow-[0_0_10px_rgba(18,165,184,0.3)]" : "bg-[#080E11] text-[#8AA3AD] border-white/[0.1] hover:text-[#FFFFFF]"
                 }`}
               >
                 SAR RADAR
               </button>
               <button
                 onClick={() => setFusionMode("fused")}
-                className={`px-3 py-1 text-xs border transition-colors ${
-                  fusionMode === "fused" ? "bg-[#E4B65A] text-[#0B0D0C] border-[#E4B65A] font-bold" : "bg-[#0B0D0C] text-[#9A9A90] border-[#2A2E2B]"
+                className={`px-3 py-1.5 text-xs border transition-all rounded-md cursor-pointer ${
+                  fusionMode === "fused" ? "bg-[#12A5B8] text-[#040708] border-[#12A5B8] font-bold shadow-[0_0_10px_rgba(18,165,184,0.4)]" : "bg-[#080E11] text-[#8AA3AD] border-white/[0.1] hover:text-[#FFFFFF]"
                 }`}
               >
                 FUSED ⊙
@@ -120,16 +101,16 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
             {/* Blend Slider (When Fused) */}
             {fusionMode === "fused" && (
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="text-[10px] text-[#D49A3A]">OPTICAL</span>
+                <span className="text-[10px] text-[#8AA3AD]">OPTICAL</span>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={blendOpacity}
                   onChange={(e) => setBlendOpacity(Number(e.target.value))}
-                  className="w-32 accent-[#76AEB0] cursor-pointer"
+                  className="w-32 accent-[#12A5B8] cursor-pointer"
                 />
-                <span className="text-[10px] text-[#76AEB0]">SAR</span>
+                <span className="text-[10px] text-[#12A5B8]">SAR</span>
               </div>
             )}
 
@@ -138,73 +119,84 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
         </div>
 
         {/* Right (Col 9-12): Cross-Modal Natural Language Query Panel */}
-        <div className="lg:col-span-4 flex flex-col justify-between p-5 bg-[#151817] border border-[#2A2E2B]">
+        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl space-y-3 h-full">
           
-          <div className="space-y-4">
-            
+          <div>
             {/* Header / Query */}
             <div>
-              <div className="font-mono text-[9px] text-[#76AEB0] uppercase font-bold tracking-widest mb-1">
+              <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
                 MULTIMODAL QUERY / FUSION
               </div>
-              <div className="text-sm font-bold text-[#F3F0E8]">
+              <div className="text-sm font-bold text-[#FFFFFF]">
                 "Does the structure identified in the optical image have corresponding SAR evidence?"
               </div>
             </div>
 
+            {/* Feature Capability Overview */}
+            <div className="p-2.5 bg-[#080E11]/70 border border-white/[0.06] rounded-lg space-y-1 mt-3">
+              <div className="flex items-center gap-1.5 text-[9px] font-mono text-[#8AA3AD] uppercase font-semibold">
+                <Info size={11} className="text-[#12A5B8]" />
+                <span>HOW THIS FEATURE WORKS</span>
+              </div>
+              <p className="font-sans text-[11px] text-[#D0E3EA] leading-relaxed">
+                Fuses optical multispectral imagery with Sentinel-1 SAR C-band microwave backscatter to corroborate physical structures through cloud cover, smoke, and varying solar illumination.
+              </p>
+            </div>
+
             {/* Scientific Cross-Modal Findings */}
-            <div className="space-y-2.5 pt-3 border-t border-[#2A2E2B] font-mono text-xs">
+            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs mt-3">
               
-              <div className="p-2.5 bg-[#0B0D0C] border-l-2 border-[#D49A3A]">
-                <div className="text-[9px] font-bold text-[#D49A3A] uppercase tracking-wider mb-0.5">
+              <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#12A5B8] rounded-lg">
+                <div className="text-[9px] font-bold text-[#12A5B8] uppercase tracking-wider mb-0.5">
                   OPTICAL EVIDENCE
                 </div>
-                <div className="font-sans text-xs text-[#E9E5DA] leading-relaxed">
-                  Visible surface geometry and roof footprint identified in Sentinel-2 multispectral band composite.
+                <div className="font-sans text-xs text-[#F0F6F8]">
+                  Identified rectangular commercial footprint with high spectral reflectance.
                 </div>
               </div>
 
-              <div className="p-2.5 bg-[#0B0D0C] border-l-2 border-[#76AEB0]">
-                <div className="text-[9px] font-bold text-[#76AEB0] uppercase tracking-wider mb-0.5">
-                  SAR EVIDENCE
+              <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#0E7C8A] rounded-lg">
+                <div className="text-[9px] font-bold text-[#0E7C8A] uppercase tracking-wider mb-0.5">
+                  SAR RADAR CORROBORATION
                 </div>
-                <div className="font-sans text-xs text-[#E9E5DA] leading-relaxed">
-                  Distinct double-bounce microwave dielectric reflection in C-Band VV polarization confirms reinforced physical structure.
+                <div className="font-sans text-xs text-[#F0F6F8]">
+                  C-band backscatter confirms strong metallic corner-reflector dihedral return.
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#22D3EE] rounded-lg">
+                <div className="text-[9px] font-bold text-[#22D3EE] uppercase tracking-wider mb-0.5">
+                  CROSS-SENSOR CONCLUSION
+                </div>
+                <div className="font-sans text-xs text-[#F0F6F8]">
+                  Confirmed permanent industrial structure. Zero shadow or optical artifact.
                 </div>
               </div>
 
             </div>
 
-            {/* Verification Metadata */}
-            <div className="pt-2 border-t border-[#2A2E2B] space-y-1.5 font-mono text-[10px]">
-              <div className="flex justify-between py-0.5">
-                <span className="text-[#9A9A90]">CROSS-MODAL SUPPORT</span>
-                <span className="text-[#68745C] font-bold">CONFIRMED (AVAILABLE)</span>
+            {/* Sensor Source Details */}
+            <div className="pt-2 border-t border-[#1C323B] space-y-1 font-mono text-[10px] mt-3">
+              <div className="flex justify-between">
+                <span className="text-[#8AA3AD]">OPTICAL PASS</span>
+                <span className="text-[#FFFFFF]">Sentinel-2 MSI (10m)</span>
               </div>
-              <div className="flex justify-between py-0.5">
-                <span className="text-[#9A9A90]">MODEL CONFIDENCE</span>
-                <span className="text-[#E4B65A] font-bold">92.8% (CALIBRATED)</span>
+              <div className="flex justify-between">
+                <span className="text-[#8AA3AD]">RADAR PASS</span>
+                <span className="text-[#12A5B8]">Sentinel-1 C-Band SAR (GRD)</span>
               </div>
-              <div className="flex justify-between py-0.5">
-                <span className="text-[#9A9A90]">TARGET ENGINE</span>
-                <span className="text-[#76AEB0]">OpticalSAR-Fusion (EarthGPT)</span>
+              <div className="flex justify-between">
+                <span className="text-[#8AA3AD]">CO-REGISTRATION</span>
+                <span className="text-[#22D3EE]">&lt; 0.4 px GeoTIFF Alignment</span>
               </div>
             </div>
 
-          </div>
+            {/* Specialist Engine */}
+            <div className="pt-2 border-t border-[#1C323B] flex items-center justify-between font-mono text-[9px] text-[#8AA3AD] mt-2">
+              <span>SPECIALIST ENGINE</span>
+              <span className="text-[#12A5B8]">OpticalSAR-Fusion (EarthGPT)</span>
+            </div>
 
-          {/* Action Trigger */}
-          <div className="pt-4 border-t border-[#2A2E2B] mt-4">
-            <button
-              onClick={() => onInvestigateInWorkstation && onInvestigateInWorkstation({
-                query: "Corroborate optical structure with SAR radar scene.",
-                mode: "FUSION"
-              })}
-              className="w-full py-2 bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-mono font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
-            >
-              <span>RUN FUSION INVESTIGATION</span>
-              <span>↗</span>
-            </button>
           </div>
 
         </div>

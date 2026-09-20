@@ -50,11 +50,11 @@ export function CommandPaletteModal({
     { id: "upload", label: "Upload Satellite Raster (GeoTIFF / PNG)", icon: Upload, action: onUploadClick, category: "Actions" },
     { id: "catalog", label: "Browse Benchmark Satellite Catalog", icon: Database, action: onOpenLibrary, category: "Actions" },
     { id: "vqa", label: "Switch to Visual QA (GeoChat-VQA)", icon: Eye, action: () => onSelectMode("VQA"), category: "Specialist Tools" },
-    { id: "grounding", label: "Switch to Spatial Grounding (GroundingDINO)", icon: Target, action: () => onSelectMode("GROUNDING"), category: "Specialist Tools" },
+    { id: "grounding", label: "Switch to Spatial Grounding (GeoChat-Grounding)", icon: Target, action: () => onSelectMode("GROUNDING"), category: "Specialist Tools" },
     { id: "change", label: "Switch to Bi-Temporal Change (CDVQA)", icon: Layers, action: () => onSelectMode("CHANGE"), category: "Specialist Tools" },
     { id: "fusion", label: "Switch to Optical + SAR Fusion (EarthGPT)", icon: Activity, action: () => onSelectMode("FUSION"), category: "Specialist Tools" },
     { id: "focus", label: "Toggle Focus Canvas Mode (88% Viewport)", icon: Maximize2, action: onToggleFocus, category: "View" },
-    { id: "report", label: "Generate ISRO / Defense Analysis Report (PDF)", icon: FileText, action: onOpenReport, category: "Outputs" },
+    { id: "report", label: "Generate Defense Analysis Report (PDF)", icon: FileText, action: onOpenReport, category: "Outputs" },
     { id: "settings", label: "System & Model Configuration", icon: Sliders, action: onOpenSettings, category: "System" },
     { id: "orbit", label: "Return to Orbit (Cinematic Landing View)", icon: Globe, action: onReturnToOrbit, category: "Navigation" },
   ];
@@ -65,26 +65,26 @@ export function CommandPaletteModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-100">
-      <div className="bg-[#151817] border border-[#2A2E2B] w-full max-w-xl shadow-[0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden font-mono text-xs">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-100">
+      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] overflow-hidden font-mono text-xs rounded-2xl">
         {/* Search Header */}
-        <div className="p-3 bg-[#0B0D0C] border-b border-[#2A2E2B] flex items-center gap-3">
-          <Search size={15} className="text-[#D49A3A]" />
+        <div className="p-3 bg-[#040708] border-b border-[#1C323B] flex items-center gap-3">
+          <Search size={15} className="text-[#12A5B8]" />
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or search action (Ctrl+K)..."
-            className="w-full bg-transparent border-none outline-none text-[#F3F0E8] placeholder:text-[#9A9A90] font-sans text-xs"
+            className="w-full bg-transparent border-none outline-none text-[#FFFFFF] placeholder:text-[#8AA3AD] font-sans text-xs"
           />
-          <span className="px-1.5 py-0.5 bg-[#1D211F] text-[#9A9A90] text-[9px]">ESC</span>
+          <span className="px-1.5 py-0.5 bg-[#132127] border border-[#1C323B] text-[#8AA3AD] text-[9px] rounded-md">ESC</span>
         </div>
 
         {/* Commands List */}
         <div className="max-h-80 overflow-y-auto p-2 space-y-1">
           {filtered.length === 0 ? (
-            <div className="p-4 text-center text-[#9A9A90] text-[11px]">
+            <div className="p-4 text-center text-[#8AA3AD] text-[11px]">
               No matching commands found.
             </div>
           ) : (
@@ -97,13 +97,13 @@ export function CommandPaletteModal({
                     cmd.action();
                     onClose();
                   }}
-                  className="px-3 py-2 flex items-center justify-between hover:bg-[#1D211F] hover:text-[#D49A3A] text-[#E9E5DA] cursor-pointer transition-colors"
+                  className="px-3 py-2 flex items-center justify-between hover:bg-[#132127] hover:text-[#FFFFFF] text-[#F0F6F8] cursor-pointer transition-colors rounded-xl group"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon size={14} className="text-[#9A9A90]" />
+                    <Icon size={14} className="text-[#8AA3AD] group-hover:text-[#12A5B8] transition-colors" />
                     <span className="font-sans text-xs">{cmd.label}</span>
                   </div>
-                  <span className="text-[9px] text-[#9A9A90]/60 uppercase tracking-widest">
+                  <span className="text-[9px] text-[#8AA3AD]/70 uppercase tracking-widest">
                     {cmd.category}
                   </span>
                 </div>
@@ -113,9 +113,9 @@ export function CommandPaletteModal({
         </div>
 
         {/* Footer */}
-        <div className="p-2.5 bg-[#0B0D0C] border-t border-[#2A2E2B] flex items-center justify-between text-[9px] text-[#9A9A90]">
+        <div className="p-2.5 bg-[#040708] border-t border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD]">
           <span>SATQUERY COMMAND DISPATCHER</span>
-          <span className="text-[#D49A3A]">SIH26167 · ISRO</span>
+          <span className="text-[#12A5B8] font-bold">SPACE TECHNOLOGY</span>
         </div>
       </div>
     </div>
