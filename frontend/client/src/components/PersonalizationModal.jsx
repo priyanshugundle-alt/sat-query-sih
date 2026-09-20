@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "react"
+import { motion, AnimatePresence } from "framer-motion";
 import { Globe, X, Check, Search, Sparkles, Layers, Sliders, Volume2, ShieldCheck, Compass } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { toast } from "sonner";
