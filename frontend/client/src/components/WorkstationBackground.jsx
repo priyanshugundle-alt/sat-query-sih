@@ -1,28 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { Earth3DCanvas } from '@/components/Earth3DCanvas';
-import { useBackground } from '@/context/BackgroundStateContext';
 
 /**
- * WorkstationBackground - 3D Earth embedded in subtle deep space
+ * WorkstationBackground - Subtle deep space environment for Investigation Workstation
  *
- * Creates atmospheric environment that blends Earth → atmosphere → deep space
- * No flat black rectangle effect, natural spatial depth
+ * Creates an atmospheric environment with cosmic black & dark cyan depth and sparse stars,
+ * without rendering the 3D Earth globe.
  */
 export const WorkstationBackground = () => {
-  const { visibilityState } = useBackground();
   const spaceCanvasRef = useRef(null);
-
-  // Earth visibility based on investigation state
-  const earthOpacity = (() => {
-    switch (visibilityState) {
-      case 'empty':       return 0.80;
-      case 'imageLoaded': return 0.60;
-      case 'analyzing':   return 0.50;
-      case 'findingSelected': return 0.40;
-      case 'showMeWhy':   return 0.30;
-      default:            return 0.80;
-    }
-  })();
 
   // Subtle deep space environment with atmospheric depth
   useEffect(() => {
@@ -56,34 +41,25 @@ export const WorkstationBackground = () => {
       time += 0.008;
       ctx.clearRect(0, 0, width, height);
 
-      // Base deep space environment (subtle gradients, not flat black)
+      // Base deep space environment (subtle cyan-black gradients, not flat black)
       const baseGrad = ctx.createRadialGradient(
         width * 0.5, height * 0.5, 0,
         width * 0.5, height * 0.5, Math.max(width, height) * 0.8
       );
-      baseGrad.addColorStop(0, "#151817");      // Subtle graphite
-      baseGrad.addColorStop(0.7, "#0F1211");   // Transition
-      baseGrad.addColorStop(1, "#0B0D0C");     // Obsidian
+      baseGrad.addColorStop(0, "#0D171C");      // Dark cyan surface
+      baseGrad.addColorStop(0.7, "#080E11");   // Transition cosmic black
+      baseGrad.addColorStop(1, "#040708");     // Void black
       ctx.fillStyle = baseGrad;
       ctx.fillRect(0, 0, width, height);
 
       // Sparse stars with subtle twinkle
       stars.forEach(star => {
         const twinkle = 0.6 + 0.4 * Math.sin(time * star.twinkleSpeed * 100 + star.phase);
-        ctx.fillStyle = `rgba(233, 229, 218, ${star.alpha * twinkle * 0.8})`;
+        ctx.fillStyle = `rgba(240, 246, 248, ${star.alpha * twinkle * 0.8})`;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         ctx.fill();
       });
-
-      // Subtle orbital elements
-      ctx.strokeStyle = "rgba(212, 154, 58, 0.06)";
-      ctx.lineWidth = 0.8;
-      ctx.setLineDash([2, 8]);
-      ctx.beginPath();
-      ctx.ellipse(width * 0.75, height * 0.25, 200, 120, -Math.PI / 15, 0, Math.PI * 1.2);
-      ctx.stroke();
-      ctx.setLineDash([]);
 
       animId = requestAnimationFrame(render);
     };
@@ -98,40 +74,16 @@ export const WorkstationBackground = () => {
 
   return (
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-      
       {/* Deep Space Environment Layer */}
       <canvas 
         ref={spaceCanvasRef}
         className="absolute inset-0 w-full h-full"
         style={{ 
-          opacity: earthOpacity * 0.7,
+          opacity: 0.7,
           transition: 'opacity 1.2s ease'
         }}
       />
-
-      {/* 3D Earth Layer - Full viewport coverage, no clipping */}
-      <div
-        className="absolute inset-0 overflow-visible"
-        style={{
-          opacity: earthOpacity,
-          transition: 'opacity 1.2s ease',
-          // Subtle atmospheric fade - centered on Earth's actual position
-          // Much gentler fade, less aggressive clipping
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 70% at 72% 28%, black 30%, rgba(0,0,0,0.9) 60%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.2) 95%, transparent 100%)',
-          maskImage: 'radial-gradient(ellipse 60% 70% at 72% 28%, black 30%, rgba(0,0,0,0.9) 60%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.2) 95%, transparent 100%)'
-        }}
-      >
-        {/*
-          Real 3D Earth using existing Earth3DCanvas + Earth_1_12756.glb
-          NO size prop = defaults to "large" for full viewport coverage
-          stage="workstation" positions Earth upper-right with proper depth
-        */}
-        <Earth3DCanvas
-          stage="workstation"
-          visibilityState={visibilityState}
-          className="pointer-events-none"
-        />
-      </div>
     </div>
   );
 };
+
