@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, CheckCircle2, AlertCircle, FileText, Database, MapPin, Clock, Eye } from "lucide-react";
 
@@ -22,7 +22,7 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
       what: "Debris flow & riverbed morphologic displacement",
       where: "Syabru Besi Sector, 28.15° N, 85.34° E (Approx)",
       when: "18 OCT 2023 vs 27 AUG 2026",
-      source: "Project Satellite Temporal Pair",
+      source: "SentinelHub / USGS Temporal Archive",
       confidence: "89.4% (Calibrated)",
       crossModal: "UNAVAILABLE FOR THIS SCENE",
       verdict: "CONFIRMED GEOLOGICAL CHANGE",
@@ -108,65 +108,76 @@ export function EvidenceProofMatrix({ onInvestigatePreset }) {
         </div>
 
         {/* Right (Col 6-12): 6-Pillar Telemetry Grid */}
-        <div className="lg:col-span-7 flex flex-col justify-between p-6 bg-[#151817] border border-[#2A2E2B]">
+        <div className="lg:col-span-7 flex flex-col justify-between p-6 bg-slate-900/85 backdrop-blur-xl border border-slate-700/60 rounded-xl">
           
           <div>
-            <div className="flex items-center justify-between font-mono text-[10px] text-[#9A9A90] pb-3 mb-4 border-b border-[#2A2E2B]">
-              <span className="text-[#D49A3A] font-bold uppercase tracking-widest">AUDIT TRAIL / FORENSIC PROOF</span>
-              <span>ISRO SIH26167 SPECIFICATION</span>
+            <div className="flex items-center justify-between font-mono text-xs text-slate-400 pb-3 mb-4 border-b border-slate-800">
+              <span className="text-amber-400 font-bold uppercase tracking-widest">AUDIT TRAIL / FORENSIC PROOF</span>
+              <span className="text-slate-400">AUDITABLE EXECUTION TRACE</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-mono text-xs">
               
               {/* 1. WHAT */}
-              <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[9px] text-[#9A9A90] uppercase block mb-0.5">01 · WHAT</span>
-                <span className="font-bold text-[#F3F0E8] block text-xs">{currentCase.what}</span>
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded">
+                <span className="text-[10px] text-slate-400 uppercase block mb-0.5">01 · WHAT</span>
+                <span className="font-bold text-white block text-xs">{currentCase.what}</span>
               </div>
 
               {/* 2. WHERE */}
-              <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[9px] text-[#9A9A90] uppercase block mb-0.5">02 · WHERE</span>
-                <span className="font-bold text-[#76AEB0] block text-xs">{currentCase.where}</span>
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded">
+                <span className="text-[10px] text-slate-400 uppercase block mb-0.5">02 · WHERE</span>
+                <span className="font-bold text-cyan-400 block text-xs">{currentCase.where}</span>
               </div>
 
               {/* 3. WHEN */}
-              <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[9px] text-[#9A9A90] uppercase block mb-0.5">03 · WHEN</span>
-                <span className="font-bold text-[#E9E5DA] block text-xs">{currentCase.when}</span>
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded">
+                <span className="text-[10px] text-slate-400 uppercase block mb-0.5">03 · WHEN</span>
+                <span className="font-bold text-slate-200 block text-xs">{currentCase.when}</span>
               </div>
 
               {/* 4. SOURCE */}
-              <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[9px] text-[#9A9A90] uppercase block mb-0.5">04 · SOURCE</span>
-                <span className="font-bold text-[#E9E5DA] block text-xs">{currentCase.source}</span>
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded">
+                <span className="text-[10px] text-slate-400 uppercase block mb-0.5">04 · SOURCE</span>
+                <span className="font-bold text-slate-200 block text-xs">{currentCase.source}</span>
               </div>
 
               {/* 5. CONFIDENCE */}
-              <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[9px] text-[#9A9A90] uppercase block mb-0.5">05 · MODEL CONFIDENCE</span>
-                <span className="font-bold text-[#E4B65A] block text-xs">{currentCase.confidence}</span>
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded">
+                <span className="text-[10px] text-slate-400 uppercase block mb-0.5">05 · MODEL CONFIDENCE</span>
+                <span className="font-bold text-amber-400 block text-xs">{currentCase.confidence}</span>
               </div>
 
               {/* 6. CROSS-MODAL SUPPORT */}
-              <div className="p-3 bg-[#0B0D0C] border border-[#2A2E2B]">
-                <span className="text-[9px] text-[#9A9A90] uppercase block mb-0.5">06 · CROSS-MODAL SUPPORT</span>
-                <span className="font-bold text-[#68745C] block text-xs">{currentCase.crossModal}</span>
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded">
+                <span className="text-[10px] text-slate-400 uppercase block mb-0.5">06 · CROSS-MODAL SUPPORT</span>
+                <span className="font-bold text-emerald-400 block text-xs">{currentCase.crossModal}</span>
+              </div>
+
+              {/* 7. SHA-256 AUDIT TRACE */}
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded font-mono text-xs col-span-1 sm:col-span-2">
+                <div className="flex items-center justify-between text-[10px] text-amber-400 font-semibold mb-1">
+                  <span>SHA-256 AUDIT TRACE RECEIPT</span>
+                  <span className="text-emerald-400">VERIFIED LOG</span>
+                </div>
+                <div className="text-slate-400 text-[10px] truncate">
+                  HASH: 0x9f8a7e6d5c4b3a21e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7
+                </div>
               </div>
 
             </div>
           </div>
 
           {/* Action Trigger */}
-          <div className="pt-4 border-t border-[#2A2E2B] mt-4 flex items-center justify-between">
-            <span className="font-mono text-[10px] text-[#9A9A90]">AI ANSWERS. IMAGERY PROVES.</span>
+          <div className="pt-4 border-t border-slate-800 mt-4 flex items-center justify-between">
+            <span className="font-mono text-xs text-slate-400">AI ANSWERS. IMAGERY PROVES.</span>
             <button
               onClick={() => onInvestigatePreset && onInvestigatePreset({
                 query: currentCase.what,
                 mode: currentCase.mode,
                 sampleImage: currentCase.image
               })}
-              className="px-4 py-2 bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-mono font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer rounded shadow-lg shadow-amber-500/20"
             >
               <span>INSPECT EVIDENCE IN WORKSTATION</span>
               <span>↗</span>

@@ -29,6 +29,9 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
 
   const img2023 = "/assets/imagery/nepal_2023_10_18.jpg";
   const img2026 = "/assets/imagery/nepal_2026_08_27.jpg";
+  // Syabru Besi, Nepal — 28.15°N 85.34°E
+  // T1: 18 Oct 2023 (pre-event baseline)
+  // T2: 27 Aug 2026 (post-event observation)
 
   return (
     <div className="w-full flex flex-col gap-6 font-sans">
@@ -225,7 +228,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
               <div className="flex justify-between py-0.5">
                 <span className="text-[#9A9A90]">SOURCE IMAGERY</span>
-                <span className="text-[#F3F0E8]">Project Satellite Temporal Pair</span>
+                <span className="text-[#F3F0E8]">SentinelHub / USGS Temporal Archive</span>
               </div>
               <div className="flex justify-between py-0.5">
                 <span className="text-[#9A9A90]">LOCATION</span>

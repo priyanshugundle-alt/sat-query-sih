@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Target, Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -30,6 +30,25 @@ export function ObservationSweep({
   },
   onActionClick = null,
 }) {
+  const SAMPLE_QUERIES = [
+    {
+      q: query,
+      a: answer,
+      tag: "Land Cover"
+    },
+    {
+      q: "Where are the major built-up areas and port docks?",
+      a: "GroundingDINO localized 3 distinct high-density industrial and residential clusters with 91.4% confidence.",
+      tag: "Built-Up & Docks"
+    },
+    {
+      q: "Identify maritime harbor logistics facilities on eastern bay.",
+      a: "Deep-water harbor logistics docks and container shipping terminals localized along the eastern bay inlet.",
+      tag: "Maritime Harbor"
+    }
+  ];
+
+  const [activeQueryIndex, setActiveQueryIndex] = useState(0);
   const [scanProgress, setScanProgress] = useState(0);
   const [isScanning, setIsScanning] = useState(true);
   const [revealed, setRevealed] = useState(false);
@@ -83,7 +102,7 @@ export function ObservationSweep({
               left: `${scanProgress * 100}%`,
               width: "1px",
               background: "#D49A3A",
-              boxShadow: "0 0 12px 1px rgba(212, 154, 58, 0.4)",
+              boxShadow: "0 0 16px 3px rgba(212, 154, 58, 0.7), 0 0 4px 1px rgba(212, 154, 58, 1)",
             }}
           >
             {/* Minimal scan indicator tick */}
@@ -118,7 +137,7 @@ export function ObservationSweep({
                 <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#E4B65A]" />
 
                 {/* Region Tag */}
-                <div className="absolute -top-6 left-0 bg-[#0B0D0C]/90 border border-[#D49A3A] px-2 py-0.5 font-mono text-[9px] text-[#E4B65A] font-bold flex items-center gap-1.5 whitespace-nowrap">
+                <div className="absolute -top-6 left-0 bg-[#151817] border border-[#D49A3A] px-2 py-0.5 font-mono text-[9px] text-[#E4B65A] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-lg">
                   <span>{region.label}</span>
                   <span className="text-[#9A9A90] font-normal">[{region.confidence}]</span>
                 </div>
@@ -148,21 +167,43 @@ export function ObservationSweep({
       <div className="w-full lg:w-96 flex flex-col justify-between p-5 bg-[#151817] border border-[#2A2E2B]">
         <div className="space-y-4">
           
-          {/* Natural Language Query */}
-          <div>
-            <div className="font-mono text-[9px] text-[#D49A3A] uppercase font-bold tracking-widest mb-1">
-              OBSERVATION QUERY / {taskType}
+          {/* Natural Language Query with Interactive Chips */}
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] text-amber-400 uppercase font-bold tracking-widest flex items-center justify-between">
+              <span>OBSERVATION QUERY / {taskType}</span>
+              <span className="text-[9px] text-slate-400">SELECT PROMPT</span>
             </div>
-            <div className="text-sm font-semibold text-[#F3F0E8] leading-snug">
-              "{query}"
+
+            {/* Interactive Query Chips */}
+            <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
+              {SAMPLE_QUERIES.map((sq, idx) => (
+                <button
+                  key={sq.tag}
+                  onClick={() => {
+                    setActiveQueryIndex(idx);
+                    restartScan();
+                  }}
+                  className={`px-2 py-1 border transition-all cursor-pointer rounded ${
+                    activeQueryIndex === idx
+                      ? "bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold"
+                      : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200"
+                  }`}
+                >
+                  {sq.tag}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-sm font-semibold text-white leading-snug pt-1">
+              "{SAMPLE_QUERIES[activeQueryIndex].q}"
             </div>
           </div>
 
           {/* Model Analysis State */}
-          <div className="pt-3 border-t border-[#2A2E2B] font-mono text-xs">
-            <div className="flex items-center justify-between text-[9px] text-[#9A9A90] uppercase tracking-wider mb-2">
+          <div className="pt-3 border-t border-slate-800 font-mono text-xs">
+            <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider mb-2">
               <span>SPECIALIST ENGINE</span>
-              <span className="text-[#68745C]">GeoChat-VQA (UniRS)</span>
+              <span className="text-cyan-400 font-semibold">GeoChat-VQA / UniRS</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -172,12 +213,12 @@ export function ObservationSweep({
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-3"
                 >
-                  <div className="p-3 bg-[#0B0D0C] border-l-2 border-[#D49A3A]">
-                    <span className="text-[9px] font-bold text-[#D49A3A] block mb-1 uppercase">
+                  <div className="p-3 bg-slate-900/90 border-l-2 border-amber-400 rounded-r">
+                    <span className="text-[10px] font-bold text-amber-400 block mb-1 uppercase tracking-wider font-mono">
                       SATQUERY VLM ANSWER
                     </span>
-                    <p className="font-sans text-xs text-[#E9E5DA] leading-relaxed">
-                      {answer}
+                    <p className="font-sans text-xs text-slate-200 leading-relaxed">
+                      {SAMPLE_QUERIES[activeQueryIndex].a}
                     </p>
                   </div>
 

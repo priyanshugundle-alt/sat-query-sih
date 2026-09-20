@@ -83,31 +83,35 @@ const WORLD_RADIUS = 2.25;
     const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
     if (stage === "hero") {
-      // Hero: Earth prominently framed on the right side, showing the massive Afro-Eurasian landmass
+      // Hero: Earth prominently framed on the right side
       targetEarthPos.current.set(isMobile ? 0 : 1.15, isMobile ? -0.30 : 0.05, 0);
       targetCameraPos.current.set(0, 0, 5.2);
       targetRotation.current = { x: 0.20, y: 0.95 };
     } else if (stage === "workstation") {
-      // Workstation: Earth visible upper-right, ~20-30% visual presence
+      // Workstation: Earth visible upper-right
       targetEarthPos.current.set(isMobile ? 0.5 : 1.7, isMobile ? 0.3 : 0.5, 0);
       targetCameraPos.current.set(0, 0, 6.2);
       targetRotation.current = { x: 0.20, y: -2.80 };
     } else if (stage === "vqa" || stage === "grounding") {
       // Mumbai: 19.0760° N, 72.8777° E
       focusCoordinates(19.0760, 72.8777, zoomProgress || 0.65);
-      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0.05, 0);
     } else if (stage === "nepal") {
       // Syabru Besi, Nepal: 28.15° N, 85.34° E
       focusCoordinates(28.15, 85.34, zoomProgress || 0.7);
-      targetEarthPos.current.set(isMobile ? 0 : -0.85, 0.05, 0);
+      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0.05, 0);
     } else if (stage === "sar") {
       // Optical + SAR swath
       focusCoordinates(28.15, 85.34, zoomProgress || 0.45);
-      targetEarthPos.current.set(isMobile ? 0 : 0.95, 0, -0.2);
-    } else if (stage === "evidence" || stage === "technical") {
-      // Evidence & Technical signal background anchor
-      targetEarthPos.current.set(isMobile ? 0 : -1.15, 0, -0.3);
+      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0, -0.2);
+    } else if (stage === "evidence") {
+      // Evidence background anchor
+      targetEarthPos.current.set(isMobile ? 0 : 1.05, 0, -0.3);
       targetCameraPos.current.set(0, 0, 5.5);
+    } else if (stage === "technical") {
+      // Technical signal background anchor
+      targetEarthPos.current.set(isMobile ? 0 : 0, 0, -0.5);
+      targetCameraPos.current.set(0, 0, 6.0);
     } else if (stage === "final_cta") {
       // Final CTA: Earth large and centered
       targetEarthPos.current.set(0, 0.1, 0);

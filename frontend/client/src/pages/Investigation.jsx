@@ -46,6 +46,8 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { CommandPaletteModal } from "@/components/CommandPaletteModal";
 import { ShowMeWhyModal } from "@/components/ShowMeWhyModal";
 import { AnalysisDetailsDrawer } from "@/components/AnalysisDetailsDrawer";
+import PersonalizationModal from "@/components/PersonalizationModal";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ─────────────────────────────────────────────────────────────────
 // SPECIALIST ENGINES CONFIGURATION
@@ -156,6 +158,8 @@ export default function Investigation() {
   const [sidebarTab, setSidebarTab] = useState("chats"); // "chats" | "images" | "projects"
   const [activeProjectId, setActiveProjectId] = useState(null); // When exploring a specific project
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false);
+  const { currentLanguage } = useLanguage();
 
   // ── Multi-Chat State & Persistence ────────────────────────────────
   const [conversations, setConversations] = useState(() => {
@@ -1200,13 +1204,18 @@ export default function Investigation() {
 
                           <button
                             onClick={() => {
-                              toast.info("Personalization: Sensor Preferences & CRS Projection Presets");
+                              setIsPersonalizationOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className="w-full px-2 py-1.5 text-left text-[#E9E5DA] hover:text-[#D49A3A] hover:bg-[#1D211F] flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full px-2 py-1.5 text-left text-[#E9E5DA] hover:text-[#D49A3A] hover:bg-[#1D211F] flex items-center justify-between transition-colors cursor-pointer group"
                           >
-                            <Clock size={14} className="text-[#9A9A90]" />
-                            <span>Personalization</span>
+                            <div className="flex items-center gap-2.5">
+                              <Globe size={14} className="text-[#D49A3A]" />
+                              <span>Personalization</span>
+                            </div>
+                            <span className="text-[10px] font-mono text-[#D49A3A] bg-[#D49A3A]/10 px-1.5 py-0.5 border border-[#D49A3A]/30 font-bold group-hover:bg-[#D49A3A]/20">
+                              {currentLanguage.nativeName} ({currentLanguage.code.toUpperCase()})
+                            </span>
                           </button>
 
                           <button
@@ -1903,6 +1912,12 @@ export default function Investigation() {
           asset={canvasActiveAsset || activeConversation?.stagedAssets?.[0]}
           analysisMode={taskMode === "AUTO" ? "GROUNDING" : taskMode}
           onOpenReport={() => setReportModalOpen(true)}
+        />
+
+        {/* ─── MODAL 7: PERSONALIZATION & 27 INDIAN LANGUAGES ─── */}
+        <PersonalizationModal
+          isOpen={isPersonalizationOpen}
+          onClose={() => setIsPersonalizationOpen(false)}
         />
       </div>
     </BackgroundProvider>
