@@ -1022,13 +1022,13 @@ export default function Investigation() {
                 <div className="p-3 pb-2">
                   <button
                     onClick={handleNewChat}
-                    className="w-full py-2 px-3 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 text-[#F0F6F8] hover:text-[#FFFFFF] font-mono text-xs flex items-center justify-between transition-all cursor-pointer shadow-sm group rounded-xl"
+                    className="w-full py-2.5 px-3.5 sq-new-chat-btn text-[#F0F6F8] font-mono text-xs flex items-center justify-between cursor-pointer shadow-sm group rounded-xl"
                   >
-                    <span className="flex items-center gap-2 font-bold tracking-wide">
-                      <Plus size={14} className="text-[#12A5B8] group-hover:rotate-90 transition-transform" />
-                      <span>NEW CHAT</span>
+                    <span className="flex items-center gap-2.5 font-bold tracking-wide">
+                      <Plus size={15} className="text-[#12A5B8] group-hover:rotate-90 group-hover:scale-110 transition-transform duration-300" />
+                      <span className="font-chillax tracking-wider text-xs">NEW CHAT</span>
                     </span>
-                    <span className="text-[10px] text-[#8AA3AD] font-mono">⌘N</span>
+                    <span className="text-[10px] text-[#8AA3AD] font-mono bg-[#080E11]/80 px-1.5 py-0.5 border border-white/[0.08] rounded-md">⌘N</span>
                   </button>
                 </div>
 
@@ -1039,35 +1039,35 @@ export default function Investigation() {
                       setSidebarTab("chats");
                       setActiveProjectId(null);
                     }}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer rounded-lg ${
+                    className={`flex-1 py-1.5 px-2 text-center font-chillax tracking-wider text-[11px] cursor-pointer rounded-lg sq-sidebar-tab ${
                       sidebarTab === "chats"
-                        ? "bg-[#132127] text-[#12A5B8] font-bold border-b border-[#12A5B8]"
-                        : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
+                        ? "sq-sidebar-tab-active"
+                        : "text-[#8AA3AD]"
                     }`}
                   >
                     CHATS
                   </button>
                   <button
                     onClick={() => setSidebarTab("images")}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer flex items-center justify-center gap-1 rounded-lg ${
+                    className={`flex-1 py-1.5 px-2 text-center font-chillax tracking-wider text-[11px] cursor-pointer flex items-center justify-center gap-1.5 rounded-lg sq-sidebar-tab ${
                       sidebarTab === "images"
-                        ? "bg-[#132127] text-[#12A5B8] font-bold border-b border-[#12A5B8]"
-                        : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
+                        ? "sq-sidebar-tab-active"
+                        : "text-[#8AA3AD]"
                     }`}
                   >
                     <span>IMAGES</span>
                     {allImagesAcrossChats.length > 0 && (
-                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#8AA3AD] rounded-md">
+                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-md">
                         {allImagesAcrossChats.length}
                       </span>
                     )}
                   </button>
                   <button
                     onClick={() => setSidebarTab("projects")}
-                    className={`flex-1 py-1 px-2 text-center transition-colors cursor-pointer rounded-lg ${
+                    className={`flex-1 py-1.5 px-2 text-center font-chillax tracking-wider text-[11px] cursor-pointer rounded-lg sq-sidebar-tab ${
                       sidebarTab === "projects"
-                        ? "bg-[#132127] text-[#12A5B8] font-bold border-b border-[#12A5B8]"
-                        : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
+                        ? "sq-sidebar-tab-active"
+                        : "text-[#8AA3AD]"
                     }`}
                   >
                     PROJECTS
@@ -1092,20 +1092,21 @@ export default function Investigation() {
                             <div
                               key={conv.id}
                               onClick={() => handleSelectChat(conv.id)}
-                              className={`group px-2.5 py-2 cursor-pointer text-xs truncate flex items-center justify-between transition-colors rounded-xl ${
-                                isActive
-                                  ? "bg-[#0D171C] text-[#12A5B8] font-bold border-l-2 border-[#12A5B8]"
-                                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]/60"
+                              className={`group px-3 py-2.5 cursor-pointer text-xs truncate flex items-center justify-between sq-chat-item rounded-xl ${
+                                isActive ? "sq-chat-item-active" : "text-[#8AA3AD]"
                               }`}
                               title={conv.title}
                             >
-                              <span className="truncate">{conv.title}</span>
+                              <div className="flex items-center gap-2 truncate min-w-0">
+                                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${isActive ? "bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" : "bg-[#8AA3AD]/40 group-hover:bg-[#12A5B8]"}`} />
+                                <span className="truncate">{conv.title}</span>
+                              </div>
                               <button
                                 onClick={(e) => handleDeleteChat(e, conv.id)}
-                                className="opacity-0 group-hover:opacity-100 p-0.5 text-[#8AA3AD] hover:text-[#B9654D] transition-opacity cursor-pointer flex-shrink-0 ml-2 rounded"
+                                className="opacity-0 group-hover:opacity-100 p-1 text-[#8AA3AD] hover:text-[#B9654D] hover:bg-[#B9654D]/15 transition-all cursor-pointer flex-shrink-0 ml-2 rounded-lg"
                                 title="Delete conversation"
                               >
-                                <Trash2 size={12} />
+                                <Trash2 size={13} />
                               </button>
                             </div>
                           );
@@ -1138,18 +1139,18 @@ export default function Investigation() {
                                 if (target) target.scrollIntoView({ behavior: "smooth" });
                               }, 100);
                             }}
-                            className="p-2 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 cursor-pointer transition-all flex items-center gap-2.5 group rounded-xl"
+                            className="p-2 bg-[#0D171C] border border-[#1C323B] cursor-pointer transition-all flex items-center gap-2.5 group rounded-xl sq-image-item"
                           >
                             <img
                               src={img.previewUrl}
                               alt={img.name}
-                              className="w-10 h-10 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg"
+                              className="w-10 h-10 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg transition-transform duration-300"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="text-[11px] font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] truncate">
+                              <div className="text-[11px] font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] truncate font-chillax">
                                 {img.name}
                               </div>
-                              <div className="text-[9px] text-[#8AA3AD] truncate mt-0.5">
+                              <div className="text-[9px] text-[#8AA3AD] truncate mt-0.5 font-mono">
                                 {img.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                               </div>
                               <div className="text-[8px] text-[#76AEB0] font-mono truncate">
@@ -1167,7 +1168,7 @@ export default function Investigation() {
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "projects" && (
                     <div className="space-y-3">
-                      <div className="text-[9px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1">
+                      <div className="text-[9px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-chillax">
                         PROJECTS
                       </div>
                       {PROJECTS_CONFIG.map((proj) => {
@@ -1176,10 +1177,10 @@ export default function Investigation() {
                         return (
                           <div
                             key={proj.id}
-                            className={`p-2.5 border transition-all rounded-xl ${
+                            className={`p-2.5 border transition-all rounded-xl sq-project-card ${
                               isSelected
-                                ? "bg-[#0D171C] border-[#12A5B8]"
-                                : "bg-[#0D171C]/60 border-[#1C323B] hover:border-[#12A5B8]/40"
+                                ? "bg-[#0D171C] border-[#12A5B8] shadow-[0_0_15px_rgba(18,165,184,0.15)]"
+                                : "bg-[#0D171C]/60 border-[#1C323B]"
                             }`}
                           >
                             <div
@@ -1187,14 +1188,14 @@ export default function Investigation() {
                               className="flex items-center justify-between cursor-pointer"
                             >
                               <div>
-                                <span className="font-bold text-xs text-[#F0F6F8] block">
+                                <span className="font-bold text-xs text-[#F0F6F8] block font-chillax">
                                   {proj.name}
                                 </span>
-                                <span className="text-[9px] text-[#8AA3AD] block mt-0.5">
+                                <span className="text-[9px] text-[#8AA3AD] block mt-0.5 font-sans">
                                   {proj.description}
                                 </span>
                               </div>
-                              <span className="text-[9px] px-2 py-0.5 bg-[#080E11] text-[#12A5B8] border border-white/[0.08] rounded-md">
+                              <span className="text-[9px] px-2 py-0.5 bg-[#080E11] text-[#12A5B8] border border-white/[0.08] rounded-md font-mono">
                                 {proj.badge}
                               </span>
                             </div>
@@ -1202,7 +1203,7 @@ export default function Investigation() {
                             {/* Project Children: Chats, Images, Findings, Reports */}
                             {isSelected && (
                               <div className="mt-2.5 pt-2 border-t border-[#1C323B] space-y-1.5 text-[10px]">
-                                <div className="text-[#8AA3AD] font-bold uppercase tracking-wider text-[8px]">
+                                <div className="text-[#8AA3AD] font-bold uppercase tracking-wider text-[8px] font-mono">
                                   ASSOCIATED CHATS ({projChats.length})
                                 </div>
                                 {projChats.length === 0 ? (
@@ -1212,7 +1213,7 @@ export default function Investigation() {
                                     <div
                                       key={c.id}
                                       onClick={() => handleSelectChat(c.id)}
-                                      className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg"
+                                      className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg transition-colors"
                                     >
                                       · {c.title}
                                     </div>
@@ -1252,12 +1253,12 @@ export default function Investigation() {
                       e.stopPropagation();
                       setProfileMenuOpen((prev) => !prev);
                     }}
-                    className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl ${
-                      profileMenuOpen ? "bg-[#132127]" : "hover:bg-[#0D171C]"
+                    className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl sq-profile-trigger border border-transparent ${
+                      profileMenuOpen ? "bg-[#132127] border-[#12A5B8]/50 shadow-[0_0_12px_rgba(18,165,184,0.2)]" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-xs flex items-center justify-center flex-shrink-0 font-mono">
+                      <div className="w-7 h-7 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-xs flex items-center justify-center flex-shrink-0 font-mono sq-avatar transition-all">
                         {userInitials}
                       </div>
                       <div className="truncate">
