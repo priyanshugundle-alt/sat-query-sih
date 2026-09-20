@@ -1815,80 +1815,48 @@
   }
 }
 
-/* Sonner toast styling based on Uiverse by asgardOP */
+/* Sonner toast styling for SatQuery AI */
 [data-sonner-toast] {
   width: fit-content !important;
   max-width: 440px !important;
   height: fit-content !important;
-  background-color: rgb(58, 58, 58) !important;
-  border-radius: 7px !important;
-  padding: 10px 18px 10px 22px !important;
+  background-color: #0D171C !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
   position: relative !important;
   cursor: pointer !important;
-  transition: 0.2s !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
-  color: white !important;
-  font-family: inherit !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid #1C323B !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(18, 165, 184, 0.15) !important;
+  color: #F0F6F8 !important;
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif !important;
 }
 
 [data-sonner-toast]:hover {
-  background-color: rgb(26, 26, 26) !important;
+  background-color: #132127 !important;
+  border-color: #12A5B8 !important;
 }
 
 [data-sonner-toast] svg {
-  color: rgba(255, 255, 255, 0.651) !important;
-  transform: scale(1.2) !important;
+  color: #12A5B8 !important;
+  transform: scale(1.1) !important;
   transition: 0.2s !important;
-}
-
-[data-sonner-toast]:hover svg {
-  color: white !important;
-}
-
-/* Radar pulse point in corner of toast */
-[data-sonner-toast]::before {
-  content: "" !important;
-  position: absolute !important;
-  bottom: 6px !important;
-  left: 6px !important;
-  width: 6px !important;
-  height: 6px !important;
-  background-color: rgb(0, 255, 0) !important;
-  border-radius: 25px !important;
-  z-index: 2 !important;
-  pointer-events: none !important;
-}
-
-[data-sonner-toast]::after {
-  content: "" !important;
-  position: absolute !important;
-  bottom: 8.5px !important;
-  left: 8.5px !important;
-  width: 1px !important;
-  height: 1px !important;
-  background-color: rgb(0, 255, 0) !important;
-  border-radius: 25px !important;
-  animation: loop 1s 0s infinite !important;
-  transform: translate(-50%, 50%) !important;
-  z-index: 1 !important;
-  pointer-events: none !important;
 }
 
 [data-sonner-toast] [data-content] {
   margin: 0 !important;
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: #F0F6F8 !important;
 }
 
 [data-sonner-toast] [data-title] {
   font-size: 13px !important;
-  font-weight: 500 !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 600 !important;
+  color: #F0F6F8 !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────

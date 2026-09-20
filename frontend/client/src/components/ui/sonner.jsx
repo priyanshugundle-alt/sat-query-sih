@@ -5,21 +5,20 @@ const Toaster = ({ ...props }) => {
     <Sonner
       position="bottom-right"
       toastOptions={{
-        className: "loader",
         style: {
           width: "fit-content",
           height: "fit-content",
-          backgroundColor: "rgb(58, 58, 58)",
-          borderRadius: "7px",
-          padding: "10px 16px 10px 20px",
+          backgroundColor: "#0D171C",
+          borderRadius: "12px",
+          padding: "12px 18px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
           cursor: "pointer",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
-          color: "rgba(255, 255, 255, 0.92)",
+          border: "1px solid #1C323B",
+          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(18, 165, 184, 0.15)",
+          color: "#F0F6F8",
           fontSize: "13px",
           fontWeight: "500",
           fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
