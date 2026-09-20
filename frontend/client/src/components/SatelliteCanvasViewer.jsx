@@ -147,13 +147,7 @@ export function SatelliteCanvasViewer({
           <rect width="100%" height="100%" fill="url(#standbyGrid)" />
         </svg>
 
-        {/* Technical Corner Telemetry */}
-        <div className="absolute top-4 left-4 font-mono text-[9px] text-[#8AA3AD]/60 tracking-widest pointer-events-none uppercase">
-          SATELLITE INTELLIGENCE · SPACE TECHNOLOGY
-        </div>
-        <div className="absolute top-4 right-4 font-mono text-[9px] text-[#8AA3AD]/60 tracking-widest pointer-events-none uppercase">
-          WGS 84 / UTM ZONE 43N · EPSG:32643
-        </div>
+
 
         {/* Center Scientific Mission Card */}
         <div className="relative z-10 max-w-lg text-center space-y-4">

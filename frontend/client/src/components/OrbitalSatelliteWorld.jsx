@@ -105,18 +105,6 @@ export function OrbitalSatelliteWorld({ className = "", opacity = 1 }) {
           </g>
         </svg>
 
-        {/* Technical telemetry corner labels */}
-        <div className="absolute top-16 left-8 font-mono text-[9px] text-[#8AA3AD]/50 tracking-widest uppercase space-y-1">
-          <div>ORBIT / 04 · SUN-SYNC 98.2°</div>
-          <div>SWATH / 120 KM · GSD 0.5M</div>
-          <div>TRACK / 2391 · SENSOR: OPTICAL</div>
-        </div>
-
-        <div className="absolute bottom-16 right-8 font-mono text-[9px] text-[#8AA3AD]/50 tracking-widest uppercase text-right space-y-1">
-          <div>LAT / 18.5204° N · LON / 73.8567° E</div>
-          <div>ALT / 684.2 KM · WGS 84 (EPSG:4326)</div>
-          <div>PASS / 2026.09.09 16:34 UTC</div>
-        </div>
       </div>
 
       {/* ─── PLANE 2: MID DEPTH (Satellite silhouettes & observation beam) ─── */}

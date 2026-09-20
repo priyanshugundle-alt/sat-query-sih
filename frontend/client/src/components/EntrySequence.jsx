@@ -135,16 +135,6 @@ export function EntrySequence({ onComplete }) {
           strokeDasharray="8 14"
         />
 
-        {/* Corner coordinate labels */}
-        <text x="28" y="880" fontFamily="'Noto Sans Mono', monospace" fontSize="9" fill="#4D88A8" opacity="0.4">
-          18.52° N 73.86° E
-        </text>
-        <text x="1300" y="880" fontFamily="'Noto Sans Mono', monospace" fontSize="9" fill="#4D88A8" opacity="0.4">
-          WGS 84 / EPSG:4326
-        </text>
-        <text x="28" y="24" fontFamily="'Noto Sans Mono', monospace" fontSize="9" fill="#4D88A8" opacity="0.4">
-          SATELLITE INTELLIGENCE · SPACE TECHNOLOGY
-        </text>
       </svg>
 
       {/* ── Layer 4: Amber scan line sweeping L→R ────────────── */}
