@@ -116,19 +116,23 @@
 
 /* Indian Type Foundry Utility Font Classes */
 .font-chillax {
-  font-family: "Chillax", "Space Grotesk", sans-serif;
+  font-family: "Chillax", "Space Grotesk", "Inter", sans-serif !important;
+}
+
+.font-sans {
+  font-family: "Chillax", "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
 .font-stardom {
-  font-family: "Stardom", "Gambarino", Georgia, serif;
+  font-family: "Stardom", "Gambarino", Georgia, serif !important;
 }
 
 .font-gambarino {
-  font-family: "Gambarino", "Stardom", Georgia, serif;
+  font-family: "Gambarino", "Stardom", Georgia, serif !important;
 }
 
 .font-melodrama {
-  font-family: "Melodrama", "Stardom", Georgia, serif;
+  font-family: "Melodrama", "Stardom", Georgia, serif !important;
 }
 
 /* ════════════════════════════════════════════════════════════════

@@ -1001,10 +1001,10 @@ export default function Investigation() {
                 <div className="p-3 border-b border-[#1C323B]/80 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
-                    <span className="font-mono text-xs font-bold tracking-wider text-[#FFFFFF]">
+                    <span className="font-chillax text-xs font-bold tracking-wider text-[#FFFFFF]">
                       SATQUERY AI
                     </span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#0D171C] text-[#8AA3AD] border border-white/[0.08] rounded-md">
+                    <span className="text-[9px] font-sans px-2 py-0.5 bg-[#0D171C] text-[#8AA3AD] border border-white/[0.08] rounded-md font-semibold">
                       EO-AI
                     </span>
                   </div>
@@ -1022,18 +1022,18 @@ export default function Investigation() {
                 <div className="p-3 pb-2">
                   <button
                     onClick={handleNewChat}
-                    className="w-full py-2.5 px-3.5 sq-new-chat-btn text-[#F0F6F8] font-mono text-xs flex items-center justify-between cursor-pointer shadow-sm group rounded-xl"
+                    className="w-full py-2.5 px-3.5 sq-new-chat-btn text-[#F0F6F8] text-xs flex items-center justify-between cursor-pointer shadow-sm group rounded-xl"
                   >
                     <span className="flex items-center gap-2.5 font-bold tracking-wide">
                       <Plus size={15} className="text-[#12A5B8] group-hover:rotate-90 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="font-chillax tracking-wider text-xs">NEW CHAT</span>
+                      <span className="font-chillax tracking-wider text-xs font-bold">NEW CHAT</span>
                     </span>
                     <span className="text-[10px] text-[#8AA3AD] font-mono bg-[#080E11]/80 px-1.5 py-0.5 border border-white/[0.08] rounded-md">⌘N</span>
                   </button>
                 </div>
 
                 {/* ── Section Switcher Tabs: CHATS / IMAGES / PROJECTS ── */}
-                <div className="px-3 pt-1 pb-2 flex gap-1 font-mono text-[11px] border-b border-[#1C323B]/60">
+                <div className="px-3 pt-1 pb-2 flex gap-1 font-chillax text-[11px] border-b border-[#1C323B]/60">
                   <button
                     onClick={() => {
                       setSidebarTab("chats");
@@ -1057,7 +1057,7 @@ export default function Investigation() {
                   >
                     <span>IMAGES</span>
                     {allImagesAcrossChats.length > 0 && (
-                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-md">
+                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-md font-sans">
                         {allImagesAcrossChats.length}
                       </span>
                     )}
@@ -1075,7 +1075,7 @@ export default function Investigation() {
                 </div>
 
                 {/* ── Middle Scrollable Area: Based on Tab ── */}
-                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4 font-mono text-xs">
+                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4 font-sans text-xs">
                   {/* ────────────────────────────────────────────────
                       TAB A: CHATS / QUERY HISTORY (Today, Yesterday, etc.)
                       ──────────────────────────────────────────────── */}
@@ -1092,14 +1092,14 @@ export default function Investigation() {
                             <div
                               key={conv.id}
                               onClick={() => handleSelectChat(conv.id)}
-                              className={`group px-3 py-2.5 cursor-pointer text-xs truncate flex items-center justify-between sq-chat-item rounded-xl ${
+                              className={`group px-3 py-2.5 cursor-pointer text-xs truncate flex items-center justify-between sq-chat-item rounded-xl font-sans ${
                                 isActive ? "sq-chat-item-active" : "text-[#8AA3AD]"
                               }`}
                               title={conv.title}
                             >
                               <div className="flex items-center gap-2 truncate min-w-0">
                                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${isActive ? "bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" : "bg-[#8AA3AD]/40 group-hover:bg-[#12A5B8]"}`} />
-                                <span className="truncate">{conv.title}</span>
+                                <span className="truncate font-sans">{conv.title}</span>
                               </div>
                               <button
                                 onClick={(e) => handleDeleteChat(e, conv.id)}
@@ -1120,11 +1120,11 @@ export default function Investigation() {
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "images" && (
                     <div className="space-y-2">
-                      <div className="text-[9px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1">
+                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-chillax">
                         ALL UPLOADED SATELLITE IMAGERY
                       </div>
                       {allImagesAcrossChats.length === 0 ? (
-                        <div className="p-4 text-center text-[#8AA3AD] text-xs">
+                        <div className="p-4 text-center text-[#8AA3AD] text-xs font-sans leading-relaxed">
                           No images uploaded yet. Upload or browse scenes to see them here.
                         </div>
                       ) : (
@@ -1150,10 +1150,10 @@ export default function Investigation() {
                               <div className="text-[11px] font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] truncate font-chillax">
                                 {img.name}
                               </div>
-                              <div className="text-[9px] text-[#8AA3AD] truncate mt-0.5 font-mono">
+                              <div className="text-[9px] text-[#8AA3AD] truncate mt-0.5 font-sans">
                                 {img.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                               </div>
-                              <div className="text-[8px] text-[#76AEB0] font-mono truncate">
+                              <div className="text-[8px] text-[#76AEB0] font-sans truncate">
                                 In: {img.chatTitle}
                               </div>
                             </div>
@@ -1167,8 +1167,8 @@ export default function Investigation() {
                       TAB C: PROJECTS (Requirement 3)
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "projects" && (
-                    <div className="space-y-3">
-                      <div className="text-[9px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-chillax">
+                    <div className="space-y-3 font-sans">
+                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-chillax">
                         PROJECTS
                       </div>
                       {PROJECTS_CONFIG.map((proj) => {
@@ -1195,7 +1195,7 @@ export default function Investigation() {
                                   {proj.description}
                                 </span>
                               </div>
-                              <span className="text-[9px] px-2 py-0.5 bg-[#080E11] text-[#12A5B8] border border-white/[0.08] rounded-md font-mono">
+                              <span className="text-[9px] px-2 py-0.5 bg-[#080E11] text-[#12A5B8] border border-white/[0.08] rounded-md font-sans">
                                 {proj.badge}
                               </span>
                             </div>
@@ -1203,24 +1203,24 @@ export default function Investigation() {
                             {/* Project Children: Chats, Images, Findings, Reports */}
                             {isSelected && (
                               <div className="mt-2.5 pt-2 border-t border-[#1C323B] space-y-1.5 text-[10px]">
-                                <div className="text-[#8AA3AD] font-bold uppercase tracking-wider text-[8px] font-mono">
+                                <div className="text-[#8AA3AD] font-bold uppercase tracking-wider text-[8px] font-chillax">
                                   ASSOCIATED CHATS ({projChats.length})
                                 </div>
                                 {projChats.length === 0 ? (
-                                  <div className="text-[#8AA3AD]/60 italic">No chats assigned yet</div>
+                                  <div className="text-[#8AA3AD]/60 italic font-sans">No chats assigned yet</div>
                                 ) : (
                                   projChats.map((c) => (
                                     <div
                                       key={c.id}
                                       onClick={() => handleSelectChat(c.id)}
-                                      className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg transition-colors"
+                                      className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg transition-colors font-sans"
                                     >
                                       · {c.title}
                                     </div>
                                   ))
                                 )}
 
-                                <div className="pt-2 flex items-center justify-between text-[9px] text-[#12A5B8]">
+                                <div className="pt-2 flex items-center justify-between text-[9px] text-[#12A5B8] font-sans">
                                   <span
                                     onClick={() => setReportModalOpen(true)}
                                     className="hover:underline cursor-pointer flex items-center gap-1"
@@ -1258,19 +1258,19 @@ export default function Investigation() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-xs flex items-center justify-center flex-shrink-0 font-mono sq-avatar transition-all">
+                      <div className="w-7 h-7 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-xs flex items-center justify-center flex-shrink-0 font-chillax sq-avatar transition-all">
                         {userInitials}
                       </div>
                       <div className="truncate">
-                        <div className="font-bold text-xs text-[#F0F6F8] truncate">
+                        <div className="font-bold text-xs text-[#F0F6F8] truncate font-chillax">
                           {currentUser?.name || "SatQuery Analyst"}
                         </div>
-                        <div className="text-[10px] text-[#8AA3AD] font-mono truncate">
+                        <div className="text-[10px] text-[#8AA3AD] font-sans truncate">
                           {currentUser?.role || "Satellite Analyst"}
                         </div>
                       </div>
                     </div>
-                    <span className="text-[11px] text-[#8AA3AD] font-mono">⬡</span>
+                    <span className="text-[11px] text-[#8AA3AD] font-sans">⬡</span>
                   </button>
 
                   {/* Popover Floating Hierarchy (Screenshot 2 Architecture) */}
