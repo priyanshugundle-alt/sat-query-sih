@@ -262,6 +262,34 @@ export default function Investigation() {
   const [activeProjectId, setActiveProjectId] = useState(null); // When exploring a specific project
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
+  // ── Dynamic Projects State & Persistence ──────────────────────────
+  const [projectsList, setProjectsList] = useState(() => {
+    try {
+      const saved = localStorage.getItem("satquery_projects_list");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn("Could not read satquery_projects_list", e);
+    }
+    return PROJECTS_CONFIG;
+  });
+
+  const handleDeleteProject = (e, projectId) => {
+    e.stopPropagation();
+    setProjectsList((prev) => {
+      const updated = prev.filter((p) => p.id !== projectId);
+      try {
+        localStorage.setItem("satquery_projects_list", JSON.stringify(updated));
+      } catch (err) {
+        console.warn("Error saving projects list", err);
+      }
+      return updated;
+    });
+    if (activeProjectId === projectId) {
+      setActiveProjectId(null);
+    }
+    toast.info("Project deleted");
+  };
+
   // ── Multi-Chat State & Persistence ────────────────────────────────
   const [conversations, setConversations] = useState(() => {
     try {
@@ -1169,80 +1197,95 @@ export default function Investigation() {
                       ──────────────────────────────────────────────── */}
                   {sidebarTab === "projects" && (
                     <div className="space-y-3 font-sans">
-                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-sans">
-                        PROJECTS
+                      <div className="text-[10px] font-bold text-[#8AA3AD] uppercase tracking-widest px-2 py-1 font-sans flex items-center justify-between">
+                        <span>PROJECTS ({projectsList.length})</span>
                       </div>
-                      {PROJECTS_CONFIG.map((proj) => {
-                        const projChats = conversations.filter((c) => c.projectId === proj.id);
-                        const isSelected = activeProjectId === proj.id;
-                        return (
-                          <div
-                            key={proj.id}
-                            className={`p-3 border transition-all rounded-xl sq-project-card ${
-                              isSelected
-                                ? "bg-[#0D171C] border-[#12A5B8] shadow-[0_4px_20px_rgba(0,0,0,0.4),0_0_12px_rgba(18,165,184,0.18)]"
-                                : "bg-[#0D171C]/70 border-[#1C323B] hover:border-[#12A5B8]/40"
-                            }`}
-                          >
+                      {projectsList.length === 0 ? (
+                        <div className="p-4 text-center text-[#8AA3AD] text-xs font-sans leading-relaxed">
+                          No active projects.
+                        </div>
+                      ) : (
+                        projectsList.map((proj) => {
+                          const projChats = conversations.filter((c) => c.projectId === proj.id);
+                          const isSelected = activeProjectId === proj.id;
+                          return (
                             <div
-                              onClick={() => setActiveProjectId(isSelected ? null : proj.id)}
-                              className="flex items-start justify-between cursor-pointer gap-2"
+                              key={proj.id}
+                              className={`group/proj p-3 border transition-all rounded-xl sq-project-card relative ${
+                                isSelected
+                                  ? "bg-[#0D171C] border-[#12A5B8] shadow-[0_4px_20px_rgba(0,0,0,0.4),0_0_12px_rgba(18,165,184,0.18)]"
+                                  : "bg-[#0D171C]/70 border-[#1C323B] hover:border-[#12A5B8]/40"
+                              }`}
                             >
-                              <div className="min-w-0 flex-1">
-                                <span className="font-bold text-xs text-[#F0F6F8] block font-sans tracking-wide leading-tight group-hover:text-[#12A5B8] transition-colors">
-                                  {proj.name}
-                                </span>
-                                <span className="text-[10px] text-[#8AA3AD] block mt-1 font-sans leading-normal">
-                                  {proj.description}
-                                </span>
-                              </div>
-                              <span className="text-[9px] font-mono px-2 py-0.5 bg-[#0B1A20] text-[#12A5B8] border border-[#12A5B8]/30 rounded-md whitespace-nowrap flex-shrink-0 font-semibold tracking-wider">
-                                {proj.badge}
-                              </span>
-                            </div>
-
-                            {/* Project Children: Chats, Images, Findings, Reports */}
-                            {isSelected && (
-                              <div className="mt-2.5 pt-2 border-t border-[#1C323B] space-y-1.5 text-[10px]">
-                                <div className="text-[#8AA3AD] font-bold uppercase tracking-wider text-[8px] font-chillax">
-                                  ASSOCIATED CHATS ({projChats.length})
+                              <div
+                                onClick={() => setActiveProjectId(isSelected ? null : proj.id)}
+                                className="flex items-start justify-between cursor-pointer gap-2"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <span className="font-bold text-xs text-[#F0F6F8] block font-sans tracking-wide leading-tight group-hover/proj:text-[#12A5B8] transition-colors">
+                                    {proj.name}
+                                  </span>
+                                  <span className="text-[10px] text-[#8AA3AD] block mt-1 font-sans leading-normal">
+                                    {proj.description}
+                                  </span>
                                 </div>
-                                {projChats.length === 0 ? (
-                                  <div className="text-[#8AA3AD]/60 italic font-sans">No chats assigned yet</div>
-                                ) : (
-                                  projChats.map((c) => (
-                                    <div
-                                      key={c.id}
-                                      onClick={() => handleSelectChat(c.id)}
-                                      className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg transition-colors font-sans"
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <span className="text-[9px] font-mono px-2 py-0.5 bg-[#0B1A20] text-[#12A5B8] border border-[#12A5B8]/30 rounded-md whitespace-nowrap font-semibold tracking-wider">
+                                    {proj.badge}
+                                  </span>
+                                  <button
+                                    onClick={(e) => handleDeleteProject(e, proj.id)}
+                                    className="opacity-0 group-hover/proj:opacity-100 p-1 text-[#8AA3AD] hover:text-[#B9654D] hover:bg-[#B9654D]/15 transition-all cursor-pointer rounded-lg ml-0.5"
+                                    title="Delete project"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Project Children: Chats, Images, Findings, Reports */}
+                              {isSelected && (
+                                <div className="mt-2.5 pt-2 border-t border-[#1C323B] space-y-1.5 text-[10px]">
+                                  <div className="text-[#8AA3AD] font-bold uppercase tracking-wider text-[8px] font-chillax">
+                                    ASSOCIATED CHATS ({projChats.length})
+                                  </div>
+                                  {projChats.length === 0 ? (
+                                    <div className="text-[#8AA3AD]/60 italic font-sans">No chats assigned yet</div>
+                                  ) : (
+                                    projChats.map((c) => (
+                                      <div
+                                        key={c.id}
+                                        onClick={() => handleSelectChat(c.id)}
+                                        className="px-2 py-1 text-[#F0F6F8] hover:text-[#12A5B8] bg-[#080E11] hover:bg-[#132127] cursor-pointer truncate rounded-lg transition-colors font-sans"
+                                      >
+                                        · {c.title}
+                                      </div>
+                                    ))
+                                  )}
+
+                                  <div className="pt-2 flex items-center justify-between text-[9px] text-[#12A5B8] font-sans">
+                                    <span
+                                      onClick={() => setReportModalOpen(true)}
+                                      className="hover:underline cursor-pointer flex items-center gap-1"
                                     >
-                                      · {c.title}
-                                    </div>
-                                  ))
-                                )}
-
-                                <div className="pt-2 flex items-center justify-between text-[9px] text-[#12A5B8] font-sans">
-                                  <span
-                                    onClick={() => setReportModalOpen(true)}
-                                    className="hover:underline cursor-pointer flex items-center gap-1"
-                                  >
-                                    <FileText size={10} />
-                                    <span>Project Report ↗</span>
-                                  </span>
-                                  <span
-                                    onClick={() => setImageryLibraryOpen(true)}
-                                    className="hover:underline cursor-pointer flex items-center gap-1"
-                                  >
-                                    <Database size={10} />
-                                    <span>Scenes ↗</span>
-                                  </span>
+                                      <FileText size={10} />
+                                      <span>Project Report ↗</span>
+                                    </span>
+                                    <span
+                                      onClick={() => setImageryLibraryOpen(true)}
+                                      className="hover:underline cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Database size={10} />
+                                      <span>Scenes ↗</span>
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                              )}
+                            </div>
+                          );
+                        }))}
+                      </div>
+                    )}
                   )}
                 </div>
 
