@@ -291,9 +291,9 @@ export function CinematicLanding({
               query="Where are the major built-up areas?"
               answer="GeoChat-Grounding localized 3 distinct high-density industrial and residential clusters with high confidence (91.4% average agreement)."
               boundingRegions={[
-                { label: "BUILT-UP SECTOR A", confidence: "91.4%", top: "28%", left: "30%", width: "24%", height: "22%" },
-                { label: "BUILT-UP SECTOR B", confidence: "93.1%", top: "52%", left: "28%", width: "30%", height: "26%" },
-                { label: "PORT DOCKS", confidence: "88.7%", top: "40%", left: "54%", width: "20%", height: "20%" },
+                { label: "BUILT-UP SECTOR A", confidence: "91.4%", top: "20%", left: "29%", width: "17.5%", height: "28%" },
+                { label: "BUILT-UP SECTOR B", confidence: "93.1%", top: "54%", left: "36.5%", width: "11.5%", height: "28%" },
+                { label: "PORT DOCKS", confidence: "88.7%", top: "38%", left: "47.5%", width: "12%", height: "33%" },
               ]}
               meta={{
                 source: "Bombay Seen by Proba Satellite",

@@ -19,8 +19,9 @@ export function ObservationSweep({
   query = "What type of land cover dominates this region?",
   answer = "Dense built-up urban agglomeration with major port infrastructure along the eastern coastal harbor and high-salinity tidal inlets.",
   boundingRegions = [
-    { label: "URBAN BUILT-UP", confidence: "91.4%", top: "35%", left: "28%", width: "42%", height: "36%" },
-    { label: "PORT INFRASTRUCTURE", confidence: "88.2%", top: "42%", left: "54%", width: "22%", height: "24%" },
+    { label: "BUILT-UP SECTOR A", confidence: "91.4%", top: "20%", left: "29%", width: "17.5%", height: "28%" },
+    { label: "BUILT-UP SECTOR B", confidence: "93.1%", top: "54%", left: "36.5%", width: "11.5%", height: "28%" },
+    { label: "PORT DOCKS", confidence: "88.7%", top: "38%", left: "47.5%", width: "12%", height: "33%" },
   ],
   meta = {
     source: "Proba Satellite / HRC Instrument",
@@ -82,13 +83,13 @@ export function ObservationSweep({
     <div className="w-full flex flex-col lg:flex-row gap-6 items-stretch font-sans">
       
       {/* ─── SATELLITE IMAGE VIEWPORT (PRIMARY VISUAL HERO) ─── */}
-      <div className="flex-1 relative bg-[#040708] border border-white/[0.08] overflow-hidden min-h-[420px] self-stretch flex items-center justify-center group select-none rounded-xl ios-glass-card">
+      <div className="flex-1 relative bg-[#040708] border border-white/[0.08] overflow-hidden min-h-[460px] lg:min-h-[500px] self-stretch flex items-center justify-center group select-none rounded-xl ios-glass-card">
         
         {/* Real Satellite Image */}
         <img
           src={imageUrl}
           alt="Satellite Observation"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
           loading="eager"
         />
 
