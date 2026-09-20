@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { X, Lock, Mail, User, ShieldCheck, ArrowRight, Eye, EyeOff, Globe, Sparkles, Building2, CheckCircle2 } from "lucide-react";
+import { X, Lock, Mail, User, ArrowRight, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }) {
-  // Mode: "signup" (Create ID) vs "login" (Access Account)
+  // Mode: "signup" vs "login"
   const [mode, setMode] = useState(initialMode === "login" ? "login" : "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [organization, setOrganization] = useState("ISRO National Remote Sensing Center");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberedName, setRememberedName] = useState("");
@@ -67,8 +66,8 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
       const userData = {
         name: chosenName,
         email: email.trim() || `${chosenName.toLowerCase().replace(/\s+/g, "")}@satquery.ai`,
-        organization: organization,
-        role: "Lead Satellite Analyst",
+        organization: "Earth Observation Directorate",
+        role: "Satellite Analyst",
         token: `sq_${Date.now()}`,
       };
 
@@ -84,9 +83,9 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
       }
 
       if (mode === "signup") {
-        toast.success(`Mission ID created for ${chosenName}. Logged into workstation.`);
+        toast.success(`Account created for ${chosenName}. Logged into workstation.`);
       } else {
-        toast.success(`Welcome back, ${chosenName}. Identity verified.`);
+        toast.success(`Welcome back, ${chosenName}. Logged in.`);
       }
 
       onSuccess?.(userData);
@@ -94,37 +93,11 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
     }, 280);
   };
 
-  const handleQuickDemo = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      const demoUser = {
-        name: "Omkar Bijamwar",
-        email: "omkarbijamwar@isro.gov.in",
-        organization: "ISRO National Remote Sensing Center",
-        role: "Lead Satellite Analyst",
-        token: `sq_demo_${Date.now()}`,
-      };
-      try {
-        const stored = localStorage.getItem("satquery_registered_users");
-        const registeredUsers = stored ? JSON.parse(stored) : {};
-        registeredUsers[demoUser.email.toLowerCase()] = demoUser;
-        localStorage.setItem("satquery_registered_users", JSON.stringify(registeredUsers));
-        localStorage.setItem("satquery_auth_user", JSON.stringify(demoUser));
-        localStorage.setItem("satquery_last_name", demoUser.name);
-        localStorage.setItem("satquery_last_email", demoUser.email);
-      } catch (err) {}
-      toast.success("Authenticated as Omkar Bijamwar · Workstation unlocked.");
-      onSuccess?.(demoUser);
-      onClose();
-    }, 200);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-150">
       
       {/* ─────────────────────────────────────────────────────────────
-          UIVERSE.IO ADAPTED AUTH BOX (DISTINCT SIGN UP & LOG IN)
+          UIVERSE.IO ADAPTED AUTH BOX (CLEAN, MINIMALIST SIGN UP & LOG IN)
           ───────────────────────────────────────────────────────────── */}
       <div className="sq_form_container">
         
@@ -137,24 +110,11 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
           <X size={16} />
         </button>
 
-        {/* Logo Container (Uiverse .logo_container with SatQuery Space Theme) */}
-        <div className="sq_logo_container">
-          <div className="relative">
-            <Globe size={32} className="text-[#12A5B8]" />
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
-          </div>
-        </div>
-
-        {/* Title Container (Uiverse .title_container) */}
-        <div className="sq_title_container">
-          <h2 className="sq_title font-heading">
-            {mode === "signup" ? "Create Mission ID" : "Operator Log In"}
+        {/* Clean Title */}
+        <div className="w-full text-center pb-1 pt-1">
+          <h2 className="sq_title font-heading text-xl font-bold tracking-tight text-white">
+            {mode === "signup" ? "Sign Up" : "Log In"}
           </h2>
-          <p className="sq_subtitle font-sans">
-            {mode === "signup"
-              ? "Register your remote-sensing operator profile to unlock satellite scene analytics."
-              : "Authenticate your credentials to resume high-resolution Earth observation."}
-          </p>
         </div>
 
         {/* Remembered Identity Banner (For Log In Mode) */}
@@ -178,20 +138,20 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
         )}
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="w-full space-y-3">
+        <form onSubmit={handleSubmit} className="w-full space-y-3.5 mt-1">
           
           {/* SIGN UP BOX: Asks for Name */}
           {mode === "signup" && (
             <div className="sq_input_container">
               <label className="sq_input_label">
-                Full Name / Operator Name <span className="text-[#12A5B8]">*</span>
+                Name <span className="text-[#12A5B8]">*</span>
               </label>
               <div className="relative">
                 <User className="sq_icon" />
                 <input
                   type="text"
                   required
-                  placeholder="Enter your name (e.g. Omkar Bijamwar)"
+                  placeholder="Enter your name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="sq_input_field font-sans"
@@ -200,17 +160,17 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
             </div>
           )}
 
-          {/* Email / Operator ID */}
+          {/* Email */}
           <div className="sq_input_container">
             <label className="sq_input_label">
-              Work Email / Operator ID <span className="text-[#12A5B8]">*</span>
+              Email <span className="text-[#12A5B8]">*</span>
             </label>
             <div className="relative">
               <Mail className="sq_icon" />
               <input
                 type="email"
                 required
-                placeholder="analyst@isro.gov.in"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="sq_input_field font-sans"
@@ -218,10 +178,10 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
             </div>
           </div>
 
-          {/* Access Key / Password */}
+          {/* Password */}
           <div className="sq_input_container">
             <label className="sq_input_label">
-              Access Key / Password <span className="text-[#12A5B8]">*</span>
+              Password <span className="text-[#12A5B8]">*</span>
             </label>
             <div className="relative">
               <Lock className="sq_icon" />
@@ -243,83 +203,44 @@ export function AuthModal({ isOpen, onClose, initialMode = "signup", onSuccess }
             </div>
           </div>
 
-          {/* SIGN UP BOX: Organization */}
-          {mode === "signup" && (
-            <div className="sq_input_container">
-              <label className="sq_input_label">
-                Research Body / Space Agency
-              </label>
-              <div className="relative">
-                <Building2 className="sq_icon" />
-                <select
-                  value={organization}
-                  onChange={(e) => setOrganization(e.target.value)}
-                  className="sq_input_field font-sans appearance-none pr-8 cursor-pointer"
-                >
-                  <option value="ISRO National Remote Sensing Center">ISRO / NRSC Remote Sensing Center</option>
-                  <option value="Defense Remote Sensing Agency">Defense Remote Sensing & Maritime Center</option>
-                  <option value="Geological Survey of India">Geological Survey & Disaster Mitigation</option>
-                  <option value="University Earth Observation Lab">Academic / Research Institution</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* Primary Action Button (Uiverse .sign-in_btn) */}
+          {/* Primary Action Button */}
           <button
             type="submit"
             disabled={isLoading}
             className="sq_btn_primary mt-2"
           >
             {isLoading ? (
-              <span>VERIFYING CREDENTIALS...</span>
+              <span>VERIFYING...</span>
             ) : (
               <>
-                <span>{mode === "signup" ? "CREATE ID & ENTER WORKSTATION" : "LOG IN TO WORKSTATION"}</span>
+                <span>{mode === "signup" ? "SIGN UP" : "LOG IN"}</span>
                 <ArrowRight size={14} />
               </>
             )}
           </button>
 
-          {/* Separator (Uiverse .separator) */}
-          <div className="sq_separator my-2">
-            <span className="line" />
-            <span>OR QUICK ACCESS</span>
-            <span className="line" />
-          </div>
-
-          {/* 1-Click Demo Shortcut (Uiverse .sign-in_ggl) */}
-          <button
-            type="button"
-            onClick={handleQuickDemo}
-            className="sq_btn_demo font-mono"
-          >
-            <ShieldCheck size={15} />
-            <span>1-Click Demo: Omkar Bijamwar</span>
-          </button>
-
-          {/* Toggle between Sign Up Box & Log In Box (Uiverse .note) */}
+          {/* Toggle between Sign Up & Log In */}
           <div className="pt-2 text-center">
             {mode === "signup" ? (
               <p className="sq_note font-mono text-xs">
-                Already registered?{" "}
+                Already have an account?{" "}
                 <button
                   type="button"
                   onClick={() => setMode("login")}
                   className="text-[#12A5B8] font-bold underline hover:text-[#FFFFFF] cursor-pointer ml-1"
                 >
-                  Log in to your ID
+                  Log In
                 </button>
               </p>
             ) : (
               <p className="sq_note font-mono text-xs">
-                Need a new mission ID?{" "}
+                Don't have an account?{" "}
                 <button
                   type="button"
                   onClick={() => setMode("signup")}
                   className="text-[#12A5B8] font-bold underline hover:text-[#FFFFFF] cursor-pointer ml-1"
                 >
-                  Sign up & create ID
+                  Sign Up
                 </button>
               </p>
             )}

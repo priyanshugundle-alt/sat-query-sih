@@ -1258,7 +1258,7 @@ export default function Investigation() {
                           {currentUser?.name || "SatQuery Analyst"}
                         </div>
                         <div className="text-[10px] text-[#8AA3AD] font-mono truncate">
-                          {currentUser?.role || "Satellite Analyst"} · {currentUser?.organization ? "NRSC / ISRO" : "Gov"}
+                          {currentUser?.role || "Satellite Analyst"}
                         </div>
                       </div>
                     </div>
@@ -1292,7 +1292,7 @@ export default function Investigation() {
                                 {currentUser?.name || "SatQuery Analyst"}
                               </div>
                               <div className="text-[10px] text-[#8AA3AD] font-mono leading-tight truncate">
-                                {currentUser?.email || "analyst@isro.gov.in"}
+                                {currentUser?.email || "analyst@satquery.ai"}
                               </div>
                             </div>
                           </div>

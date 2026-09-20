@@ -64,7 +64,7 @@ export function UserProfileModal({ isOpen, onClose, user, onLogout }) {
                 <span>Operator Email:</span>
               </div>
               <span className="text-[#F0F6F8] font-medium truncate max-w-[200px]">
-                {user?.email || "analyst@isro.gov.in"}
+                {user?.email || "analyst@satquery.ai"}
               </span>
             </div>
 
@@ -74,7 +74,7 @@ export function UserProfileModal({ isOpen, onClose, user, onLogout }) {
                 <span>Organization:</span>
               </div>
               <span className="text-[#F0F6F8] font-medium truncate max-w-[200px]">
-                {user?.organization || "ISRO National Remote Sensing Center"}
+                {user?.organization || "Earth Observation Directorate"}
               </span>
             </div>
 
