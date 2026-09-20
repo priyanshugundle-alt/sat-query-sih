@@ -100,11 +100,6 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               <span className="text-[#12A5B8] font-bold">27 AUG 2026</span>
             </div>
 
-            {/* Bottom-Left Location Tag */}
-            <div className="absolute bottom-3 left-3 bg-[#040708]/85 border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] text-[#8AA3AD] backdrop-blur-md z-30 rounded-lg shadow-sm">
-              SYABRU BESI, NEPAL
-            </div>
-
           </div>
 
           {/* Temporal Scrubber Control Bar */}
