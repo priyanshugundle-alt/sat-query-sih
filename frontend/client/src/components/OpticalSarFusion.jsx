@@ -175,28 +175,6 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
 
             </div>
 
-            {/* Sensor Source Details */}
-            <div className="pt-2 border-t border-[#1C323B] space-y-1 font-mono text-[10px] mt-3">
-              <div className="flex justify-between">
-                <span className="text-[#8AA3AD]">OPTICAL PASS</span>
-                <span className="text-[#FFFFFF]">Sentinel-2 MSI (10m)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#8AA3AD]">RADAR PASS</span>
-                <span className="text-[#12A5B8]">Sentinel-1 C-Band SAR (GRD)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#8AA3AD]">CO-REGISTRATION</span>
-                <span className="text-[#22D3EE]">&lt; 0.4 px GeoTIFF Alignment</span>
-              </div>
-            </div>
-
-            {/* Specialist Engine */}
-            <div className="pt-2 border-t border-[#1C323B] flex items-center justify-between font-mono text-[9px] text-[#8AA3AD] mt-2">
-              <span>SPECIALIST ENGINE</span>
-              <span className="text-[#12A5B8]">OpticalSAR-Fusion (EarthGPT)</span>
-            </div>
-
           </div>
 
         </div>

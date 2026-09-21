@@ -234,22 +234,6 @@ export function ObservationSweep({
                       {answer}
                     </p>
                   </div>
-
-                  {/* Audit Evidence Breakdown Grid */}
-                  <div className="grid grid-cols-3 gap-2 font-mono text-[10px] p-2 bg-[#040708]/40 border border-white/[0.06] rounded-lg">
-                    <div className="border-r border-white/[0.06] pr-1.5">
-                      <span className="text-[#8AA3AD] block text-[8.5px]">CONFIDENCE</span>
-                      <span className="text-[#12A5B8] font-bold">91.4% (VERIFIED)</span>
-                    </div>
-                    <div className="border-r border-white/[0.06] px-1.5">
-                      <span className="text-[#8AA3AD] block text-[8.5px]">LOCALIZATION</span>
-                      <span className="text-[#22D3EE] font-bold">{featureInfo.targetType}</span>
-                    </div>
-                    <div className="pl-1.5">
-                      <span className="text-[#8AA3AD] block text-[8.5px]">CALIBRATION</span>
-                      <span className="text-[#10B981] font-bold">WGS 84 · 5m</span>
-                    </div>
-                  </div>
                 </motion.div>
               ) : (
                 <div className="p-3.5 bg-[#040708]/40 border border-white/[0.06] flex items-center justify-center gap-2.5 text-[#8AA3AD] text-xs rounded-lg">

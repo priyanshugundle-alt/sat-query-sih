@@ -13,10 +13,12 @@ import React from "react";
 export default function SatQueryLogo({
   size = 28,
   variant = "icon",
+  theme = "dark",
   className = "",
   style = {},
 }) {
   const isIcon = variant === "icon";
+  const isLight = theme === "light";
 
   return (
     <svg
@@ -38,21 +40,26 @@ export default function SatQueryLogo({
       {/* Rounded Squircle Container for "icon" variant */}
       {isIcon && (
         <>
-          <rect width="512" height="512" rx="112" fill="#060A0D" />
+          <rect
+            width="512"
+            height="512"
+            rx="112"
+            fill={isLight ? "#FFFFFF" : "#060A0D"}
+          />
           <rect
             width="512"
             height="512"
             rx="112"
             fill="none"
-            stroke="#1C323B"
-            strokeWidth="4"
-            opacity="0.6"
+            stroke={isLight ? "#CBD5E1" : "#1C323B"}
+            strokeWidth={isLight ? "8" : "4"}
+            opacity={isLight ? "1" : "0.6"}
           />
         </>
       )}
 
-      {/* Segmented Aperture Q-Ring (Ivory / Off-White) */}
-      <g fill="#F4F2EB">
+      {/* Segmented Aperture Q-Ring: Black in light mode, Ivory in dark mode */}
+      <g fill={isLight ? "#000000" : "#F4F2EB"}>
         {/* Arc 1: Top-Right to Bottom-Right */}
         <path d="M 261.65 94.10 A 162.0 162.0 0 0 1 393.39 341.85 L 357.77 319.59 A 120.0 120.0 0 0 0 260.19 136.07 Z" />
         {/* Arc 2: Bottom to Left */}

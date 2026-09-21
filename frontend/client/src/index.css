@@ -2086,9 +2086,8 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────
- * WORKSTATION-ONLY LIGHT THEME
+ * WORKSTATION-ONLY LIGHT THEME (Clean Modern Light System)
  * Isolated strictly to the workstation container (.workstation-light)
- * Landing page remains 100% in dark cosmic theme
  * ───────────────────────────────────────────────────────────────── */
 .workstation-light {
   background-color: #F8FAFC !important;
@@ -2098,36 +2097,26 @@
 .workstation-light aside {
   background-color: #FFFFFF !important;
   border-color: #E2E8F0 !important;
+  color: #0F172A !important;
 }
 
 .workstation-light header {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
-  backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(16px) !important;
 }
 
 .workstation-light main {
   background-color: #F8FAFC !important;
 }
 
-.workstation-light .ios-glass-card {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-color: #E2E8F0 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
-  color: #0F172A !important;
-}
-
-.workstation-light .ios-glass-header {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: #E2E8F0 !important;
-  color: #0F172A !important;
-}
-
+/* Floating Composer in Light Mode */
+.workstation-light .ios-glass,
 .workstation-light .composer-box {
   background: #FFFFFF !important;
-  border-color: #CBD5E1 !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08) !important;
 }
 
 .workstation-light textarea,
@@ -2135,6 +2124,12 @@
   color: #0F172A !important;
 }
 
+.workstation-light textarea::placeholder,
+.workstation-light input::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Text Colors */
 .workstation-light .text-\[\#F0F6F8\],
 .workstation-light .text-\[\#FFFFFF\] {
   color: #0F172A !important;
@@ -2144,6 +2139,11 @@
   color: #64748B !important;
 }
 
+.workstation-light .text-\[\#76AEB0\] {
+  color: #0E7C8A !important;
+}
+
+/* Background surfaces */
 .workstation-light .bg-\[\#080E11\],
 .workstation-light .bg-\[\#040708\] {
   background-color: #F1F5F9 !important;
@@ -2154,9 +2154,10 @@
 }
 
 .workstation-light .bg-\[\#132127\] {
-  background-color: #F8FAFC !important;
+  background-color: #F1F5F9 !important;
 }
 
+/* Borders */
 .workstation-light .border-\[\#1C323B\],
 .workstation-light .border-white\/\[0\.08\],
 .workstation-light .border-white\/\[0\.1\],
@@ -2165,9 +2166,63 @@
   border-color: #E2E8F0 !important;
 }
 
+/* Hover States */
 .workstation-light .hover\:bg-\[\#132127\]:hover,
 .workstation-light .hover\:bg-\[\#0D171C\]:hover {
   background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+/* Buttons & Chips in light mode */
+.workstation-light .sq-new-chat-btn {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #0E7C8A !important;
+}
+
+.workstation-light .sq-new-chat-btn:hover {
+  background: #E2E8F0 !important;
+  border-color: #0E7C8A !important;
+}
+
+.workstation-light .sq-sidebar-tab:hover {
+  color: #0F172A !important;
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.workstation-light .sq-sidebar-tab-active {
+  background: rgba(14, 124, 138, 0.1) !important;
+  color: #0E7C8A !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(14, 124, 138, 0.3) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.workstation-light .sq-chat-item:hover {
+  background: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+.workstation-light .sq-chat-item-active {
+  background: #F1F5F9 !important;
+  color: #0E7C8A !important;
+  border-color: rgba(14, 124, 138, 0.35) !important;
+}
+
+/* Logo in light mode: replace black with white, and white with black; keep antenna probe untouched */
+.workstation-light svg rect[fill="#060A0D"] {
+  fill: #FFFFFF !important;
+  stroke: #CBD5E1 !important;
+}
+
+.workstation-light svg rect[stroke="#1C323B"] {
+  stroke: #CBD5E1 !important;
+}
+
+.workstation-light svg g[fill="#F4F2EB"] {
+  fill: #000000 !important;
 }
 
 
@@ -2297,6 +2352,18 @@
 .sq-profile-trigger:hover .sq-avatar {
   border-color: #12A5B8 !important;
   box-shadow: 0 0 12px rgba(18, 165, 184, 0.5) !important;
+}
+
+/* Light Mode Overrides for Sidebar Profile Footer Trigger */
+.workstation-light .sq-profile-trigger:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08) !important;
+}
+
+.workstation-light .sq-profile-trigger:hover .sq-avatar {
+  border-color: #0E7C8A !important;
+  box-shadow: 0 0 8px rgba(14, 124, 138, 0.25) !important;
 }
 
 
