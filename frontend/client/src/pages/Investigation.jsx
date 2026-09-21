@@ -24,7 +24,7 @@ import {
   Layers, Search, Globe, ArrowUpRight, Check, X,
   Maximize2, Eye, ShieldCheck, Target, Radar, Activity,
   Database, RefreshCw, PanelLeftClose, PanelLeftOpen, Trash2,
-  Sun, Moon, ArrowLeft
+  Sun, Moon, ArrowLeft, SquarePen
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -1027,83 +1027,89 @@ export default function Investigation() {
                 }`}
               >
                 {/* ── Top Header: Brand + Collapse ── */}
-                <div className="p-3 border-b border-[#1C323B]/80 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <SatQueryLogo size={20} variant="icon" className="shadow-[0_0_8px_rgba(18,165,184,0.3)]" />
-                    <span className="font-chillax text-xs font-bold tracking-wider text-[#FFFFFF]">
-                      SATQUERY AI
-                    </span>
-                    <span className="text-[9px] font-sans px-2 py-0.5 bg-[#0D171C] text-[#8AA3AD] border border-white/[0.08] rounded-md font-semibold">
-                      EO-AI
+                <div className="p-3.5 border-b border-[#1C323B]/80 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <SatQueryLogo size={28} variant="icon" className="shadow-[0_0_12px_rgba(18,165,184,0.35)]" />
+                    <span className="font-sans text-base font-semibold tracking-wide text-[#FFFFFF]">
+                      SatQuery AI
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="p-1.5 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C] transition-colors rounded-lg cursor-pointer"
-                    title="Collapse Sidebar"
-                  >
-                    <PanelLeftClose size={15} />
-                  </button>
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      onClick={() => setSidebarOpen(false)}
+                      className="p-1.5 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C] transition-colors rounded-lg cursor-pointer"
+                      title="Collapse Sidebar"
+                    >
+                      <PanelLeftClose size={17} strokeWidth={1.75} />
+                    </button>
+                  </div>
                 </div>
 
-                {/* ── + NEW CHAT Button (Always Clean Slate) ── */}
-                <div className="p-3 pb-2">
+                {/* ── Main Navigation List (Vertical, Elegant) ── */}
+                <div className="px-2 pt-2 pb-1 space-y-1 border-b border-[#1C323B]/60">
+                  {/* New Chat */}
                   <button
                     onClick={handleNewChat}
-                    className="w-full py-2.5 px-3.5 sq-new-chat-btn text-[#F0F6F8] text-xs flex items-center justify-between cursor-pointer shadow-sm group rounded-xl"
+                    className="w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg text-[#F0F6F8] hover:bg-[#132127]"
                   >
-                    <span className="flex items-center gap-2.5 font-bold tracking-wide">
-                      <Plus size={15} className="text-[#12A5B8] group-hover:rotate-90 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="font-chillax tracking-wider text-xs font-bold">NEW CHAT</span>
-                    </span>
-                    <span className="text-[10px] text-[#8AA3AD] font-mono bg-[#080E11]/80 px-1.5 py-0.5 border border-white/[0.08] rounded-md">⌘N</span>
+                    <div className="flex items-center gap-3">
+                      <SquarePen size={16} strokeWidth={1.5} className="text-[#12A5B8]" />
+                      <span className="font-sans font-medium text-[13px]">New chat</span>
+                    </div>
+                    <span className="opacity-0 group-hover:opacity-100 text-[10px] text-[#8AA3AD] font-mono transition-opacity">⌘N</span>
                   </button>
-                </div>
 
-                {/* ── Section Switcher Tabs: CHATS / IMAGES / PROJECTS ── */}
-                <div className="px-3 pt-1.5 pb-2 flex gap-1 font-sans text-[11px] border-b border-[#1C323B]/60">
+                  {/* Images Tab */}
+                  <button
+                    onClick={() => {
+                      setSidebarTab("images");
+                      setActiveProjectId(null);
+                    }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${
+                      sidebarTab === "images" ? "bg-[#132127] text-[#12A5B8]" : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <ImageIcon size={16} strokeWidth={1.5} />
+                      <span>Images</span>
+                    </div>
+                    {allImagesAcrossChats.length > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-full">
+                        {allImagesAcrossChats.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Projects Tab */}
+                  <button
+                    onClick={() => {
+                      setSidebarTab("projects");
+                    }}
+                    className={`w-full px-3 py-2 text-left flex items-center gap-3 transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${
+                      sidebarTab === "projects" ? "bg-[#132127] text-[#12A5B8]" : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
+                    }`}
+                  >
+                    <Folder size={16} strokeWidth={1.5} />
+                    <span>Projects</span>
+                  </button>
+                  
+                  {/* Recents / Chats Tab */}
                   <button
                     onClick={() => {
                       setSidebarTab("chats");
                       setActiveProjectId(null);
                     }}
-                    className={`flex-1 py-1.5 px-2 text-center font-sans font-medium tracking-wide text-[11px] cursor-pointer rounded-full sq-sidebar-tab ${
-                      sidebarTab === "chats"
-                        ? "sq-sidebar-tab-active"
-                        : "text-[#8AA3AD]"
+                    className={`w-full px-3 py-2 text-left flex items-center gap-3 transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${
+                      sidebarTab === "chats" ? "bg-[#132127] text-[#12A5B8]" : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
                     }`}
                   >
-                    CHATS
-                  </button>
-                  <button
-                    onClick={() => setSidebarTab("images")}
-                    className={`flex-1 py-1.5 px-2 text-center font-sans font-medium tracking-wide text-[11px] cursor-pointer flex items-center justify-center gap-1.5 rounded-full sq-sidebar-tab ${
-                      sidebarTab === "images"
-                        ? "sq-sidebar-tab-active"
-                        : "text-[#8AA3AD]"
-                    }`}
-                  >
-                    <span>IMAGES</span>
-                    {allImagesAcrossChats.length > 0 && (
-                      <span className="text-[9px] px-1.5 py-0.2 bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30 font-bold rounded-full font-sans">
-                        {allImagesAcrossChats.length}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setSidebarTab("projects")}
-                    className={`flex-1 py-1.5 px-2 text-center font-sans font-medium tracking-wide text-[11px] cursor-pointer rounded-full sq-sidebar-tab ${
-                      sidebarTab === "projects"
-                        ? "sq-sidebar-tab-active"
-                        : "text-[#8AA3AD]"
-                    }`}
-                  >
-                    PROJECTS
+                    <Clock size={16} strokeWidth={1.5} />
+                    <span>Recents</span>
                   </button>
                 </div>
 
-                {/* ── Middle Scrollable Area: Based on Tab ── */}
+                {/* ── Middle Scrollable Area: History ── */}
                 <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4 font-sans text-xs">
                   {/* ────────────────────────────────────────────────
                       TAB A: CHATS / QUERY HISTORY (Today, Yesterday, etc.)
@@ -1127,7 +1133,6 @@ export default function Investigation() {
                               title={conv.title}
                             >
                               <div className="flex items-center gap-2 truncate min-w-0">
-                                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all ${isActive ? "bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" : "bg-[#8AA3AD]/40 group-hover:bg-[#12A5B8]"}`} />
                                 <span className="truncate font-sans font-medium">{conv.title}</span>
                               </div>
                               <button
@@ -1291,15 +1296,15 @@ export default function Investigation() {
                 {/* ── Bottom Profile Menu (Screenshot 2 UX Reference) ── */}
                 <div className="p-2 border-t border-[#1C323B] relative" ref={profileMenuRef}>
                   {/* Popover Menu Trigger Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setProfileMenuOpen((prev) => !prev);
-                    }}
-                    className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl sq-profile-trigger border border-transparent ${
-                      profileMenuOpen ? "bg-[#132127] border-[#12A5B8]/50 shadow-[0_0_12px_rgba(18,165,184,0.2)]" : ""
-                    }`}
-                  >
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setProfileMenuOpen((prev) => !prev);
+                      }}
+                      className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl sq-profile-trigger border border-transparent ${
+                        profileMenuOpen ? "bg-[#132127] border-[#1C323B]" : ""
+                      }`}
+                    >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-7 h-7 rounded-full bg-[#12A5B8]/20 border border-[#12A5B8]/60 text-[#12A5B8] font-bold text-xs flex items-center justify-center flex-shrink-0 font-chillax sq-avatar transition-all">
                         {userInitials}
@@ -1591,22 +1596,21 @@ export default function Investigation() {
                           className="text-center space-y-2 mb-3"
                         >
                           <div className="flex justify-center mb-3">
-                            <SatQueryLogo size={48} variant="icon" className="shadow-[0_0_24px_rgba(18,165,184,0.35)]" />
+                            <SatQueryLogo size={48} variant="icon" />
                           </div>
                           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0D171C] border border-white/[0.08] font-mono text-[10px] text-[#12A5B8] uppercase tracking-wider rounded-md">
-                            <span className="w-1.5 h-1.5 bg-[#12A5B8] rounded-full" />
                             <span>EARTH OBSERVATION AGENTIC WORKSTATION</span>
                           </div>
-                          <h1 className="font-sans text-3xl sm:text-4xl font-extrabold text-[#FFFFFF] tracking-tight">
-                            ASK SATQUERY
+                          <h1 className="font-sans text-2xl sm:text-3xl font-medium text-[#F0F6F8] tracking-wide mt-2">
+                            Ask SatQuery
                           </h1>
-                          <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-md mx-auto leading-relaxed">
+                          <p className="font-sans text-sm sm:text-base text-[#8AA3AD] max-w-xl mx-auto leading-relaxed mt-1">
                             Understand Earth-observation imagery through natural language.
                           </p>
                         </motion.div>
 
                         {/* Physical spacer that reserves the exact visual footprint of the centered composer */}
-                        <div className="h-[60px] w-full my-2 pointer-events-none" />
+                        <div className="h-[80px] w-full mt-6 mb-2 pointer-events-none" />
 
                         {/* Quick-Query Suggestions (positioned below centered composer) */}
                         <motion.div
@@ -1649,13 +1653,13 @@ export default function Investigation() {
                                 setTaskMode(card.mode);
                                 composerInputRef.current?.focus();
                               }}
-                              className="p-3.5 bg-[#0D171C]/80 hover:bg-[#132127] border border-[#1C323B] hover:border-[#12A5B8]/60 cursor-pointer transition-all group rounded-2xl shadow-sm"
+                              className="p-3.5 bg-[#0D171C] hover:bg-[#132127] border border-[#1C323B] hover:border-[#8AA3AD]/50 cursor-pointer transition-colors duration-200 group rounded-xl"
                             >
-                              <div className="text-xs font-bold text-[#F0F6F8] group-hover:text-[#12A5B8] flex items-center justify-between">
+                              <div className="text-xs font-semibold tracking-wide text-[#F0F6F8] group-hover:text-[#12A5B8] flex items-center justify-between">
                                 <span>{card.title}</span>
-                                <ArrowUpRight size={13} className="text-[#8AA3AD] group-hover:text-[#12A5B8]" />
+                                <ArrowUpRight size={14} className="text-[#8AA3AD] group-hover:text-[#12A5B8] transition-colors" />
                               </div>
-                              <div className="text-[11px] text-[#8AA3AD] mt-1 leading-normal">
+                              <div className="text-[11px] text-[#8AA3AD] mt-1.5 leading-relaxed font-medium">
                                 "{card.prompt}"
                               </div>
                             </div>
@@ -1725,7 +1729,7 @@ export default function Investigation() {
                               {/* 2. User Question Bubble */}
                               {msg.role === "user" && msg.text && (
                                 <div className="flex justify-end">
-                                  <div className="max-w-xl p-3.5 bg-[#0D171C] border border-[#1C323B] text-[#FFFFFF] font-sans text-sm leading-relaxed rounded-2xl">
+                                  <div className="max-w-xl p-3.5 bg-[#0D171C] text-[#FFFFFF] font-sans text-sm leading-relaxed rounded-2xl">
                                     <div className="flex items-center justify-between text-[9px] font-mono text-[#8AA3AD] mb-1">
                                       <span className="text-[#76AEB0] font-bold">YOU</span>
                                       <span>{msg.timestamp}</span>
@@ -1737,12 +1741,10 @@ export default function Investigation() {
 
                               {/* 3. Assistant Response Block */}
                               {msg.role === "assistant" && (
-                                <div className="p-4 bg-[#080E11]/90 border border-[#1C323B] space-y-3 font-sans max-w-2xl rounded-2xl">
+                                <div className="py-4 space-y-3 font-sans max-w-2xl w-full">
                                   {/* Assistant Header */}
-                                  <div className="flex items-center justify-between text-xs font-mono border-b border-[#1C323B]/70 pb-2">
+                                  <div className="flex items-center justify-between text-xs font-mono pb-2">
                                     <div className="flex items-center gap-2">
-                                      <span className="w-2 h-2 bg-[#12A5B8] shadow-[0_0_6px_#12A5B8] rounded-full" />
-                                      <span className="font-bold text-[#12A5B8]">SATQUERY AI</span>
                                       <span className="text-[10px] text-[#8AA3AD] font-mono">
                                         [{SPECIALIST_CONFIG[msg.mode]?.sublabel || "OPTICAL ◉"}]
                                       </span>
@@ -1753,19 +1755,14 @@ export default function Investigation() {
                                   {/* Natural Language Answer */}
                                   <p className="text-sm text-[#F0F6F8] leading-relaxed font-sans">{msg.text}</p>
 
-                                  {/* Action Triggers: [VIEW FINDINGS] [SHOW ME WHY] [AUDIT REPORT] */}
-                                  <div className="pt-2 border-t border-[#1C323B]/60 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                                    <div className="text-[10px] text-[#68745C] font-bold">
-                                      {msg.findingsCount || 2} FINDINGS · {msg.confidence || 94.2}% CONFIDENCE
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
+                                  {/* Action Triggers: [VIEW FINDINGS] [SHOW ME WHY] */}
+                                  <div className="pt-2 flex flex-wrap items-center justify-start gap-3 font-mono text-xs">
                                       <button
                                         onClick={() => handleOpenCanvasInspection(msg.assetRef, msg.evidence)}
-                                        className="px-3 py-1 bg-[#0D171C] hover:bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/40 hover:border-[#12A5B8] font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 shadow-sm rounded-lg"
+                                        className="px-2 py-1 text-[#12A5B8] hover:text-[#19C5DC] hover:bg-[#12A5B8]/10 transition-colors cursor-pointer flex items-center gap-1.5 rounded"
                                       >
-                                        <Target size={12} />
-                                        <span>VIEW FINDINGS ↗</span>
+                                        <Target size={13} />
+                                        <span className="font-semibold uppercase tracking-wider">View Findings</span>
                                       </button>
 
                                       <button
@@ -1773,12 +1770,11 @@ export default function Investigation() {
                                           setActiveEvidenceResult(msg.queryResult);
                                           setShowMeWhyOpen(true);
                                         }}
-                                        className="px-3 py-1 bg-[#0D171C] hover:bg-[#132127] text-[#F0F6F8] hover:text-[#12A5B8] border border-[#1C323B] text-[11px] transition-colors cursor-pointer flex items-center gap-1 rounded-lg"
+                                        className="px-2 py-1 text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#1C323B]/50 transition-colors cursor-pointer flex items-center gap-1.5 rounded"
                                       >
-                                        <ShieldCheck size={12} />
-                                        <span>SHOW ME WHY ↗</span>
+                                        <ShieldCheck size={13} />
+                                        <span className="font-semibold uppercase tracking-wider">Show Me Why</span>
                                       </button>
-                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -1833,7 +1829,7 @@ export default function Investigation() {
                   className="absolute left-4 right-4 z-40 pointer-events-none"
                   initial={false}
                   animate={{
-                    bottom: isEmptyChat ? "calc(50% - 30px)" : "24px",
+                    bottom: isEmptyChat ? "calc(50% - 70px)" : "24px",
                   }}
                   transition={{
                     duration: 0.65,
@@ -1870,7 +1866,7 @@ export default function Investigation() {
                     )}
 
                     {/* Composer Bar Container */}
-                    <div className="ios-glass p-2.5 flex items-center gap-2 shadow-2xl transition-all relative rounded-xl border border-white/[0.12]">
+                    <div className="ios-glass p-2.5 flex items-end gap-2 shadow-2xl transition-all relative rounded-xl border border-[#1C323B] bg-[#080E11]/40">
                       {/* Hidden File Input for Image Upload */}
                       <input
                         type="file"
@@ -1978,7 +1974,7 @@ export default function Investigation() {
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 8, scale: 0.98 }}
                               transition={{ duration: 0.12 }}
-                              className="absolute bottom-full right-0 mb-3 w-60 ios-glass border border-white/[0.12] shadow-2xl p-1.5 font-mono text-xs z-50 rounded-xl max-h-72 overflow-y-auto"
+                              className="absolute bottom-full right-0 mb-3 w-60 bg-[#080E11]/95 backdrop-blur-xl border border-[#1C323B] shadow-2xl p-1.5 font-mono text-xs z-50 rounded-xl max-h-72 overflow-y-auto"
                             >
                               {Object.keys(SPECIALIST_CONFIG).map((mode) => (
                                 <button
@@ -2049,10 +2045,13 @@ export default function Investigation() {
               {/* Overlay Header */}
               <div className="h-12 px-4 border-b border-[#1C323B] flex items-center justify-between font-mono text-xs bg-[#0D171C]">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-[#12A5B8]" />
-                  <span className="font-bold text-[#FFFFFF]">{canvasActiveAsset?.name || "Satellite Canvas"}</span>
-                  <span className="text-[#8AA3AD]">·</span>
-                  <span className="text-[#76AEB0]">{canvasActiveAsset?.metadata?.coordinates || "19.0760° N, 72.8777° E"}</span>
+                  <span className="font-bold font-sans text-sm text-[#FFFFFF]">{canvasActiveAsset?.name || "Satellite Canvas"}</span>
+                  {canvasActiveAsset?.metadata?.coordinates && (
+                    <>
+                      <span className="text-[#8AA3AD] font-mono">·</span>
+                      <span className="text-[#76AEB0] font-mono">{canvasActiveAsset.metadata.coordinates}</span>
+                    </>
+                  )}
                 </div>
 
                 <button
