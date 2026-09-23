@@ -2847,6 +2847,7 @@ export default function Investigation() {
         <ReportGenerationModal
           isOpen={reportModalOpen}
           onClose={() => setReportModalOpen(false)}
+          theme={workstationTheme}
           queryResult={activeEvidenceResult || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult}
           imageAssets={activeConversation?.stagedAssets || []}
           onDownloadPdf={() => {
