@@ -26,7 +26,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [defaultSensor, setDefaultSensor] = useState("sentinel-2a");
   const [defaultCRS, setDefaultCRS] = useState("EPSG:4326");
-  const [accentTone, setAccentTone] = useState("cyan");
 
   if (!isOpen) return null;
 
@@ -775,90 +774,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                       </span>
                     </div>
                   </motion.div>
-                </div>
-
-                {/* Accent Tone Preferences */}
-                <div
-                  className={`p-4 rounded-xl border space-y-3 transition-colors ${
-                    isLight
-                      ? "bg-[#F8FAFC] border-[#E2E8F0]"
-                      : "bg-[#0E171D] border-[#1C323B]"
-                  }`}
-                >
-                  <label
-                    className={`font-bold text-xs uppercase block flex items-center gap-2 ${
-                      isLight ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                    }`}
-                  >
-                    <Sparkles size={14} className={isLight ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
-                    <span>Telemetry Accent Highlights</span>
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {[
-                      {
-                        id: "cyan",
-                        name: "ISRO Cyber Cyan",
-                        color: "#12A5B8",
-                        desc: "High clarity HUD telemetry",
-                      },
-                      {
-                        id: "emerald",
-                        name: "NDVI Vegetation Emerald",
-                        color: "#10B981",
-                        desc: "Agriculture & forestry grading",
-                      },
-                      {
-                        id: "amber",
-                        name: "Solar Cartography Gold",
-                        color: "#D49A3A",
-                        desc: "Thermal & urban built-up tint",
-                      },
-                    ].map((accent) => (
-                      <div
-                        key={accent.id}
-                        onClick={() => {
-                          setAccentTone(accent.id);
-                          toast.info(`Accent tint set to ${accent.name}`);
-                        }}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
-                          accentTone === accent.id
-                            ? isLight
-                              ? "bg-white border-[#0E7C8A] shadow-sm"
-                              : "bg-[#132127] border-[#12A5B8] shadow-[0_0_12px_rgba(18,165,184,0.2)]"
-                            : isLight
-                            ? "bg-white border-[#E2E8F0] hover:border-slate-400"
-                            : "bg-[#080D10] border-[#1C323B] hover:border-slate-700"
-                        }`}
-                      >
-                        <div
-                          className="w-4 h-4 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: accent.color }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className={`text-xs font-bold truncate ${
-                              isLight ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                            }`}
-                          >
-                            {accent.name}
-                          </div>
-                          <div
-                            className={`text-[10px] truncate ${
-                              isLight ? "text-[#64748B]" : "text-[#8AA3AD]"
-                            }`}
-                          >
-                            {accent.desc}
-                          </div>
-                        </div>
-                        {accentTone === accent.id && (
-                          <Check
-                            size={14}
-                            className={isLight ? "text-[#0E7C8A]" : "text-[#12A5B8]"}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             )}
