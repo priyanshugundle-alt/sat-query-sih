@@ -116,7 +116,7 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
         >
           {/* Header */}
           <div
-            className={`px-6 py-4 border-b flex items-center justify-between transition-colors ${
+            className={`px-6 py-4 border-b flex items-center justify-between transition-colors flex-shrink-0 ${
               isLight
                 ? "bg-[#F8FAFC] border-[#E2E8F0]"
                 : "bg-[#0E171D] border-[#1C323B]"
@@ -222,48 +222,64 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
 
           {/* Navigation Tabs Bar */}
           <div
-            className={`flex border-b text-xs transition-colors overflow-x-auto ${
+            className={`flex-shrink-0 flex items-stretch border-b text-xs transition-colors overflow-x-auto select-none min-h-[46px] ${
               isLight
                 ? "bg-[#F1F5F9] border-[#E2E8F0]"
                 : "bg-[#080D10] border-[#1C323B]"
             }`}
           >
             <button
+              type="button"
               onClick={() => setActiveTab("language")}
-              className={`px-5 py-3 flex items-center gap-2 transition-all cursor-pointer border-r whitespace-nowrap ${
+              className={`relative px-5 py-3 flex items-center gap-2.5 transition-all cursor-pointer border-r whitespace-nowrap text-xs ${
                 isLight ? "border-[#E2E8F0]" : "border-[#1C323B]"
               } ${
                 activeTab === "language"
                   ? isLight
-                    ? "bg-white text-[#0E7C8A] font-bold border-b-2 border-b-[#0E7C8A] shadow-sm"
-                    : "bg-[#132127] text-[#12A5B8] font-bold border-b-2 border-b-[#12A5B8]"
+                    ? "bg-white text-[#0E7C8A] font-bold shadow-sm"
+                    : "bg-[#132127] text-[#12A5B8] font-bold"
                   : isLight
-                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60"
-                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D]"
+                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60 font-medium"
+                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D] font-medium"
               }`}
             >
-              <Globe size={14} />
+              {activeTab === "language" && (
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] ${
+                    isLight ? "bg-[#0E7C8A]" : "bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]"
+                  }`}
+                />
+              )}
+              <Globe size={15} className="flex-shrink-0" />
               <span>01 LANGUAGES & SCRIPTS ({languages.length})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab("theme")}
-              className={`px-5 py-3 flex items-center gap-2 transition-all cursor-pointer border-r whitespace-nowrap ${
+              className={`relative px-5 py-3 flex items-center gap-2.5 transition-all cursor-pointer border-r whitespace-nowrap text-xs ${
                 isLight ? "border-[#E2E8F0]" : "border-[#1C323B]"
               } ${
                 activeTab === "theme"
                   ? isLight
-                    ? "bg-white text-[#0E7C8A] font-bold border-b-2 border-b-[#0E7C8A] shadow-sm"
-                    : "bg-[#132127] text-[#12A5B8] font-bold border-b-2 border-b-[#12A5B8]"
+                    ? "bg-white text-[#0E7C8A] font-bold shadow-sm"
+                    : "bg-[#132127] text-[#12A5B8] font-bold"
                   : isLight
-                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60"
-                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D]"
+                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60 font-medium"
+                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D] font-medium"
               }`}
             >
-              <Palette size={14} />
+              {activeTab === "theme" && (
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] ${
+                    isLight ? "bg-[#0E7C8A]" : "bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]"
+                  }`}
+                />
+              )}
+              <Palette size={15} className="flex-shrink-0" />
               <span>02 APPEARANCE & THEME</span>
               <span
-                className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase leading-none ${
                   isLight
                     ? "bg-[#0E7C8A]/10 text-[#0E7C8A]"
                     : "bg-[#12A5B8]/20 text-[#12A5B8]"
@@ -274,25 +290,33 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab("sensor")}
-              className={`px-5 py-3 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+              className={`relative px-5 py-3 flex items-center gap-2.5 transition-all cursor-pointer whitespace-nowrap text-xs ${
                 activeTab === "sensor"
                   ? isLight
-                    ? "bg-white text-[#0E7C8A] font-bold border-b-2 border-b-[#0E7C8A] shadow-sm"
-                    : "bg-[#132127] text-[#12A5B8] font-bold border-b-2 border-b-[#12A5B8]"
+                    ? "bg-white text-[#0E7C8A] font-bold shadow-sm"
+                    : "bg-[#132127] text-[#12A5B8] font-bold"
                   : isLight
-                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60"
-                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D]"
+                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60 font-medium"
+                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D] font-medium"
               }`}
             >
-              <Compass size={14} />
+              {activeTab === "sensor" && (
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] ${
+                    isLight ? "bg-[#0E7C8A]" : "bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]"
+                  }`}
+                />
+              )}
+              <Compass size={15} className="flex-shrink-0" />
               <span>03 SENSOR & CRS PRESETS</span>
             </button>
           </div>
 
           {/* Modal Content Body */}
           <div
-            className={`flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 ${
+            className={`flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-6 ${
               isLight ? "bg-white" : "bg-[#0B1114]"
             }`}
           >
@@ -958,7 +982,7 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
 
           {/* Footer Bar */}
           <div
-            className={`px-6 py-3.5 border-t flex items-center justify-between text-xs transition-colors ${
+            className={`px-6 py-3.5 border-t flex items-center justify-between text-xs transition-colors flex-shrink-0 ${
               isLight
                 ? "bg-[#F8FAFC] border-[#E2E8F0]"
                 : "bg-[#0E171D] border-[#1C323B]"
