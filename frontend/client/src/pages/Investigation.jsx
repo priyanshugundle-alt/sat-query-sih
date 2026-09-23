@@ -1759,23 +1759,6 @@ export default function Investigation() {
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
-                    {/* Workstation Light / Dark Theme Toggle */}
-                    <button
-                      onClick={toggleWorkstationTheme}
-                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${
-                        workstationTheme === "light"
-                          ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
-                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08]"
-                      }`}
-                      title={`Switch to ${workstationTheme === "dark" ? "Light" : "Dark"} Mode (Workstation only)`}
-                    >
-                      {workstationTheme === "dark" ? (
-                        <Sun size={14} className="text-[#12A5B8]" />
-                      ) : (
-                        <Moon size={14} className="text-[#0E7C8A]" />
-                      )}
-                      <span className="text-[10px] hidden md:inline uppercase">{workstationTheme}</span>
-                    </button>
 
                     <button
                       onClick={() => setReportModalOpen(true)}
@@ -2905,6 +2888,13 @@ export default function Investigation() {
         <PersonalizationModal
           isOpen={isPersonalizationOpen}
           onClose={() => setIsPersonalizationOpen(false)}
+          theme={workstationTheme}
+          onThemeChange={(newTheme) => {
+            setWorkstationTheme(newTheme);
+            try {
+              localStorage.setItem("satquery_workstation_theme", newTheme);
+            } catch (e) {}
+          }}
         />
       </div>
     </BackgroundProvider>
