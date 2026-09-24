@@ -55,7 +55,14 @@ export function ReportGenerationModal({
   const isError = Boolean(
     queryResult?.isError ||
     queryResult?.error ||
-    (typeof rawAnswer === "string" && (rawAnswer.startsWith("Error:") || rawAnswer.includes("MODEL_UNAVAILABLE") || rawAnswer.includes("offline")))
+    (typeof rawAnswer === "string" && (
+      rawAnswer.toLowerCase().includes("validation error") ||
+      rawAnswer.toLowerCase().includes("error:") ||
+      rawAnswer.toLowerCase().includes("repair guidance") ||
+      rawAnswer.toLowerCase().includes("please adjust your inputs") ||
+      rawAnswer.includes("MODEL_UNAVAILABLE") ||
+      rawAnswer.includes("offline")
+    ))
   );
 
   const referenceId = queryResult?.queryId
@@ -278,17 +285,25 @@ export function ReportGenerationModal({
             {/* Tamper-Proof Cryptographic Hash Footer Note */}
             <div
               className={`text-[11px] flex items-center gap-2 ${
-                isLight ? "text-[#64748B]" : "text-[#8AA3AD]"
+                isError
+                  ? "text-[#FCA5A5]"
+                  : isLight ? "text-[#64748B]" : "text-[#8AA3AD]"
               }`}
             >
-              <CheckCircle2
-                size={14}
-                className={`flex-shrink-0 ${
-                  isLight ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                }`}
-              />
+              {isError ? (
+                <AlertTriangle size={14} className="flex-shrink-0 text-[#EF4444]" />
+              ) : (
+                <CheckCircle2
+                  size={14}
+                  className={`flex-shrink-0 ${
+                    isLight ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                  }`}
+                />
+              )}
               <span>
-                Cryptographic hash embedded in PDF metadata for tamper-proof verification.
+                {isError
+                  ? "Execution log flagged with input validation exception."
+                  : "Cryptographic hash embedded in PDF metadata for tamper-proof verification."}
               </span>
             </div>
           </div>

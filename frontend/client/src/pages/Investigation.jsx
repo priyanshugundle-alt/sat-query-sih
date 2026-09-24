@@ -546,6 +546,8 @@ export default function Investigation() {
   const [showMeWhyOpen, setShowMeWhyOpen] = useState(false);
   const [activeEvidenceResult, setActiveEvidenceResult] = useState(null);
   const [analysisDetailsOpen, setAnalysisDetailsOpen] = useState(false);
+  const [projectSessionsModalOpen, setProjectSessionsModalOpen] = useState(false);
+  const [selectedProjectForModal, setSelectedProjectForModal] = useState(null);
 
   // Derive current evidence result from active execution or active conversation history
   const currentEvidenceResult = useMemo(() => {
@@ -629,10 +631,13 @@ export default function Investigation() {
         e.preventDefault();
         setCommandPaletteOpen((prev) => !prev);
       }
+      if (e.key === "Escape" && projectSessionsModalOpen) {
+        setProjectSessionsModalOpen(false);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [projectSessionsModalOpen]);
 
   // ── Speech Recognition Integration ────────────────────────────────
   useEffect(() => {
@@ -722,16 +727,44 @@ export default function Investigation() {
     toast.success(`Created project: ${newProj.name}`);
   };
 
-  const handleSelectProject = (proj) => {
-    setActiveProjectId(proj.id);
-    setSidebarTab("chat");
+  const handleOpenProjectSessions = (proj) => {
+    setSelectedProjectForModal(proj);
+    setProjectSessionsModalOpen(true);
+  };
+
+  const handleStartNewProjectChat = (projId) => {
+    const targetProjId = projId || selectedProjectForModal?.id || "proj-earth-obs";
+    setActiveProjectId(targetProjId);
     setActiveChatId(null);
     setStagedAsset(null);
     setQueryText("");
-    toast.success(`Active Mission Workspace: ${proj.name}`);
+    setSidebarTab("chat");
+    setProjectSessionsModalOpen(false);
+    const projObj = projectsList.find((p) => p.id === targetProjId);
+    toast.success(`Started new chat session in ${projObj?.name || "Project"}`);
     setTimeout(() => {
       composerInputRef.current?.focus();
-    }, 50);
+    }, 60);
+  };
+
+  const handleSelectProjectSession = (chatId, projId) => {
+    setActiveProjectId(projId);
+    setActiveChatId(chatId);
+    setSidebarTab("chat");
+    setStagedAsset(null);
+    setQueryText("");
+    setIsAnalyzing(false);
+    setRoutingStage(null);
+    setProjectSessionsModalOpen(false);
+  };
+
+  const handleDeleteProjectSession = (e, chatId) => {
+    e.stopPropagation();
+    handleDeleteChat(e, chatId);
+  };
+
+  const handleSelectProject = (proj) => {
+    handleOpenProjectSessions(proj);
   };
 
   const handleOpenImageChat = (img) => {
@@ -1018,7 +1051,7 @@ export default function Investigation() {
         createdAt: new Date().toISOString(),
         messages: [],
         stagedAssets: stagedAsset ? [stagedAsset] : [],
-        projectId: "proj-earth-obs",
+        projectId: activeProjectId || "proj-earth-obs",
       };
       setConversations((prev) => [targetChat, ...prev]);
       setActiveChatId(chatId);
@@ -1880,7 +1913,8 @@ export default function Investigation() {
                         return (
                           <div
                             key={proj.id}
-                            className={`p-5 rounded-2xl transition-all flex flex-col justify-between group shadow-sm border ${workstationTheme === "light"
+                            onClick={() => handleOpenProjectSessions(proj)}
+                            className={`p-5 rounded-2xl transition-all flex flex-col justify-between group shadow-sm border cursor-pointer ${workstationTheme === "light"
                                 ? isSelected
                                   ? "bg-white border-[#0E7C8A] shadow-[0_4px_24px_rgba(14,124,138,0.15)] ring-1 ring-[#0E7C8A]/30"
                                   : "bg-white border-[#CBD5E1] hover:border-[#0E7C8A]/50 hover:shadow-md"
@@ -2811,6 +2845,268 @@ export default function Investigation() {
           onOpenReport={() => setReportModalOpen(true)}
         />
 
+        {/* ─── MODAL 7: PROJECT RESEARCH SESSIONS ─── */}
+        <AnimatePresence>
+          {projectSessionsModalOpen && selectedProjectForModal && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setProjectSessionsModalOpen(false);
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className={`w-full max-w-2xl border shadow-2xl overflow-hidden font-sans rounded-2xl ${
+                  workstationTheme === "light"
+                    ? "bg-white border-[#CBD5E1] text-[#0F172A] shadow-[0_25px_60px_rgba(14,124,138,0.12)]"
+                    : "bg-[#080E11] border-[#1C323B] text-[#F0F6F8] shadow-[0_25px_60px_rgba(0,0,0,0.95)]"
+                }`}
+              >
+                {/* Modal Header */}
+                <div
+                  className={`flex items-center justify-between p-5 border-b ${
+                    workstationTheme === "light"
+                      ? "bg-[#F8FAFC] border-[#E2E8F0]"
+                      : "bg-[#040708] border-[#1C323B]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl border flex items-center justify-center ${
+                        workstationTheme === "light"
+                          ? "bg-[#0E7C8A]/10 border-[#0E7C8A]/30 text-[#0E7C8A]"
+                          : "bg-[#12A5B8]/15 border-[#12A5B8]/40 text-[#12A5B8]"
+                      }`}
+                    >
+                      <Folder size={20} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className={`text-lg font-bold ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"}`}>
+                          {selectedProjectForModal.name}
+                        </h3>
+                        <span
+                          className={`font-mono text-[9px] px-2 py-0.5 font-bold rounded tracking-wider border ${
+                            workstationTheme === "light"
+                              ? "bg-[#F1F5F9] text-[#0E7C8A] border-[#0E7C8A]/30"
+                              : "bg-[#12A5B8]/10 text-[#12A5B8] border border-[#12A5B8]/30"
+                          }`}
+                        >
+                          {selectedProjectForModal.badge}
+                        </span>
+                      </div>
+                      <p className={`text-xs mt-0.5 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>
+                        {selectedProjectForModal.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setProjectSessionsModalOpen(false)}
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      workstationTheme === "light"
+                        ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
+                        : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-white/[0.06]"
+                    }`}
+                    title="Close (ESC)"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Top Action Bar with ALWAYS-PRESENT "+ NEW CHAT IN [PROJECT]" Button */}
+                <div
+                  className={`px-5 py-3 border-b flex flex-wrap items-center justify-between gap-3 ${
+                    workstationTheme === "light"
+                      ? "bg-[#F1F5F9] border-[#E2E8F0]"
+                      : "bg-[#0A1115] border-[#1C323B]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 font-mono text-xs">
+                    <span className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}>
+                      PROJECT SESSIONS:
+                    </span>
+                    <span
+                      className={`font-bold px-2 py-0.5 rounded border text-[11px] ${
+                        workstationTheme === "light"
+                          ? "bg-white text-[#0E7C8A] border-[#CBD5E1]"
+                          : "bg-[#12A5B8]/15 text-[#12A5B8] border-[#12A5B8]/30"
+                      }`}
+                    >
+                      {conversations.filter((c) => c.projectId === selectedProjectForModal.id).length} Active
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => handleStartNewProjectChat(selectedProjectForModal.id)}
+                    className={`px-4 py-2 font-bold font-mono text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer ${
+                      workstationTheme === "light"
+                        ? "bg-[#0E7C8A] hover:bg-[#0B6570] text-white shadow-[#0E7C8A]/20"
+                        : "bg-[#12A5B8] hover:bg-[#0EA0B2] text-black font-bold shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+                    }`}
+                  >
+                    <Plus size={15} />
+                    <span>NEW CHAT IN {selectedProjectForModal.name.toUpperCase()}</span>
+                  </button>
+                </div>
+
+                {/* Sessions Scrollable Content / Empty State */}
+                <div className="p-5 max-h-[50vh] overflow-y-auto space-y-3">
+                  {(() => {
+                    const projectChats = conversations.filter(
+                      (c) => c.projectId === selectedProjectForModal.id
+                    );
+
+                    if (projectChats.length === 0) {
+                      return (
+                        <div
+                          className={`p-8 border-2 border-dashed rounded-2xl text-center space-y-4 ${
+                            workstationTheme === "light"
+                              ? "bg-[#F8FAFC] border-[#CBD5E1]"
+                              : "bg-[#0D171C]/60 border-[#1C323B]"
+                          }`}
+                        >
+                          <div
+                            className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center border ${
+                              workstationTheme === "light"
+                                ? "bg-[#F1F5F9] border-[#CBD5E1] text-[#0E7C8A]"
+                                : "bg-[#12A5B8]/10 border-[#12A5B8]/30 text-[#12A5B8]"
+                            }`}
+                          >
+                            <MessageSquare size={24} />
+                          </div>
+                          <div>
+                            <h4
+                              className={`text-sm font-bold ${
+                                workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                              }`}
+                            >
+                              No Chat Sessions Yet
+                            </h4>
+                            <p
+                              className={`text-xs mt-1 max-w-md mx-auto ${
+                                workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                              }`}
+                            >
+                              You haven't started any research chat sessions in {selectedProjectForModal.name} yet. Create your first session to organize queries and satellite data for this mission container.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleStartNewProjectChat(selectedProjectForModal.id)}
+                            className={`px-5 py-2.5 font-bold font-mono text-xs rounded-xl shadow transition-all inline-flex items-center gap-2 cursor-pointer ${
+                              workstationTheme === "light"
+                                ? "bg-[#0E7C8A] hover:bg-[#0B6570] text-white"
+                                : "bg-[#12A5B8] hover:bg-[#0EA0B2] text-black font-bold shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+                            }`}
+                          >
+                            <Plus size={15} />
+                            <span>START FIRST CHAT SESSION</span>
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-2.5">
+                        {projectChats.map((chat) => {
+                          const msgCount = chat.messages?.length || 0;
+                          const firstMsg = chat.messages?.[0]?.text || "";
+                          const hasImages = (chat.stagedAssets && chat.stagedAssets.length > 0) || chat.messages?.some(m => m.attachedAsset);
+                          
+                          return (
+                            <div
+                              key={chat.id}
+                              onClick={() => handleSelectProjectSession(chat.id, selectedProjectForModal.id)}
+                              className={`p-4 border rounded-xl transition-all flex items-center justify-between group cursor-pointer ${
+                                workstationTheme === "light"
+                                  ? "bg-white border-[#E2E8F0] hover:border-[#0E7C8A] hover:shadow-md"
+                                  : "bg-[#0D171C] border-[#1C323B] hover:border-[#12A5B8] hover:shadow-[0_0_15px_rgba(18,165,184,0.1)]"
+                              }`}
+                            >
+                              <div className="flex items-start gap-3 min-w-0 pr-3">
+                                <div
+                                  className={`w-9 h-9 rounded-xl border flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                    workstationTheme === "light"
+                                      ? "bg-[#F1F5F9] border-[#CBD5E1] text-[#0E7C8A]"
+                                      : "bg-[#12A5B8]/10 border-[#12A5B8]/30 text-[#12A5B8]"
+                                  }`}
+                                >
+                                  <MessageSquare size={16} />
+                                </div>
+
+                                <div className="min-w-0">
+                                  <h4
+                                    className={`text-xs font-bold truncate group-hover:text-[#12A5B8] transition-colors ${
+                                      workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                                    }`}
+                                  >
+                                    {chat.title || "Investigation Session"}
+                                  </h4>
+                                  <p
+                                    className={`text-[11px] mt-0.5 line-clamp-1 ${
+                                      workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                    }`}
+                                  >
+                                    {firstMsg || "Empty session. Ready for query dispatch."}
+                                  </p>
+
+                                  <div className="flex items-center gap-3 mt-2 font-mono text-[10px]">
+                                    <span className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}>
+                                      {msgCount} {msgCount === 1 ? "message" : "messages"}
+                                    </span>
+                                    {hasImages && (
+                                      <span className="flex items-center gap-1 text-[#10B981]">
+                                        <ImageIcon size={11} />
+                                        <span>Imagery attached</span>
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectProjectSession(chat.id, selectedProjectForModal.id);
+                                  }}
+                                  className={`px-3 py-1.5 font-mono text-xs font-bold rounded-lg border transition-all flex items-center gap-1 cursor-pointer ${
+                                    workstationTheme === "light"
+                                      ? "bg-[#F1F5F9] hover:bg-[#0E7C8A] text-[#0E7C8A] hover:text-white border-[#CBD5E1]"
+                                      : "bg-[#12A5B8]/15 hover:bg-[#12A5B8] text-[#12A5B8] hover:text-black border-[#12A5B8]/30"
+                                  }`}
+                                >
+                                  <span>Open</span>
+                                  <ArrowUpRight size={13} />
+                                </button>
+
+                                <button
+                                  onClick={(e) => handleDeleteProjectSession(e, chat.id)}
+                                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                    workstationTheme === "light"
+                                      ? "text-[#94A3B8] hover:text-[#EF4444] hover:bg-[#FEF2F2]"
+                                      : "text-[#8AA3AD] hover:text-[#FF5454] hover:bg-[#FF5454]/10"
+                                  }`}
+                                  title="Delete Session"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         {/* ─── SLIDE-OVER RIGHT SIDEBAR: AUDIT REPORT & PROVENANCE ─── */}
         <AnimatePresence>
           {rightSidebarOpen && (
@@ -2865,6 +3161,21 @@ export default function Investigation() {
                   {(() => {
                     const currentAsset = canvasActiveAsset || stagedAsset || activeConversation?.stagedAssets?.[0];
                     const activeResult = currentEvidenceResult;
+                    const findingsText = activeResult?.answer || activeResult?.summary || "";
+                    
+                    const isError = Boolean(
+                      activeResult?.isError ||
+                      activeResult?.error ||
+                      (typeof findingsText === "string" && (
+                        findingsText.toLowerCase().includes("validation error") ||
+                        findingsText.toLowerCase().includes("error:") ||
+                        findingsText.toLowerCase().includes("repair guidance") ||
+                        findingsText.toLowerCase().includes("please adjust your inputs") ||
+                        findingsText.includes("MODEL_UNAVAILABLE") ||
+                        findingsText.includes("offline")
+                      ))
+                    );
+
                     const queryRefId = activeResult?.queryId
                       ? `SQ-2026-${String(activeResult.queryId).slice(-4)}`
                       : activeConversation?.id
@@ -2874,8 +3185,7 @@ export default function Investigation() {
                           : "SQ-2026-LIVE";
                     const sensorType = currentAsset?.modality || currentAsset?.metadata?.format || "OPTICAL / SAR";
                     const resolution = currentAsset?.metadata?.resolution || "Multi-Spectral 0.5m GSD";
-                    const confidenceScore = activeResult?.confidence || (activeConversation ? 95 : null);
-                    const findingsText = activeResult?.answer || activeResult?.summary;
+                    const confidenceScore = isError ? null : (activeResult?.confidence || (activeConversation ? 95 : null));
 
                     return (
                       <>
@@ -2889,16 +3199,18 @@ export default function Investigation() {
                             workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
                           }`}>
                             <span>AUDIT REFERENCE ID</span>
-                            <span className={`px-2 py-0.5 rounded border text-[9px] ${
-                              activeResult
+                            <span className={`px-2 py-0.5 rounded border text-[9px] font-bold ${
+                              isError
+                                ? "text-[#EF4444] bg-[#EF4444]/15 border-[#EF4444]/30"
+                                : activeResult
                                 ? "text-[#10B981] bg-[#10B981]/15 border-[#10B981]/30"
                                 : "text-[#0E7C8A] bg-[#0E7C8A]/10 border-[#0E7C8A]/30"
                             }`}>
-                              {activeResult ? "VERIFIED" : "LIVE SESSION"}
+                              {isError ? "UNVERIFIED" : activeResult ? "VERIFIED" : "LIVE SESSION"}
                             </span>
                           </div>
                           <div className={`text-base font-bold font-mono ${
-                            workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                            isError ? "text-[#F59E0B]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
                           }`}>
                             {queryRefId}
                           </div>
@@ -2911,59 +3223,82 @@ export default function Investigation() {
 
                         {/* Evidence Pipeline Steps */}
                         <div className={`p-3.5 border rounded-xl space-y-2 text-[11px] ${
-                          workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                          isError
+                            ? workstationTheme === "light" ? "bg-[#FEF2F2] border-[#FCA5A5]" : "bg-[#1A0C0E] border-[#7F1D1D]"
+                            : workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
                         }`}>
                           <div className={`text-[10px] uppercase font-bold tracking-wider font-mono ${
-                            workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                            isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
                           }`}>
                             DETERMINISTIC EVIDENCE TRAIL
                           </div>
                           <div className="space-y-1.5 font-mono text-[11px]">
                             <div className="flex items-center justify-between">
                               <span>1. Surface Reflectance Calibration</span>
-                              <span className="text-[#10B981] font-bold">PASS ✓</span>
+                              <span className={isError ? "text-[#F59E0B] font-bold" : "text-[#10B981] font-bold"}>
+                                {isError ? "CHECK ⚠️" : "PASS ✓"}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span>2. Vision-Language Grounding</span>
-                              <span className="text-[#10B981] font-bold">
-                                {confidenceScore ? `PASS (${confidenceScore}%)` : "PASS ✓"}
+                              <span className={isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
+                                {isError ? "FAILED ✕" : confidenceScore ? `PASS (${confidenceScore}%)` : "PASS ✓"}
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span>3. Cryptographic SHA-256 Signature</span>
-                              <span className="text-[#10B981] font-bold">VERIFIED ✓</span>
+                              <span className={isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
+                                {isError ? "UNVERIFIED ⚠️" : "VERIFIED ✓"}
+                              </span>
                             </div>
                           </div>
                         </div>
 
                         {/* Summary & Findings Excerpt */}
                         <div className={`p-3.5 border rounded-xl space-y-2 ${
-                          workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
+                          isError
+                            ? workstationTheme === "light" ? "bg-[#FFF5F5] border-[#FECDD3]" : "bg-[#1F1213] border-[#7F1D1D]"
+                            : workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
                         }`}>
-                          <strong className={`text-[10px] font-mono uppercase tracking-wider block ${
-                            workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                          <strong className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 ${
+                            isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
                           }`}>
-                            CURRENT FINDINGS SUMMARY:
+                            {isError && <AlertTriangle size={13} className="text-[#EF4444]" />}
+                            <span>{isError ? "INPUT VALIDATION / EXECUTION EXCEPTION:" : "CURRENT FINDINGS SUMMARY:"}</span>
                           </strong>
                           <p className={`leading-relaxed text-[12px] ${
-                            workstationTheme === "light" ? "text-[#334155]" : "text-[#F0F6F8]"
+                            isError
+                              ? "text-[#FCA5A5] font-mono"
+                              : workstationTheme === "light" ? "text-[#334155]" : "text-[#F0F6F8]"
                           }`}>
                             {findingsText || "No active query result generated yet. Run a satellite query or select an existing conversation to inspect live audit findings."}
                           </p>
                         </div>
+
+                        {/* Cryptographic Footnote */}
+                        <div className={`p-3 border rounded-xl text-[11px] font-sans flex items-start gap-2 ${
+                          isError
+                            ? workstationTheme === "light"
+                              ? "border-[#EF4444]/40 bg-[#FEF2F2] text-[#991B1B]"
+                              : "border-[#EF4444]/30 bg-[#EF4444]/10 text-[#FCA5A5]"
+                            : workstationTheme === "light"
+                              ? "border-[#10B981]/40 bg-[#ECFDF5] text-[#047857]"
+                              : "border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]"
+                        }`}>
+                          {isError ? (
+                            <AlertTriangle size={15} className="text-[#EF4444] flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <CheckCircle2 size={15} className="text-[#10B981] flex-shrink-0 mt-0.5" />
+                          )}
+                          <span>
+                            {isError
+                              ? "Execution halted due to validation failure. Audit log preserved."
+                              : "Tamper-proof execution token generated with cryptographic verification."}
+                          </span>
+                        </div>
                       </>
                     );
                   })()}
-
-                  {/* Cryptographic Footnote */}
-                  <div className={`p-3 border rounded-xl text-[11px] font-sans flex items-start gap-2 ${
-                    workstationTheme === "light"
-                      ? "border-[#10B981]/40 bg-[#ECFDF5] text-[#047857]"
-                      : "border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]"
-                  }`}>
-                    <CheckCircle2 size={15} className="text-[#10B981] flex-shrink-0 mt-0.5" />
-                    <span>Tamper-proof execution token generated with cryptographic verification.</span>
-                  </div>
                 </div>
 
                 {/* Right Sidebar Footer Actions */}
