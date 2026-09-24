@@ -2943,24 +2943,23 @@ export default function Investigation() {
                     Inspect Full Report Modal
                   </Button>
 
-                  <Button
+                  <button
                     onClick={() => {
                       const qId = activeEvidenceResult?.queryId || "SQ-2026-7f1c";
                       downloadReportPdf(qId);
                       toast.success(`Analysis Report PDF for ${qId} downloaded`);
                     }}
-                    variant="outline"
-                    className={`w-full font-mono text-xs rounded-xl cursor-pointer ${
+                    className={`w-full py-2.5 px-4 font-mono text-xs rounded-xl cursor-pointer flex items-center justify-center border transition-all ${
                       workstationTheme === "light"
-                        ? "border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]"
-                        : "border-[#1C323B] text-[#F0F6F8] hover:bg-[#132127]"
+                        ? "bg-white border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9] hover:text-[#0E7C8A] hover:border-[#0E7C8A]/60 shadow-xs"
+                        : "bg-[#0D171C] border-[#1C323B] text-[#F0F6F8] hover:bg-[#132127] hover:text-white hover:border-[#12A5B8]/60 shadow-sm"
                     }`}
                   >
-                    <Download size={14} className={`mr-1.5 ${
+                    <Download size={14} className={`mr-1.5 flex-shrink-0 ${
                       workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
                     }`} />
-                    Download PDF Report
-                  </Button>
+                    <span className="font-semibold">Download PDF Report</span>
+                  </button>
                 </div>
               </motion.aside>
             </>
