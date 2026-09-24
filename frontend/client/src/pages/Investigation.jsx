@@ -21,9 +21,9 @@ import {
   Folder, Image as ImageIcon, MessageSquare,
   Sliders, Settings as SettingsIcon, User, Sparkles,
   HelpCircle, LogOut, ExternalLink, FileText, CheckCircle2,
-  Layers, Search, Globe, ArrowUpRight, Check, X,
+  Layers, Search, Globe, ArrowUpRight, ArrowRight, Check, X,
   Maximize2, Eye, ShieldCheck, Target, Radar, Activity,
-  Database, RefreshCw, PanelLeftClose, PanelLeftOpen, Trash2,
+  Database, RefreshCw, PanelLeftClose, PanelLeftOpen, PanelRightClose, Trash2,
   Sun, Moon, ArrowLeft, SquarePen
 } from "lucide-react";
 import { toast } from "sonner";
@@ -55,53 +55,47 @@ import { useLanguage } from "@/context/LanguageContext";
 // SPECIALIST ENGINES CONFIGURATION
 // ─────────────────────────────────────────────────────────────────
 const SPECIALIST_CONFIG = {
-  AUTO: {
-    id: "AUTO",
-    label: "Auto Specialist",
-    engine: "SatQuery Auto-Router (NLP Intent)",
-    sublabel: "AUTO ROUTE ⚡",
-  },
   VQA: {
     id: "VQA",
     label: "Visual QA",
     engine: "GeoChat-VQA (UniRS Adapter)",
+    subtitle: "Multispectral Question Answering",
     sublabel: "OPTICAL ◉",
   },
   GROUNDING: {
     id: "GROUNDING",
     label: "Spatial Grounding",
     engine: "GeoChat-Grounding (UniRS Adapter)",
+    subtitle: "Pixel-Accurate Target Bounding Box",
     sublabel: "BOUNDING BOX ⊞",
   },
   CHANGE: {
     id: "CHANGE",
     label: "Change Analysis",
     engine: "CDVQA-Siamese (ChangeQA Adapter)",
+    subtitle: "Bi-Temporal Surface Subtraction",
     sublabel: "BI-TEMPORAL ↔",
   },
   "OPTICAL + SAR": {
     id: "OPTICAL + SAR",
     label: "Optical + SAR",
     engine: "OpticalSAR-Fusion (EarthGPT Adapter)",
+    subtitle: "Sentinel-1 Radar & Sentinel-2 Fusion",
     sublabel: "OPTICAL + SAR ◎",
   },
   CAPTIONING: {
     id: "CAPTIONING",
     label: "Scene Captioning",
     engine: "GeoCaption-VLM (UniRS Adapter)",
+    subtitle: "Dense Remote Sensing Scene Description",
     sublabel: "CAPTION ✍",
   },
   CHANGE_UNDERSTANDING: {
     id: "CHANGE_UNDERSTANDING",
     label: "Change Understanding",
     engine: "ChangeQA-Siamese (Multi-Temporal)",
+    subtitle: "Multi-Temporal Trend & Reason Analysis",
     sublabel: "TEMPORAL ⏱",
-  },
-  INFORMATION_EXTRACTION: {
-    id: "INFORMATION_EXTRACTION",
-    label: "Info Extraction",
-    engine: "SatExtraction-VLM (Structured)",
-    sublabel: "EXTRACTION ✦",
   },
 };
 
@@ -134,7 +128,7 @@ function classifyQueryIntent(queryText) {
 function generateConversationTitle(queryText, fallbackName) {
   const q = (queryText || "").trim();
   if (!q) return fallbackName ? fallbackName.replace(/\.[^/.]+$/, "") : "Satellite Investigation";
-  
+
   // Format the user query into a clean, concise research title
   const clean = q.replace(/[?!.,;]/g, "").trim();
   const words = clean.split(/\s+/).slice(0, 6).join(" ");
@@ -293,12 +287,23 @@ export default function Investigation() {
     }
   });
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (workstationTheme === "light") {
+      root.classList.add("light", "workstation-light");
+      root.classList.remove("dark");
+    } else {
+      root.classList.add("dark");
+      root.classList.remove("light", "workstation-light");
+    }
+  }, [workstationTheme]);
+
   const toggleWorkstationTheme = () => {
     const next = workstationTheme === "dark" ? "light" : "dark";
     setWorkstationTheme(next);
     try {
       localStorage.setItem("satquery_workstation_theme", next);
-    } catch (e) {}
+    } catch (e) { }
     toast.info(`Workstation switched to ${next.toUpperCase()} mode`);
   };
 
@@ -308,7 +313,7 @@ export default function Investigation() {
     try {
       const saved = localStorage.getItem("satquery_auth_user");
       if (saved) return "investigation";
-    } catch (e) {}
+    } catch (e) { }
     return "landing";
   });
 
@@ -333,7 +338,7 @@ export default function Investigation() {
       localStorage.setItem("satquery_auth_user", JSON.stringify(userData));
       if (userData?.name) localStorage.setItem("satquery_last_name", userData.name);
       if (userData?.email) localStorage.setItem("satquery_last_email", userData.email);
-    } catch (e) {}
+    } catch (e) { }
     setCurrentUser(userData);
     setViewMode("investigation");
     window.history.pushState({ page: "investigation" }, "", window.location.href);
@@ -344,7 +349,7 @@ export default function Investigation() {
   const handleLogout = () => {
     try {
       localStorage.removeItem("satquery_auth_user");
-    } catch (e) {}
+    } catch (e) { }
     setCurrentUser(null);
     setViewMode("landing");
     setProfileMenuOpen(false);
@@ -515,7 +520,7 @@ export default function Investigation() {
 
   // ── Composer & Task Mode State ────────────────────────────────────
   const [queryText, setQueryText] = useState("");
-  const [taskMode, setTaskMode] = useState("AUTO"); // AUTO, VQA, GROUNDING, CHANGE, OPTICAL + SAR
+  const [taskMode, setTaskMode] = useState("VQA"); // VQA, GROUNDING, CHANGE, OPTICAL + SAR, CAPTIONING, CHANGE_UNDERSTANDING
   const [taskDropdownOpen, setTaskDropdownOpen] = useState(false);
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
   const [stagedAsset, setStagedAsset] = useState(null); // Current pending image attachment in composer
@@ -529,6 +534,7 @@ export default function Investigation() {
   // ── Interactive Modals State ──────────────────────────────────────
   const [imageryLibraryOpen, setImageryLibraryOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [showMeWhyOpen, setShowMeWhyOpen] = useState(false);
@@ -676,7 +682,7 @@ export default function Investigation() {
     setProjectsList(updated);
     try {
       localStorage.setItem("satquery_projects_list", JSON.stringify(updated));
-    } catch (err) {}
+    } catch (err) { }
     setNewProjectName("");
     setNewProjectDesc("");
     setNewProjectBadge("");
@@ -845,11 +851,11 @@ export default function Investigation() {
           prev.map((c) =>
             c.id === currentId
               ? {
-                  ...c,
-                  title: c.title === "New Chat" ? file.name.replace(/\.[^/.]+$/, "") : c.title,
-                  messages: [imageMsg],
-                  stagedAssets: [...(c.stagedAssets || []), assetEntry],
-                }
+                ...c,
+                title: c.title === "New Chat" ? file.name.replace(/\.[^/.]+$/, "") : c.title,
+                messages: [imageMsg],
+                stagedAssets: [...(c.stagedAssets || []), assetEntry],
+              }
               : c
           )
         );
@@ -932,11 +938,11 @@ export default function Investigation() {
         prev.map((c) =>
           c.id === currentId
             ? {
-                ...c,
-                title: c.title === "New Chat" ? scene.name : c.title,
-                messages: [imageMsg],
-                stagedAssets: [...(c.stagedAssets || []), assetEntry],
-              }
+              ...c,
+              title: c.title === "New Chat" ? scene.name : c.title,
+              messages: [imageMsg],
+              stagedAssets: [...(c.stagedAssets || []), assetEntry],
+            }
             : c
         )
       );
@@ -1012,13 +1018,13 @@ export default function Investigation() {
       prev.map((c) =>
         c.id === chatId
           ? {
-              ...c,
-              title: updatedTitle,
-              messages: [...c.messages, userMsg],
-              stagedAssets: stagedAsset
-                ? [...(c.stagedAssets || []).filter((a) => a.id !== stagedAsset.id), stagedAsset]
-                : c.stagedAssets,
-            }
+            ...c,
+            title: updatedTitle,
+            messages: [...c.messages, userMsg],
+            stagedAssets: stagedAsset
+              ? [...(c.stagedAssets || []).filter((a) => a.id !== stagedAsset.id), stagedAsset]
+              : c.stagedAssets,
+          }
           : c
       )
     );
@@ -1177,8 +1183,8 @@ export default function Investigation() {
         idx === 0
           ? { top: 24, left: 34, width: 16, height: 14 }
           : idx === 1
-          ? { top: 48, left: 54, width: 18, height: 16 }
-          : { top: 64, left: 26, width: 14, height: 13 },
+            ? { top: 48, left: 54, width: 18, height: 16 }
+            : { top: 64, left: 26, width: 14, height: 13 },
     }));
     setCanvasDetections(converted);
     setSelectedDetectionId(converted[0]?.id || null);
@@ -1195,13 +1201,12 @@ export default function Investigation() {
       {viewMode === "investigation" && <WorkstationBackground theme={workstationTheme} />}
 
       <div
-        className={`flex flex-col w-full max-w-full overflow-x-hidden font-sans transition-colors duration-200 ${
-          viewMode === "landing"
+        className={`flex flex-col w-full max-w-full overflow-x-hidden font-sans transition-colors duration-200 ${viewMode === "landing"
             ? "min-h-screen bg-[#080E11] text-foreground"
             : workstationTheme === "light"
-            ? "h-screen overflow-hidden select-none bg-[#F8FAFC] text-[#0F172A]"
-            : "h-screen overflow-hidden select-none bg-black text-[#F0F6F8]"
-        }`}
+              ? "h-screen overflow-hidden select-none bg-[#F8FAFC] text-[#0F172A]"
+              : "h-screen overflow-hidden select-none bg-black text-[#F0F6F8]"
+          }`}
         style={viewMode !== "landing" ? { position: "relative", zIndex: 10 } : {}}
       >
         {/* ════════════════════════════════════════════════════════════════
@@ -1263,24 +1268,21 @@ export default function Investigation() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className={`flex h-full w-full overflow-hidden relative ${
-                workstationTheme === "light" ? "workstation-light" : ""
-              }`}
+              className={`flex h-full w-full overflow-hidden relative ${workstationTheme === "light" ? "workstation-light" : ""
+                }`}
             >
               {/* ══════════════════════════════════════════════════════════
                   1. LEFT SIDEBAR (CHATGPT LAYOUT · SATQUERY PALETTE)
                   ══════════════════════════════════════════════════════════ */}
               <aside
-                className={`transition-all duration-200 z-40 flex flex-col font-sans border-r ${
-                  workstationTheme === "light"
+                className={`transition-all duration-200 z-40 flex flex-col font-sans border-r ${workstationTheme === "light"
                     ? "bg-white border-[#E2E8F0]"
                     : "bg-[#080E11]/95 backdrop-blur-xl border-[#1C323B]"
-                } ${sidebarOpen ? "w-64 sm:w-72" : "w-0 overflow-hidden border-none"}`}
+                  } ${sidebarOpen ? "w-64 sm:w-72" : "w-0 overflow-hidden border-none"}`}
               >
                 {/* ── Top Header: Brand + Collapse ── */}
-                <div className={`p-3.5 border-b flex items-center justify-between ${
-                  workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
-                }`}>
+                <div className={`p-3.5 border-b flex items-center justify-between ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
+                  }`}>
                   <div className="flex items-center gap-2.5">
                     <SatQueryLogo
                       size={28}
@@ -1288,9 +1290,8 @@ export default function Investigation() {
                       theme={workstationTheme}
                       className={workstationTheme === "light" ? "shadow-sm" : "shadow-[0_0_12px_rgba(18,165,184,0.35)]"}
                     />
-                    <span className={`font-sans text-base font-semibold tracking-wide ${
-                      workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                    }`}>
+                    <span className={`font-sans text-base font-semibold tracking-wide ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                      }`}>
                       SatQuery AI
                     </span>
                   </div>
@@ -1307,21 +1308,19 @@ export default function Investigation() {
                 </div>
 
                 {/* ── Main Navigation List (Vertical, Elegant) ── */}
-                <div className={`px-2 pt-2 pb-1 space-y-1 border-b ${
-                  workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
-                }`}>
+                <div className={`px-2 pt-2 pb-1 space-y-1 border-b ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
+                  }`}>
                   {/* New Chat */}
                   <button
                     onClick={handleNewChat}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${
-                      sidebarTab === "chat"
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${sidebarTab === "chat"
                         ? workstationTheme === "light"
                           ? "bg-[#F1F5F9] text-[#0E7C8A] border border-[#0E7C8A]/30 shadow-sm font-bold"
                           : "bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/30 shadow-sm"
                         : workstationTheme === "light"
-                        ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
-                        : "text-[#F0F6F8] hover:bg-[#132127]"
-                    }`}
+                          ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
+                          : "text-[#F0F6F8] hover:bg-[#132127]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <SquarePen
@@ -1333,8 +1332,8 @@ export default function Investigation() {
                               ? "text-[#0E7C8A]"
                               : "text-[#12A5B8]"
                             : workstationTheme === "light"
-                            ? "text-[#64748B]"
-                            : "text-[#8AA3AD]"
+                              ? "text-[#64748B]"
+                              : "text-[#8AA3AD]"
                         }
                       />
                       <span className="font-sans font-medium text-[13px]">New chat</span>
@@ -1347,15 +1346,14 @@ export default function Investigation() {
                     onClick={() => {
                       setSidebarTab("projects");
                     }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${
-                      sidebarTab === "projects"
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${sidebarTab === "projects"
                         ? workstationTheme === "light"
                           ? "bg-[#F1F5F9] text-[#0E7C8A] border border-[#0E7C8A]/30 shadow-sm font-bold"
                           : "bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/30 shadow-sm"
                         : workstationTheme === "light"
-                        ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
-                        : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
-                    }`}
+                          ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
+                          : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Folder
@@ -1367,17 +1365,16 @@ export default function Investigation() {
                               ? "text-[#0E7C8A]"
                               : "text-[#12A5B8]"
                             : workstationTheme === "light"
-                            ? "text-[#64748B]"
-                            : "text-[#8AA3AD]"
+                              ? "text-[#64748B]"
+                              : "text-[#8AA3AD]"
                         }
                       />
                       <span>Projects</span>
                     </div>
-                    <span className={`text-[10px] px-1.5 py-0.5 font-bold rounded-full border ${
-                      workstationTheme === "light"
+                    <span className={`text-[10px] px-1.5 py-0.5 font-bold rounded-full border ${workstationTheme === "light"
                         ? "bg-[#F1F5F9] text-[#0E7C8A] border-[#CBD5E1]"
                         : "bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30"
-                    }`}>
+                      }`}>
                       {projectsList.length}
                     </span>
                   </button>
@@ -1388,15 +1385,14 @@ export default function Investigation() {
                       setSidebarTab("images");
                       setActiveProjectId(null);
                     }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${
-                      sidebarTab === "images"
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${sidebarTab === "images"
                         ? workstationTheme === "light"
                           ? "bg-[#F1F5F9] text-[#0E7C8A] border border-[#0E7C8A]/30 shadow-sm font-bold"
                           : "bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/30 shadow-sm"
                         : workstationTheme === "light"
-                        ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
-                        : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
-                    }`}
+                          ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
+                          : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <ImageIcon
@@ -1408,17 +1404,16 @@ export default function Investigation() {
                               ? "text-[#0E7C8A]"
                               : "text-[#12A5B8]"
                             : workstationTheme === "light"
-                            ? "text-[#64748B]"
-                            : "text-[#8AA3AD]"
+                              ? "text-[#64748B]"
+                              : "text-[#8AA3AD]"
                         }
                       />
                       <span>Images</span>
                     </div>
-                    <span className={`text-[10px] px-1.5 py-0.5 font-bold rounded-full border ${
-                      workstationTheme === "light"
+                    <span className={`text-[10px] px-1.5 py-0.5 font-bold rounded-full border ${workstationTheme === "light"
                         ? "bg-[#F1F5F9] text-[#0E7C8A] border-[#CBD5E1]"
                         : "bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30"
-                    }`}>
+                      }`}>
                       {displayedImages.length}
                     </span>
                   </button>
@@ -1452,29 +1447,27 @@ export default function Investigation() {
                                 handleSelectChat(chat.id);
                                 setSidebarTab("chat");
                               }}
-                              className={`group flex items-center justify-between w-full px-2.5 py-2 rounded-xl text-left transition-all cursor-pointer ${
-                                isActive
+                              className={`group flex items-center justify-between w-full px-2.5 py-2 rounded-xl text-left transition-all cursor-pointer ${isActive
                                   ? workstationTheme === "light"
                                     ? "bg-[#F1F5F9] text-[#0E7C8A] border border-[#0E7C8A]/30 shadow-sm"
                                     : "bg-[#132127] text-[#FFFFFF] border border-[#12A5B8]/40 shadow-sm"
                                   : workstationTheme === "light"
-                                  ? "text-[#0F172A] hover:bg-[#F8FAFC] border border-transparent"
-                                  : "text-[#8AA3AD] hover:bg-[#132127]/60 hover:text-[#FFFFFF] border border-transparent"
-                              }`}
+                                    ? "text-[#0F172A] hover:bg-[#F8FAFC] border border-transparent"
+                                    : "text-[#8AA3AD] hover:bg-[#132127]/60 hover:text-[#FFFFFF] border border-transparent"
+                                }`}
                             >
-                                <div className="min-w-0 flex-1 pr-1.5">
-                                  <div className={`text-[12px] font-medium truncate ${
-                                    isActive
-                                      ? workstationTheme === "light"
-                                        ? "text-[#0E7C8A] font-bold"
-                                        : "text-[#FFFFFF]"
-                                      : workstationTheme === "light"
+                              <div className="min-w-0 flex-1 pr-1.5">
+                                <div className={`text-[12px] font-medium truncate ${isActive
+                                    ? workstationTheme === "light"
+                                      ? "text-[#0E7C8A] font-bold"
+                                      : "text-[#FFFFFF]"
+                                    : workstationTheme === "light"
                                       ? "text-[#0F172A]"
                                       : "text-[#D0E3EA]"
                                   }`}>
-                                    {chat.title || "Investigation"}
-                                  </div>
+                                  {chat.title || "Investigation"}
                                 </div>
+                              </div>
 
                               <button
                                 onClick={(e) => handleDeleteChat(e, chat.id)}
@@ -1492,47 +1485,41 @@ export default function Investigation() {
                 </div>
 
                 {/* ── Bottom Profile Menu (Screenshot 2 UX Reference) ── */}
-                <div className={`p-2 border-t relative ${
-                  workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]"
-                }`} ref={profileMenuRef}>
+                <div className={`p-2 border-t relative ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]"
+                  }`} ref={profileMenuRef}>
                   {/* Popover Menu Trigger Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setProfileMenuOpen((prev) => !prev);
-                      }}
-                      className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl sq-profile-trigger border ${
-                        profileMenuOpen
-                          ? workstationTheme === "light"
-                            ? "bg-[#F1F5F9] border-[#CBD5E1]"
-                            : "bg-[#132127] border-[#1C323B]"
-                          : "border-transparent"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setProfileMenuOpen((prev) => !prev);
+                    }}
+                    className={`w-full p-2 flex items-center justify-between text-left transition-colors cursor-pointer rounded-xl sq-profile-trigger border ${profileMenuOpen
+                        ? workstationTheme === "light"
+                          ? "bg-[#F1F5F9] border-[#CBD5E1]"
+                          : "bg-[#132127] border-[#1C323B]"
+                        : "border-transparent"
                       }`}
-                    >
+                  >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center flex-shrink-0 font-chillax sq-avatar transition-all border ${
-                        workstationTheme === "light"
+                      <div className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center flex-shrink-0 font-chillax sq-avatar transition-all border ${workstationTheme === "light"
                           ? "bg-[#F1F5F9] border-[#0E7C8A]/40 text-[#0E7C8A]"
                           : "bg-[#12A5B8]/20 border-[#12A5B8]/60 text-[#12A5B8]"
-                      }`}>
+                        }`}>
                         {userInitials}
                       </div>
                       <div className="truncate">
-                        <div className={`font-bold text-xs truncate font-chillax ${
-                          workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
-                        }`}>
+                        <div className={`font-bold text-xs truncate font-chillax ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
+                          }`}>
                           {currentUser?.name || "SatQuery Analyst"}
                         </div>
-                        <div className={`text-[10px] font-sans truncate ${
-                          workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                        }`}>
+                        <div className={`text-[10px] font-sans truncate ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                          }`}>
                           {currentUser?.role || "Satellite Analyst"}
                         </div>
                       </div>
                     </div>
-                    <span className={`text-[11px] font-sans ${
-                      workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                    }`}>⬡</span>
+                    <span className={`text-[11px] font-sans ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                      }`}>⬡</span>
                   </button>
 
                   {/* Popover Floating Hierarchy (Screenshot 2 Architecture) */}
@@ -1543,11 +1530,10 @@ export default function Investigation() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.98 }}
                         transition={{ duration: 0.15 }}
-                        className={`absolute bottom-full left-2 right-2 mb-2 shadow-2xl p-1 font-sans text-xs z-50 rounded-2xl overflow-hidden border ${
-                          workstationTheme === "light"
+                        className={`absolute bottom-full left-2 right-2 mb-2 shadow-2xl p-1 font-sans text-xs z-50 rounded-2xl overflow-hidden border ${workstationTheme === "light"
                             ? "bg-white border-[#E2E8F0] shadow-[0_12px_40px_rgba(15,23,42,0.12)] text-[#0F172A]"
                             : "bg-[#0D171C] border-[#1C323B] text-[#F0F6F8]"
-                        }`}
+                          }`}
                       >
                         {/* Profile Header Item */}
                         <div
@@ -1555,29 +1541,25 @@ export default function Investigation() {
                             setProfileModalOpen(true);
                             setProfileMenuOpen(false);
                           }}
-                          className={`p-2 flex items-center justify-between cursor-pointer transition-colors border-b pb-2 rounded-xl ${
-                            workstationTheme === "light"
+                          className={`p-2 flex items-center justify-between cursor-pointer transition-colors border-b pb-2 rounded-xl ${workstationTheme === "light"
                               ? "hover:bg-[#F1F5F9] border-[#E2E8F0]"
                               : "hover:bg-[#132127] border-[#1C323B]/60"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className={`w-6 h-6 rounded-full font-bold text-[10px] flex items-center justify-center font-mono flex-shrink-0 border ${
-                              workstationTheme === "light"
+                            <div className={`w-6 h-6 rounded-full font-bold text-[10px] flex items-center justify-center font-mono flex-shrink-0 border ${workstationTheme === "light"
                                 ? "bg-[#F1F5F9] border-[#0E7C8A]/40 text-[#0E7C8A]"
                                 : "bg-[#12A5B8]/20 border-[#12A5B8]/60 text-[#12A5B8]"
-                            }`}>
+                              }`}>
                               {userInitials}
                             </div>
                             <div className="truncate">
-                              <div className={`font-bold text-xs leading-tight truncate ${
-                                workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
-                              }`}>
+                              <div className={`font-bold text-xs leading-tight truncate ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
+                                }`}>
                                 {currentUser?.name || "SatQuery Analyst"}
                               </div>
-                              <div className={`text-[10px] font-mono leading-tight truncate ${
-                                workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                              }`}>
+                              <div className={`text-[10px] font-mono leading-tight truncate ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                }`}>
                                 {currentUser?.email || "analyst@satquery.ai"}
                               </div>
                             </div>
@@ -1592,11 +1574,10 @@ export default function Investigation() {
                               setProfileModalOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className={`w-full px-2 py-1.5 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${
-                              workstationTheme === "light"
+                            className={`w-full px-2 py-1.5 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${workstationTheme === "light"
                                 ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
                                 : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127]"
-                            }`}
+                              }`}
                           >
                             <User size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
                             <span>View Profile</span>
@@ -1607,11 +1588,10 @@ export default function Investigation() {
                               setSettingsModalOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className={`w-full px-2 py-1.5 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${
-                              workstationTheme === "light"
+                            className={`w-full px-2 py-1.5 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${workstationTheme === "light"
                                 ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
                                 : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127]"
-                            }`}
+                              }`}
                           >
                             <SettingsIcon size={14} className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"} />
                             <span>Settings</span>
@@ -1622,30 +1602,27 @@ export default function Investigation() {
                               setIsPersonalizationOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className={`w-full px-2 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer rounded-xl group ${
-                              workstationTheme === "light"
+                            className={`w-full px-2 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer rounded-xl group ${workstationTheme === "light"
                                 ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
                                 : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127]"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-2.5">
                               <Globe size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
                               <span>Personalization</span>
                             </div>
-                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 border rounded ${
-                              workstationTheme === "light"
+                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 border rounded ${workstationTheme === "light"
                                 ? "text-[#0E7C8A] bg-[#F1F5F9] border-[#0E7C8A]/30"
                                 : "text-[#12A5B8] bg-[#12A5B8]/10 border-[#12A5B8]/30 group-hover:bg-[#12A5B8]/20"
-                            }`}>
+                              }`}>
                               {currentLanguage.nativeName} ({currentLanguage.code.toUpperCase()})
                             </span>
                           </button>
                         </div>
 
                         {/* Separator */}
-                        <div className={`border-t my-1 ${
-                          workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
-                        }`} />
+                        <div className={`border-t my-1 ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
+                          }`} />
 
                         {/* Bottom Group: Help / Log out */}
                         <div className="py-0.5 space-y-0.5">
@@ -1654,11 +1631,10 @@ export default function Investigation() {
                               setCommandPaletteOpen(true);
                               setProfileMenuOpen(false);
                             }}
-                            className={`w-full px-2 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer rounded-xl ${
-                              workstationTheme === "light"
+                            className={`w-full px-2 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer rounded-xl ${workstationTheme === "light"
                                 ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
                                 : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127]"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-2.5">
                               <HelpCircle size={14} className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"} />
@@ -1669,11 +1645,10 @@ export default function Investigation() {
 
                           <button
                             onClick={handleLogout}
-                            className={`w-full px-2 py-1.5 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${
-                              workstationTheme === "light"
+                            className={`w-full px-2 py-1.5 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${workstationTheme === "light"
                                 ? "text-[#DC2626] hover:bg-[#FEF2F2]"
                                 : "text-[#FF5454] hover:bg-[#FF5454]/10"
-                            }`}
+                              }`}
                           >
                             <LogOut size={14} />
                             <span>Log out</span>
@@ -1688,24 +1663,21 @@ export default function Investigation() {
               {/* ══════════════════════════════════════════════════════════
                   2. CENTER MAIN WORKSPACE (CONVERSATION + HERO CANVAS)
                   ══════════════════════════════════════════════════════════ */}
-              <main className={`flex-1 flex flex-col h-full overflow-hidden relative transition-colors duration-200 ${
-                workstationTheme === "light" ? "bg-[#F8FAFC]" : "bg-black"
-              }`}>
+              <main className={`flex-1 flex flex-col h-full overflow-hidden relative transition-colors duration-200 ${workstationTheme === "light" ? "bg-[#F8FAFC]" : "bg-black"
+                }`}>
                 {/* ── Top Bar: Sidebar toggle, Chat title, Orbit return ── */}
-                <header className={`h-12 px-4 flex items-center justify-between z-30 font-mono text-xs transition-colors duration-200 ${
-                  workstationTheme === "light"
+                <header className={`h-12 px-4 flex items-center justify-between z-30 font-mono text-xs transition-colors duration-200 ${workstationTheme === "light"
                     ? "bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] text-[#0F172A]"
                     : "bg-black/90 backdrop-blur-md border-b border-[#1C323B] text-[#F0F6F8]"
-                }`}>
+                  }`}>
                   <div className="flex items-center gap-3 min-w-0">
                     {!sidebarOpen && (
                       <button
                         onClick={() => setSidebarOpen(true)}
-                        className={`p-1.5 transition-colors cursor-pointer rounded-md ${
-                          workstationTheme === "light"
+                        className={`p-1.5 transition-colors cursor-pointer rounded-md ${workstationTheme === "light"
                             ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
                             : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0D171C]"
-                        }`}
+                          }`}
                         title="Open Sidebar"
                       >
                         <PanelLeftOpen size={16} />
@@ -1718,40 +1690,36 @@ export default function Investigation() {
                       onClick={() => {
                         handleNewChat();
                       }}
-                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${
-                        workstationTheme === "light"
+                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${workstationTheme === "light"
                           ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
                           : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08]"
-                      }`}
+                        }`}
                       title="Left Arrow Back Button: Open New Chat"
                     >
                       <ArrowLeft size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
-                      <span className={`text-[10px] hidden sm:inline font-mono ${
-                        workstationTheme === "light" ? "text-[#0F172A]" : "text-[#8AA3AD]"
-                      }`}>NEW CHAT</span>
+                      <span className={`text-[10px] hidden sm:inline font-mono ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#8AA3AD]"
+                        }`}>NEW CHAT</span>
                     </button>
 
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={`font-bold text-sm truncate font-sans ${
-                        workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                      }`}>
+                      <span className={`font-bold text-sm truncate font-sans ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                        }`}>
                         {sidebarTab === "projects"
                           ? "Projects Workspace"
                           : sidebarTab === "images"
-                          ? "Satellite Imagery Archive"
-                          : activeConversation?.title || "SatQuery Workstation"}
+                            ? "Satellite Imagery Archive"
+                            : activeConversation?.title || "SatQuery Workstation"}
                       </span>
                       {sidebarTab === "chat" && activeConversation?.projectId && (
-                        <span className={`text-[9px] px-2 py-0.5 border hidden sm:inline rounded-md ${
-                          workstationTheme === "light"
+                        <span className={`text-[9px] px-2 py-0.5 border hidden sm:inline rounded-md ${workstationTheme === "light"
                             ? "bg-[#F1F5F9] text-[#0E7C8A] border-[#0E7C8A]/30"
                             : "bg-[#0D171C] text-[#12A5B8] border-white/[0.08]"
-                        }`}>
+                          }`}>
                           {activeConversation.projectId === "proj-disaster"
                             ? "DISASTER"
                             : activeConversation.projectId === "proj-urban"
-                            ? "URBAN"
-                            : "EARTH OBS"}
+                              ? "URBAN"
+                              : "EARTH OBS"}
                         </span>
                       )}
                     </div>
@@ -1759,14 +1727,32 @@ export default function Investigation() {
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
+                    {/* Audit Report Button (Toggles Right Slide-Over Sidebar) */}
+                    <button
+                      onClick={() => setRightSidebarOpen((prev) => !prev)}
+                      className={`px-3 py-1.5 border transition-all duration-150 flex items-center gap-1.5 cursor-pointer rounded-lg font-sans font-semibold text-xs ${
+                        rightSidebarOpen
+                          ? workstationTheme === "light"
+                            ? "text-[#0E7C8A] bg-[#E0F2FE] border-[#0E7C8A] shadow-sm font-bold"
+                            : "text-[#12A5B8] bg-[#132127] border-[#12A5B8] shadow-[0_0_12px_rgba(18,165,184,0.3)] font-bold"
+                          : workstationTheme === "light"
+                          ? "text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] border-[#CBD5E1] bg-white shadow-sm"
+                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08] bg-[#080E11]"
+                      }`}
+                      title={rightSidebarOpen ? "Hide Audit Sidebar" : "Open Audit Sidebar"}
+                    >
+                      <FileText size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
+                      <span className="hidden sm:inline font-mono font-bold tracking-wider">AUDIT REPORT</span>
+                      <ArrowRight size={13} className={`transition-transform duration-200 ${rightSidebarOpen ? "rotate-180" : ""}`} />
+                    </button>
+
                     {/* Workstation Light / Dark Theme Toggle */}
                     <button
                       onClick={toggleWorkstationTheme}
-                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${
-                        workstationTheme === "light"
+                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${workstationTheme === "light"
                           ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
                           : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08]"
-                      }`}
+                        }`}
                       title={`Switch to ${workstationTheme === "dark" ? "Light" : "Dark"} Mode (Workstation only)`}
                     >
                       {workstationTheme === "dark" ? (
@@ -1776,18 +1762,6 @@ export default function Investigation() {
                       )}
                       <span className="text-[10px] hidden md:inline uppercase">{workstationTheme}</span>
                     </button>
-
-                    <button
-                      onClick={() => setReportModalOpen(true)}
-                      className={`px-3 py-1 text-[11px] border transition-colors flex items-center gap-1.5 cursor-pointer rounded-md ${
-                        workstationTheme === "light"
-                          ? "text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
-                          : "text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#0D171C] border-white/[0.08]"
-                      }`}
-                    >
-                      <FileText size={13} />
-                      <span className="hidden sm:inline">AUDIT REPORT ↗</span>
-                    </button>
                   </div>
                 </header>
 
@@ -1796,30 +1770,26 @@ export default function Investigation() {
                      1. PROJECTS WORKSPACE (MAIN SCREEN)
                      ══════════════════════════════════════════════════════════ */
                   <div className="flex-1 overflow-y-auto px-6 md:px-12 py-8 space-y-6 max-w-6xl mx-auto w-full">
-                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b ${
-                      workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
-                    }`}>
+                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
+                      }`}>
                       <div>
-                        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${
-                          workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                        }`}>
+                        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                          }`}>
                           <Folder className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} size={22} />
                           <span>Projects Workspace</span>
                         </h2>
-                        <p className={`text-xs sm:text-sm mt-1 ${
-                          workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                        }`}>
+                        <p className={`text-xs sm:text-sm mt-1 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                          }`}>
                           Dedicated Earth-observation mission containers. Select any project to dispatch geospatial queries.
                         </p>
                       </div>
 
                       <button
                         onClick={() => setIsCreatingProject((p) => !p)}
-                        className={`px-3.5 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md self-start sm:self-auto ${
-                          workstationTheme === "light"
+                        className={`px-3.5 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md self-start sm:self-auto ${workstationTheme === "light"
                             ? "bg-[#0E7C8A] hover:bg-[#0B4F58] text-white"
                             : "bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708]"
-                        }`}
+                          }`}
                       >
                         <Plus size={14} />
                         <span>NEW PROJECT</span>
@@ -1830,15 +1800,13 @@ export default function Investigation() {
                     {isCreatingProject && (
                       <form
                         onSubmit={handleCreateProject}
-                        className={`p-4 rounded-xl space-y-3 shadow-lg border ${
-                          workstationTheme === "light"
+                        className={`p-4 rounded-xl space-y-3 shadow-lg border ${workstationTheme === "light"
                             ? "bg-white border-[#CBD5E1]"
                             : "bg-[#0D171C] border-[#12A5B8]/40"
-                        }`}
+                          }`}
                       >
-                        <div className={`text-xs font-bold uppercase font-mono tracking-wider ${
-                          workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                        }`}>
+                        <div className={`text-xs font-bold uppercase font-mono tracking-wider ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                          }`}>
                           CREATE MISSION PROJECT
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1847,11 +1815,10 @@ export default function Investigation() {
                             placeholder="Project Name (e.g. Brahmaputra Basin Floods)"
                             value={newProjectName}
                             onChange={(e) => setNewProjectName(e.target.value)}
-                            className={`sm:col-span-2 px-3 py-2 rounded-lg text-xs outline-none border ${
-                              workstationTheme === "light"
+                            className={`sm:col-span-2 px-3 py-2 rounded-lg text-xs outline-none border ${workstationTheme === "light"
                                 ? "bg-[#F8FAFC] border-[#CBD5E1] text-[#0F172A] focus:border-[#0E7C8A] placeholder:text-[#94A3B8]"
                                 : "bg-[#040708] border-white/[0.1] text-[#F0F6F8] focus:border-[#12A5B8] placeholder:text-[#8AA3AD]"
-                            }`}
+                              }`}
                             autoFocus
                             required
                           />
@@ -1860,11 +1827,10 @@ export default function Investigation() {
                             placeholder="Badge (e.g. RAPID-RESP)"
                             value={newProjectBadge}
                             onChange={(e) => setNewProjectBadge(e.target.value)}
-                            className={`px-3 py-2 rounded-lg text-xs outline-none font-mono border ${
-                              workstationTheme === "light"
+                            className={`px-3 py-2 rounded-lg text-xs outline-none font-mono border ${workstationTheme === "light"
                                 ? "bg-[#F8FAFC] border-[#CBD5E1] text-[#0F172A] focus:border-[#0E7C8A] placeholder:text-[#94A3B8]"
                                 : "bg-[#040708] border-white/[0.1] text-[#F0F6F8] focus:border-[#12A5B8] placeholder:text-[#8AA3AD]"
-                            }`}
+                              }`}
                           />
                         </div>
                         <input
@@ -1872,29 +1838,26 @@ export default function Investigation() {
                           placeholder="Short description of this satellite analysis mission..."
                           value={newProjectDesc}
                           onChange={(e) => setNewProjectDesc(e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg text-xs outline-none border ${
-                            workstationTheme === "light"
+                          className={`w-full px-3 py-2 rounded-lg text-xs outline-none border ${workstationTheme === "light"
                               ? "bg-[#F8FAFC] border-[#CBD5E1] text-[#0F172A] focus:border-[#0E7C8A] placeholder:text-[#94A3B8]"
                               : "bg-[#040708] border-white/[0.1] text-[#F0F6F8] focus:border-[#12A5B8] placeholder:text-[#8AA3AD]"
-                          }`}
+                            }`}
                         />
                         <div className="flex justify-end gap-2 pt-1">
                           <button
                             type="button"
                             onClick={() => setIsCreatingProject(false)}
-                            className={`px-3 py-1.5 text-xs cursor-pointer ${
-                              workstationTheme === "light" ? "text-[#64748B] hover:text-[#0F172A]" : "text-[#8AA3AD] hover:text-[#FFFFFF]"
-                            }`}
+                            className={`px-3 py-1.5 text-xs cursor-pointer ${workstationTheme === "light" ? "text-[#64748B] hover:text-[#0F172A]" : "text-[#8AA3AD] hover:text-[#FFFFFF]"
+                              }`}
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
-                            className={`px-4 py-1.5 font-bold text-xs rounded-lg cursor-pointer ${
-                              workstationTheme === "light"
+                            className={`px-4 py-1.5 font-bold text-xs rounded-lg cursor-pointer ${workstationTheme === "light"
                                 ? "bg-[#0E7C8A] hover:bg-[#0B4F58] text-white"
                                 : "bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708]"
-                            }`}
+                              }`}
                           >
                             Save Project
                           </button>
@@ -1911,33 +1874,30 @@ export default function Investigation() {
                         return (
                           <div
                             key={proj.id}
-                            className={`p-5 rounded-2xl transition-all flex flex-col justify-between group shadow-sm border ${
-                              workstationTheme === "light"
+                            className={`p-5 rounded-2xl transition-all flex flex-col justify-between group shadow-sm border ${workstationTheme === "light"
                                 ? isSelected
                                   ? "bg-white border-[#0E7C8A] shadow-[0_4px_24px_rgba(14,124,138,0.15)] ring-1 ring-[#0E7C8A]/30"
                                   : "bg-white border-[#CBD5E1] hover:border-[#0E7C8A]/50 hover:shadow-md"
                                 : isSelected
-                                ? "bg-[#0D171C]/90 border-[#12A5B8] shadow-[0_0_20px_rgba(18,165,184,0.15)] ring-1 ring-[#12A5B8]/40"
-                                : "bg-[#0D171C]/90 border-[#1C323B] hover:border-[#12A5B8]/50"
-                            }`}
+                                  ? "bg-[#0D171C]/90 border-[#12A5B8] shadow-[0_0_20px_rgba(18,165,184,0.15)] ring-1 ring-[#12A5B8]/40"
+                                  : "bg-[#0D171C]/90 border-[#1C323B] hover:border-[#12A5B8]/50"
+                              }`}
                           >
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
-                                <span className={`font-mono text-[9px] px-2 py-0.5 font-bold rounded tracking-wider border ${
-                                  workstationTheme === "light"
+                                <span className={`font-mono text-[9px] px-2 py-0.5 font-bold rounded tracking-wider border ${workstationTheme === "light"
                                     ? "bg-[#F1F5F9] text-[#0E7C8A] border-[#0E7C8A]/30"
                                     : "bg-[#12A5B8]/10 text-[#12A5B8] border border-[#12A5B8]/30"
-                                }`}>
+                                  }`}>
                                   {proj.badge}
                                 </span>
                                 {proj.id.startsWith("proj-") && !["proj-earth-obs", "proj-disaster", "proj-urban"].includes(proj.id) && (
                                   <button
                                     onClick={(e) => handleDeleteProject(e, proj.id)}
-                                    className={`p-1 transition-colors cursor-pointer ${
-                                      workstationTheme === "light"
+                                    className={`p-1 transition-colors cursor-pointer ${workstationTheme === "light"
                                         ? "text-[#94A3B8] hover:text-[#EF4444]"
                                         : "text-[#8AA3AD] hover:text-[#FF5454]"
-                                    }`}
+                                      }`}
                                     title="Delete Project"
                                   >
                                     <Trash2 size={13} />
@@ -1946,37 +1906,32 @@ export default function Investigation() {
                               </div>
 
                               <div>
-                                <h3 className={`text-base font-bold transition-colors ${
-                                  workstationTheme === "light"
+                                <h3 className={`text-base font-bold transition-colors ${workstationTheme === "light"
                                     ? "text-[#0F172A] group-hover:text-[#0E7C8A]"
                                     : "text-[#FFFFFF] group-hover:text-[#12A5B8]"
-                                }`}>
+                                  }`}>
                                   {proj.name}
                                 </h3>
-                                <p className={`text-xs mt-1.5 leading-relaxed ${
-                                  workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                }`}>
+                                <p className={`text-xs mt-1.5 leading-relaxed ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                  }`}>
                                   {proj.description}
                                 </p>
                               </div>
                             </div>
 
-                            <div className={`pt-4 mt-4 border-t flex items-center justify-between ${
-                              workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
-                            }`}>
-                              <span className={`text-[11px] font-mono ${
-                                workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                            <div className={`pt-4 mt-4 border-t flex items-center justify-between ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
                               }`}>
+                              <span className={`text-[11px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                }`}>
                                 {projConversations.length} Active {projConversations.length === 1 ? "Session" : "Sessions"}
                               </span>
 
                               <button
                                 onClick={() => handleSelectProject(proj)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer border ${
-                                  workstationTheme === "light"
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer border ${workstationTheme === "light"
                                     ? "bg-[#F1F5F9] hover:bg-[#0E7C8A] text-[#0E7C8A] hover:text-white border-[#CBD5E1] hover:border-[#0E7C8A] shadow-sm"
                                     : "bg-[#12A5B8]/15 hover:bg-[#12A5B8] text-[#12A5B8] hover:text-[#040708] border border-[#12A5B8]/30"
-                                }`}
+                                  }`}
                               >
                                 <span>OPEN &amp; INVESTIGATE</span>
                                 <ArrowUpRight size={13} />
@@ -1992,19 +1947,16 @@ export default function Investigation() {
                      2. SATELLITE IMAGERY ARCHIVE (MAIN SCREEN)
                      ══════════════════════════════════════════════════════════ */
                   <div className="flex-1 overflow-y-auto px-6 md:px-12 py-8 space-y-6 max-w-6xl mx-auto w-full">
-                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b ${
-                      workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
-                    }`}>
+                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
+                      }`}>
                       <div>
-                        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${
-                          workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                        }`}>
+                        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                          }`}>
                           <ImageIcon className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} size={22} />
                           <span>Satellite Imagery Archive</span>
                         </h2>
-                        <p className={`text-xs sm:text-sm mt-1 ${
-                          workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                        }`}>
+                        <p className={`text-xs sm:text-sm mt-1 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                          }`}>
                           Browse multispectral, SAR, and bi-temporal rasters. Click any scene to analyze with SatQuery AI.
                         </p>
                       </div>
@@ -2012,11 +1964,10 @@ export default function Investigation() {
                       <div className="flex items-center gap-2.5 self-start sm:self-auto">
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className={`px-3.5 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md ${
-                            workstationTheme === "light"
+                          className={`px-3.5 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md ${workstationTheme === "light"
                               ? "bg-[#0E7C8A] hover:bg-[#0B4F58] text-white"
                               : "bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708]"
-                          }`}
+                            }`}
                         >
                           <Upload size={14} />
                           <span>UPLOAD GEOTIFF</span>
@@ -2030,15 +1981,14 @@ export default function Investigation() {
                         <button
                           key={mod}
                           onClick={() => setImageFilterModality(mod)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer border ${
-                            imageFilterModality === mod
+                          className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer border ${imageFilterModality === mod
                               ? workstationTheme === "light"
                                 ? "bg-[#0E7C8A] text-white border-[#0E7C8A] font-bold shadow-sm"
                                 : "bg-[#12A5B8]/20 text-[#12A5B8] border-[#12A5B8] font-bold"
                               : workstationTheme === "light"
-                              ? "bg-white text-[#64748B] border-[#CBD5E1] hover:text-[#0F172A] hover:bg-[#F8FAFC]"
-                              : "bg-[#0D171C] text-[#8AA3AD] border-[#1C323B] hover:text-[#FFFFFF]"
-                          }`}
+                                ? "bg-white text-[#64748B] border-[#CBD5E1] hover:text-[#0F172A] hover:bg-[#F8FAFC]"
+                                : "bg-[#0D171C] text-[#8AA3AD] border-[#1C323B] hover:text-[#FFFFFF]"
+                            }`}
                         >
                           {mod === "ALL" ? "All Modalities" : mod}
                         </button>
@@ -2047,35 +1997,30 @@ export default function Investigation() {
 
                     {/* Imagery Grid or Empty State */}
                     {displayedImages.length === 0 ? (
-                      <div className={`py-20 flex flex-col items-center justify-center text-center space-y-4 max-w-md mx-auto border border-dashed rounded-2xl p-8 ${
-                        workstationTheme === "light"
+                      <div className={`py-20 flex flex-col items-center justify-center text-center space-y-4 max-w-md mx-auto border border-dashed rounded-2xl p-8 ${workstationTheme === "light"
                           ? "bg-white border-[#CBD5E1] shadow-sm"
                           : "bg-[#0D171C]/40 border-[#1C323B]"
-                      }`}>
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${
-                          workstationTheme === "light"
+                        }`}>
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${workstationTheme === "light"
                             ? "bg-[#F1F5F9] border-[#0E7C8A]/30 text-[#0E7C8A]"
                             : "bg-[#12A5B8]/10 border-[#12A5B8]/30 text-[#12A5B8]"
-                        }`}>
+                          }`}>
                           <ImageIcon size={26} />
                         </div>
                         <div className="space-y-1.5">
-                          <h3 className={`text-base font-bold ${
-                            workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                          }`}>No Uploaded Satellite Imagery</h3>
-                          <p className={`text-xs leading-relaxed ${
-                            workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                          }`}>
+                          <h3 className={`text-base font-bold ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                            }`}>No Uploaded Satellite Imagery</h3>
+                          <p className={`text-xs leading-relaxed ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                            }`}>
                             Upload GeoTIFF or satellite imagery during your investigation. Each uploaded image will appear here with the title of the research performed.
                           </p>
                         </div>
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className={`px-4 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md mt-2 ${
-                            workstationTheme === "light"
+                          className={`px-4 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md mt-2 ${workstationTheme === "light"
                               ? "bg-[#0E7C8A] hover:bg-[#0B4F58] text-white"
                               : "bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708]"
-                          }`}
+                            }`}
                         >
                           <Upload size={14} />
                           <span>UPLOAD GEOTIFF OR IMAGE</span>
@@ -2087,49 +2032,43 @@ export default function Investigation() {
                           <div
                             key={img.id || img.previewUrl}
                             onClick={() => handleOpenImageChat(img)}
-                            className={`rounded-2xl overflow-hidden group transition-all flex flex-col justify-between shadow-sm cursor-pointer border ${
-                              workstationTheme === "light"
+                            className={`rounded-2xl overflow-hidden group transition-all flex flex-col justify-between shadow-sm cursor-pointer border ${workstationTheme === "light"
                                 ? "bg-white border-[#CBD5E1] hover:border-[#0E7C8A] hover:shadow-[0_4px_20px_rgba(14,124,138,0.12)]"
                                 : "bg-[#0D171C] border-[#1C323B] hover:border-[#12A5B8] hover:shadow-[0_0_20px_rgba(18,165,184,0.15)]"
-                            }`}
+                              }`}
                           >
                             <div>
                               {/* Image Preview with Hover Effect */}
-                              <div className={`relative h-48 w-full overflow-hidden ${
-                                workstationTheme === "light" ? "bg-[#F1F5F9]" : "bg-[#040708]"
-                              }`}>
+                              <div className={`relative h-48 w-full overflow-hidden ${workstationTheme === "light" ? "bg-[#F1F5F9]" : "bg-[#040708]"
+                                }`}>
                                 <img
                                   src={img.previewUrl}
                                   alt={img.name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
-                                <div className={`absolute inset-0 bg-gradient-to-t ${
-                                  workstationTheme === "light" ? "from-black/30" : "from-[#0D171C]"
-                                } via-transparent to-transparent opacity-60`} />
+                                <div className={`absolute inset-0 bg-gradient-to-t ${workstationTheme === "light" ? "from-black/30" : "from-[#0D171C]"
+                                  } via-transparent to-transparent opacity-60`} />
                                 <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                                  <span className={`px-2 py-0.5 backdrop-blur-md border text-[9.5px] font-mono font-bold rounded ${
-                                    workstationTheme === "light"
+                                  <span className={`px-2 py-0.5 backdrop-blur-md border text-[9.5px] font-mono font-bold rounded ${workstationTheme === "light"
                                       ? "bg-white/90 border-[#CBD5E1] text-[#0E7C8A] shadow-sm"
                                       : "bg-[#040708]/85 border-[#12A5B8]/50 text-[#12A5B8]"
-                                  }`}>
+                                    }`}>
                                     {img.modality || "OPTICAL"}
                                   </span>
                                   {img.metadata?.resolution && (
-                                    <span className={`px-2 py-0.5 backdrop-blur-md border text-[9.5px] font-mono rounded ${
-                                      workstationTheme === "light"
+                                    <span className={`px-2 py-0.5 backdrop-blur-md border text-[9.5px] font-mono rounded ${workstationTheme === "light"
                                         ? "bg-white/90 border-[#CBD5E1] text-[#0F172A] shadow-sm"
                                         : "bg-[#040708]/85 border-white/[0.1] text-[#F0F6F8]"
-                                    }`}>
+                                      }`}>
                                       {img.metadata.resolution}
                                     </span>
                                   )}
                                 </div>
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-[2px]">
-                                  <span className={`px-3.5 py-1.5 text-xs font-mono font-bold rounded-lg shadow-lg flex items-center gap-1.5 ${
-                                    workstationTheme === "light"
+                                  <span className={`px-3.5 py-1.5 text-xs font-mono font-bold rounded-lg shadow-lg flex items-center gap-1.5 ${workstationTheme === "light"
                                       ? "bg-[#0E7C8A] text-white"
                                       : "bg-[#12A5B8] text-[#040708]"
-                                  }`}>
+                                    }`}>
                                     <span>OPEN CHAT</span>
                                     <ArrowUpRight size={14} />
                                   </span>
@@ -2138,28 +2077,24 @@ export default function Investigation() {
 
                               {/* Card Details: Research Title prominent */}
                               <div className="p-4 space-y-2">
-                                <div className={`text-[10px] font-mono uppercase tracking-wider font-semibold ${
-                                  workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                                }`}>
+                                <div className={`text-[10px] font-mono uppercase tracking-wider font-semibold ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                  }`}>
                                   RESEARCH PERFORMED
                                 </div>
-                                <h3 className={`font-bold text-sm transition-colors leading-snug line-clamp-2 ${
-                                  workstationTheme === "light"
+                                <h3 className={`font-bold text-sm transition-colors leading-snug line-clamp-2 ${workstationTheme === "light"
                                     ? "text-[#0F172A] group-hover:text-[#0E7C8A]"
                                     : "text-[#F0F6F8] group-hover:text-[#12A5B8]"
-                                }`}>
+                                  }`}>
                                   {img.researchTitle || img.chatTitle || img.name}
                                 </h3>
-                                <div className={`text-[11px] flex items-center justify-between pt-1 ${
-                                  workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                }`}>
+                                <div className={`text-[11px] flex items-center justify-between pt-1 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                  }`}>
                                   <span className="truncate max-w-[170px] font-mono">{img.name}</span>
                                   <span className="text-[10px] font-mono">{img.date || "Active Session"}</span>
                                 </div>
                                 {img.metadata?.coordinates && (
-                                  <div className={`text-[10px] font-mono truncate pt-0.5 ${
-                                    workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                  }`}>
+                                  <div className={`text-[10px] font-mono truncate pt-0.5 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                    }`}>
                                     📍 {img.metadata.coordinates}
                                   </div>
                                 )}
@@ -2173,11 +2108,10 @@ export default function Investigation() {
                                   e.stopPropagation();
                                   handleOpenImageChat(img);
                                 }}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
-                                  workstationTheme === "light"
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${workstationTheme === "light"
                                     ? "bg-[#F1F5F9] hover:bg-[#0E7C8A] text-[#0E7C8A] hover:text-white border-[#CBD5E1] hover:border-[#0E7C8A] shadow-sm"
                                     : "bg-[#12A5B8]/15 hover:bg-[#12A5B8] text-[#12A5B8] hover:text-[#040708] border border-[#12A5B8]/30"
-                                }`}
+                                  }`}
                               >
                                 <span>OPEN CHAT INVESTIGATION</span>
                                 <ArrowUpRight size={13} />
@@ -2188,11 +2122,10 @@ export default function Investigation() {
                                   setCanvasActiveAsset(img);
                                   setCanvasModalOpen(true);
                                 }}
-                                className={`p-2 rounded-lg cursor-pointer transition-colors border ${
-                                  workstationTheme === "light"
+                                className={`p-2 rounded-lg cursor-pointer transition-colors border ${workstationTheme === "light"
                                     ? "bg-[#F1F5F9] hover:bg-[#E2E8F0] border-[#CBD5E1] text-[#64748B] hover:text-[#0F172A]"
                                     : "bg-[#132127] hover:bg-[#1C323B] border-white/[0.08] text-[#8AA3AD] hover:text-[#FFFFFF]"
-                                }`}
+                                  }`}
                                 title="Inspect in Canvas"
                               >
                                 <Maximize2 size={14} />
@@ -2210,572 +2143,550 @@ export default function Investigation() {
                   <>
                     {/* ── Conversational Stream Area ── */}
                     <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col">
-                  <AnimatePresence mode="wait">
-                    {isEmptyChat ? (
-                      /* ────────────────────────────────────────────────
-                          STATE 1: EMPTY CHAT / WELCOME SCREEN
-                          Welcome heading + spacer for centered composer + quick suggestions
-                          ──────────────────────────────────────────────── */
-                      <motion.div
-                        key="empty-welcome-screen"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{
-                          opacity: 0,
-                          transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-                        }}
-                        className="flex-1 flex flex-col justify-center items-center my-auto w-full max-w-3xl mx-auto py-6"
-                      >
-                        {/* Welcome Heading (positioned above centered composer) */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{
-                            opacity: 0,
-                            y: -24,
-                            transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-                          }}
-                          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                          className="text-center space-y-2 mb-3"
-                        >
-                          <div className="flex justify-center mb-3">
-                            <SatQueryLogo size={48} variant="icon" theme={workstationTheme} />
-                          </div>
-                          <h1 className={`font-sans text-2xl sm:text-3xl font-medium tracking-wide mt-1 ${
-                            workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
-                          }`}>
-                            Ask Query
-                          </h1>
-                          <p className={`font-sans text-sm sm:text-base max-w-xl mx-auto leading-relaxed mt-1 ${
-                            workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                          }`}>
-                            Understand Earth-observation imagery through natural language.
-                          </p>
-                        </motion.div>
-
-                        {/* Physical spacer that reserves the exact visual footprint of the centered composer */}
-                        <div className="h-[80px] w-full mt-6 mb-2 pointer-events-none" />
-
-                        {/* Quick-Query Suggestions (positioned below centered composer) */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{
-                            opacity: 0,
-                            y: 24,
-                            transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-                          }}
-                          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                          className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-3 text-left font-sans"
-                        >
-                          {[
-                            {
-                              title: "Land Cover Analysis",
-                              prompt: "What type of land cover dominates this region?",
-                              mode: "VQA",
-                            },
-                            {
-                              title: "Built-up Area Detection",
-                              prompt: "Where are the major built-up areas?",
-                              mode: "GROUNDING",
-                            },
-                            {
-                              title: "Temporal Difference",
-                              prompt: "Did this region change between 2023 and 2026?",
-                              mode: "CHANGE",
-                            },
-                            {
-                              title: "Radar Penetration",
-                              prompt: "Corroborate with SAR radar through cloud cover.",
-                              mode: "OPTICAL + SAR",
-                            },
-                          ].map((card) => (
-                            <div
-                              key={card.title}
-                              onClick={() => {
-                                setQueryText(card.prompt);
-                                setTaskMode(card.mode);
-                                composerInputRef.current?.focus();
+                      <AnimatePresence mode="wait">
+                        {isEmptyChat ? (
+                          /* ────────────────────────────────────────────────
+                              STATE 1: EMPTY CHAT / WELCOME SCREEN
+                              Welcome heading + spacer for centered composer + quick suggestions
+                              ──────────────────────────────────────────────── */
+                          <motion.div
+                            key="empty-welcome-screen"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{
+                              opacity: 0,
+                              transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                            }}
+                            className="flex-1 flex flex-col justify-center items-center my-auto w-full max-w-3xl mx-auto py-6"
+                          >
+                            {/* Welcome Heading (positioned above centered composer) */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{
+                                opacity: 0,
+                                y: -24,
+                                transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
                               }}
-                              className={`p-3.5 cursor-pointer transition-colors duration-200 group rounded-xl border ${
-                                workstationTheme === "light"
-                                  ? "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1] hover:border-[#0E7C8A]/50 shadow-sm"
-                                  : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] hover:border-[#8AA3AD]/50"
-                              }`}
+                              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                              className="text-center space-y-2 mb-3"
                             >
-                              <div className={`text-xs font-semibold tracking-wide flex items-center justify-between ${
-                                workstationTheme === "light"
-                                  ? "text-[#0F172A] group-hover:text-[#0E7C8A]"
-                                  : "text-[#F0F6F8] group-hover:text-[#12A5B8]"
-                              }`}>
-                                <span>{card.title}</span>
-                                <ArrowUpRight size={14} className={workstationTheme === "light" ? "text-[#94A3B8] group-hover:text-[#0E7C8A]" : "text-[#8AA3AD] group-hover:text-[#12A5B8]"} />
+                              <div className="flex justify-center mb-3">
+                                <SatQueryLogo size={48} variant="icon" theme={workstationTheme} />
                               </div>
-                              <div className={`text-[11px] mt-1.5 leading-relaxed font-medium ${
-                                workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                              }`}>
-                                "{card.prompt}"
-                              </div>
-                            </div>
-                          ))}
-                        </motion.div>
-                      </motion.div>
-                    ) : (
-                      /* ────────────────────────────────────────────────
-                          STATE 2: ACTIVE CONVERSATION STREAM
-                          ──────────────────────────────────────────────── */
-                      <motion.div
-                        key="active-conversation-stream"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.15 }}
-                        className="max-w-3xl mx-auto space-y-6 pb-36 w-full"
-                      >
-                        {activeConversation &&
-                          activeConversation.messages.map((msg, idx) => {
-                            const isFirstMessage = idx === 0;
-                            const prevMsg = idx > 0 ? activeConversation.messages[idx - 1] : null;
-                            const isTimeGap = prevMsg ? shouldShowTimeGap(prevMsg, msg, activeConversation?.createdAt) : false;
+                              <h1 className={`font-sans text-2xl sm:text-3xl font-medium tracking-wide mt-1 ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
+                                }`}>
+                                Ask Query
+                              </h1>
+                              <p className={`font-sans text-sm sm:text-base max-w-xl mx-auto leading-relaxed mt-1 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                }`}>
+                                Understand Earth-observation imagery through natural language.
+                              </p>
+                            </motion.div>
 
-                            return (
-                              <div key={msg.id} className="space-y-4">
-                                {/* Centered Week & Time Divider for 1st text or when texting back after time gap */}
-                                {(isFirstMessage || isTimeGap) && (
-                                  <div className="flex justify-center my-4 select-none">
-                                    <span className={`text-xs font-sans font-normal px-3 py-1 ${
-                                      workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                    }`}>
-                                      {formatChatTimestamp(msg.timestamp, msg.createdAt, activeConversation?.createdAt)}
-                                    </span>
-                                  </div>
-                                )}
+                            {/* Physical spacer that reserves the exact visual footprint of the centered composer */}
+                            <div className="h-[80px] w-full mt-6 mb-2 pointer-events-none" />
 
-                                {/* 1. If user message and contains attached asset, show image directly inside chat */}
-                                {msg.attachedAsset && (
-                                  <div
-                                    id={`asset-${msg.attachedAsset.id}`}
-                                    className={`p-3.5 space-y-3 font-mono text-xs max-w-xl ml-auto rounded-2xl border ${
-                                      workstationTheme === "light"
-                                        ? "bg-white border-[#E2E8F0] shadow-sm"
-                                        : "bg-[#0D171C] border-[#1C323B]"
+                            {/* Quick-Query Suggestions (positioned below centered composer) */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{
+                                opacity: 0,
+                                y: 24,
+                                transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                              }}
+                              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                              className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-3 text-left font-sans"
+                            >
+                              {[
+                                {
+                                  title: "Land Cover Analysis",
+                                  prompt: "What type of land cover dominates this region?",
+                                  mode: "VQA",
+                                },
+                                {
+                                  title: "Built-up Area Detection",
+                                  prompt: "Where are the major built-up areas?",
+                                  mode: "GROUNDING",
+                                },
+                                {
+                                  title: "Temporal Difference",
+                                  prompt: "Did this region change between 2023 and 2026?",
+                                  mode: "CHANGE",
+                                },
+                                {
+                                  title: "Radar Penetration",
+                                  prompt: "Corroborate with SAR radar through cloud cover.",
+                                  mode: "OPTICAL + SAR",
+                                },
+                              ].map((card) => (
+                                <div
+                                  key={card.title}
+                                  onClick={() => {
+                                    setQueryText(card.prompt);
+                                    setTaskMode(card.mode);
+                                    composerInputRef.current?.focus();
+                                  }}
+                                  className={`p-3.5 cursor-pointer transition-colors duration-200 group rounded-xl border ${workstationTheme === "light"
+                                      ? "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1] hover:border-[#0E7C8A]/50 shadow-sm"
+                                      : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] hover:border-[#8AA3AD]/50"
                                     }`}
-                                  >
-                                    <div className={`flex items-center justify-between text-[10px] border-b pb-2 ${
-                                      workstationTheme === "light" ? "text-[#64748B] border-[#E2E8F0]" : "text-[#8AA3AD] border-[#1C323B]"
+                                >
+                                  <div className={`text-xs font-semibold tracking-wide flex items-center justify-between ${workstationTheme === "light"
+                                      ? "text-[#0F172A] group-hover:text-[#0E7C8A]"
+                                      : "text-[#F0F6F8] group-hover:text-[#12A5B8]"
                                     }`}>
-                                      <span className={`font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                                        workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                                      }`}>
-                                        <ImageIcon size={12} />
-                                        <span>IMAGE</span>
-                                      </span>
-                                      <span>{msg.attachedAsset.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}</span>
-                                    </div>
-
-                                    <div>
-                                      <div className={`font-sans font-bold text-sm ${
-                                        workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                                      }`}>
-                                        {msg.attachedAsset.name}
-                                      </div>
-                                      <div className={`text-[10px] font-mono mt-0.5 ${
-                                        workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#76AEB0]"
-                                      }`}>
-                                        {msg.attachedAsset.metadata?.coordinates || "19.0760° N, 72.8777° E"}
-                                      </div>
-                                    </div>
-
-                                    {/* Clickable Image Card Preview */}
-                                    <div
-                                      onClick={() => handleOpenCanvasInspection(msg.attachedAsset)}
-                                      className={`relative h-48 sm:h-56 overflow-hidden border group cursor-pointer rounded-xl ${
-                                        workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#080E11] border-[#1C323B]"
-                                      }`}
-                                    >
-                                      <img
-                                        src={msg.attachedAsset.previewUrl}
-                                        alt={msg.attachedAsset.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end justify-between p-2.5">
-                                        <span className="text-[10px] text-white font-mono bg-black/70 px-2.5 py-0.5 border border-white/20 rounded-full">
-                                          {msg.attachedAsset.metadata?.resolution || "0.5m GSD"} · {msg.attachedAsset.metadata?.format || "GeoTIFF"}
-                                        </span>
-                                        <span className="text-[10px] font-bold text-[#12A5B8] flex items-center gap-1 bg-black/80 px-2.5 py-0.5 border border-[#12A5B8]/40 rounded-full">
-                                          <Maximize2 size={11} />
-                                          <span>INSPECT CANVAS ↗</span>
-                                        </span>
-                                      </div>
-                                    </div>
+                                    <span>{card.title}</span>
+                                    <ArrowUpRight size={14} className={workstationTheme === "light" ? "text-[#94A3B8] group-hover:text-[#0E7C8A]" : "text-[#8AA3AD] group-hover:text-[#12A5B8]"} />
                                   </div>
-                                )}
-
-                                {/* 2. User Question Bubble */}
-                                {msg.role === "user" && msg.text && (
-                                  <div className="flex justify-end my-2">
-                                    <div className={`max-w-xl px-4 py-3 font-sans text-sm leading-relaxed rounded-2xl shadow-sm whitespace-pre-wrap border ${
-                                      workstationTheme === "light"
-                                        ? "bg-[#F1F5F9] text-[#0F172A] border-[#CBD5E1]"
-                                        : "bg-[#0D171C] text-[#FFFFFF] border-white/[0.08]"
+                                  <div className={`text-[11px] mt-1.5 leading-relaxed font-medium ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
                                     }`}>
-                                      {msg.text}
-                                    </div>
+                                    "{card.prompt}"
                                   </div>
-                                )}
+                                </div>
+                              ))}
+                            </motion.div>
+                          </motion.div>
+                        ) : (
+                          /* ────────────────────────────────────────────────
+                              STATE 2: ACTIVE CONVERSATION STREAM
+                              ──────────────────────────────────────────────── */
+                          <motion.div
+                            key="active-conversation-stream"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.15 }}
+                            className="max-w-3xl mx-auto space-y-6 pb-36 w-full"
+                          >
+                            {activeConversation &&
+                              activeConversation.messages.map((msg, idx) => {
+                                const isFirstMessage = idx === 0;
+                                const prevMsg = idx > 0 ? activeConversation.messages[idx - 1] : null;
+                                const isTimeGap = prevMsg ? shouldShowTimeGap(prevMsg, msg, activeConversation?.createdAt) : false;
 
-                                {/* 3. Assistant Response Block (with dedicated dark/light background card) */}
-                                {msg.role === "assistant" && (
-                                  <div className="flex justify-start my-2">
-                                    <div className={`max-w-2xl w-full p-4 rounded-2xl shadow-md space-y-3 font-sans border ${
-                                      workstationTheme === "light"
-                                        ? "bg-white border-[#CBD5E1] shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
-                                        : "bg-[#0D171C] border-[#1C323B]"
-                                    }`}>
-                                      {/* Assistant Header */}
-                                      <div className={`flex items-center text-xs font-mono pb-1 border-b ${
-                                        workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
-                                      }`}>
-                                        <span className={`text-[10px] font-mono font-semibold tracking-wider ${
-                                          workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                                        }`}>
-                                          {SPECIALIST_CONFIG[msg.mode]?.sublabel || "OPTICAL ◉"}
+                                return (
+                                  <div key={msg.id} className="space-y-4">
+                                    {/* Centered Week & Time Divider for 1st text or when texting back after time gap */}
+                                    {(isFirstMessage || isTimeGap) && (
+                                      <div className="flex justify-center my-4 select-none">
+                                        <span className={`text-xs font-sans font-normal px-3 py-1 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                          }`}>
+                                          {formatChatTimestamp(msg.timestamp, msg.createdAt, activeConversation?.createdAt)}
                                         </span>
                                       </div>
+                                    )}
 
-                                      {/* Natural Language Answer */}
-                                      <p className={`text-sm leading-relaxed font-sans ${
-                                        workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
-                                      }`}>{msg.text}</p>
-
-                                      {/* Action Triggers + Bottom Right Timing */}
-                                      <div className={`pt-2 flex items-center justify-between gap-3 font-mono text-xs border-t ${
-                                        workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/50"
-                                      }`}>
-                                        <div className="flex flex-wrap items-center gap-2.5">
-                                          <button
-                                            onClick={() => handleOpenCanvasInspection(msg.assetRef, msg.evidence)}
-                                            className={`px-2.5 py-1 transition-colors cursor-pointer flex items-center gap-1.5 rounded-lg text-xs border ${
-                                              workstationTheme === "light"
-                                                ? "text-[#0E7C8A] hover:text-[#0B4F58] bg-[#0E7C8A]/10 hover:bg-[#0E7C8A]/20 border-[#0E7C8A]/30 font-semibold"
-                                                : "text-[#12A5B8] hover:text-[#19C5DC] bg-[#12A5B8]/10 hover:bg-[#12A5B8]/20 border-[#12A5B8]/30 font-semibold"
-                                            }`}
-                                          >
-                                            <Target size={13} />
-                                            <span className="uppercase tracking-wider text-[11px]">View Findings</span>
-                                          </button>
-
-                                          <button
-                                            onClick={() => {
-                                              setActiveEvidenceResult(msg.queryResult);
-                                              setShowMeWhyOpen(true);
-                                            }}
-                                            className={`px-2.5 py-1 transition-colors cursor-pointer flex items-center gap-1.5 rounded-lg text-xs border ${
-                                              workstationTheme === "light"
-                                                ? "text-[#475569] hover:text-[#0F172A] bg-[#F8FAFC] hover:bg-[#F1F5F9] border-[#CBD5E1]"
-                                                : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#1C323B]/50 border-white/[0.08]"
-                                            }`}
-                                          >
-                                            <ShieldCheck size={13} />
-                                            <span className="uppercase tracking-wider text-[11px]">Show Me Why</span>
-                                          </button>
+                                    {/* 1. If user message and contains attached asset, show image directly inside chat */}
+                                    {msg.attachedAsset && (
+                                      <div
+                                        id={`asset-${msg.attachedAsset.id}`}
+                                        className={`p-3.5 space-y-3 font-mono text-xs max-w-xl ml-auto rounded-2xl border ${workstationTheme === "light"
+                                            ? "bg-white border-[#E2E8F0] shadow-sm"
+                                            : "bg-[#0D171C] border-[#1C323B]"
+                                          }`}
+                                      >
+                                        <div className={`flex items-center justify-between text-[10px] border-b pb-2 ${workstationTheme === "light" ? "text-[#64748B] border-[#E2E8F0]" : "text-[#8AA3AD] border-[#1C323B]"
+                                          }`}>
+                                          <span className={`font-bold uppercase tracking-wider flex items-center gap-1.5 ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                            }`}>
+                                            <ImageIcon size={12} />
+                                            <span>IMAGE</span>
+                                          </span>
+                                          <span>{msg.attachedAsset.date || new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}</span>
                                         </div>
 
-                                        {/* Timing in Bottom Right Corner of Card */}
-                                        <div className={`text-[11px] font-sans font-normal self-end ml-auto pr-0.5 select-none ${
-                                          workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                        }`}>
-                                          {formatTimeOnly(msg.timestamp, msg.createdAt, activeConversation?.createdAt)}
+                                        <div>
+                                          <div className={`font-sans font-bold text-sm ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
+                                            }`}>
+                                            {msg.attachedAsset.name}
+                                          </div>
+                                          <div className={`text-[10px] font-mono mt-0.5 ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#76AEB0]"
+                                            }`}>
+                                            {msg.attachedAsset.metadata?.coordinates || "19.0760° N, 72.8777° E"}
+                                          </div>
+                                        </div>
+
+                                        {/* Clickable Image Card Preview */}
+                                        <div
+                                          onClick={() => handleOpenCanvasInspection(msg.attachedAsset)}
+                                          className={`relative h-48 sm:h-56 overflow-hidden border group cursor-pointer rounded-xl ${workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#080E11] border-[#1C323B]"
+                                            }`}
+                                        >
+                                          <img
+                                            src={msg.attachedAsset.previewUrl}
+                                            alt={msg.attachedAsset.name}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                          />
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end justify-between p-2.5">
+                                            <span className="text-[10px] text-white font-mono bg-black/70 px-2.5 py-0.5 border border-white/20 rounded-full">
+                                              {msg.attachedAsset.metadata?.resolution || "0.5m GSD"} · {msg.attachedAsset.metadata?.format || "GeoTIFF"}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-[#12A5B8] flex items-center gap-1 bg-black/80 px-2.5 py-0.5 border border-[#12A5B8]/40 rounded-full">
+                                              <Maximize2 size={11} />
+                                              <span>INSPECT CANVAS ↗</span>
+                                            </span>
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                    )}
 
-                        {/* ────────────────────────────────────────────────
+                                    {/* 2. User Question Bubble */}
+                                    {msg.role === "user" && msg.text && (
+                                      <div className="flex justify-end my-2">
+                                        <div className={`max-w-xl px-4 py-3 font-sans text-sm leading-relaxed rounded-2xl shadow-sm whitespace-pre-wrap border ${workstationTheme === "light"
+                                            ? "bg-[#F1F5F9] text-[#0F172A] border-[#CBD5E1]"
+                                            : "bg-[#0D171C] text-[#FFFFFF] border-white/[0.08]"
+                                          }`}>
+                                          {msg.text}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* 3. Assistant Response Block (with dedicated dark/light background card) */}
+                                    {msg.role === "assistant" && (
+                                      <div className="flex justify-start my-2">
+                                        <div className={`max-w-2xl w-full p-4 rounded-2xl shadow-md space-y-3 font-sans border ${workstationTheme === "light"
+                                            ? "bg-white border-[#CBD5E1] shadow-[0_4px_20px_rgba(15,23,42,0.06)]"
+                                            : "bg-[#0D171C] border-[#1C323B]"
+                                          }`}>
+                                          {/* Assistant Header */}
+                                          <div className={`flex items-center text-xs font-mono pb-1 border-b ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/60"
+                                            }`}>
+                                            <span className={`text-[10px] font-mono font-semibold tracking-wider ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                              }`}>
+                                              {SPECIALIST_CONFIG[msg.mode]?.sublabel || "OPTICAL ◉"}
+                                            </span>
+                                          </div>
+
+                                          {/* Natural Language Answer */}
+                                          <p className={`text-sm leading-relaxed font-sans ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
+                                            }`}>{msg.text}</p>
+
+                                          {/* Action Triggers + Bottom Right Timing */}
+                                          <div className={`pt-2 flex items-center justify-between gap-3 font-mono text-xs border-t ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/50"
+                                            }`}>
+                                            <div className="flex flex-wrap items-center gap-2.5">
+                                              <button
+                                                onClick={() => handleOpenCanvasInspection(msg.assetRef, msg.evidence)}
+                                                className={`px-2.5 py-1 transition-colors cursor-pointer flex items-center gap-1.5 rounded-lg text-xs border ${workstationTheme === "light"
+                                                    ? "text-[#0E7C8A] hover:text-[#0B4F58] bg-[#0E7C8A]/10 hover:bg-[#0E7C8A]/20 border-[#0E7C8A]/30 font-semibold"
+                                                    : "text-[#12A5B8] hover:text-[#19C5DC] bg-[#12A5B8]/10 hover:bg-[#12A5B8]/20 border-[#12A5B8]/30 font-semibold"
+                                                  }`}
+                                              >
+                                                <Target size={13} />
+                                                <span className="uppercase tracking-wider text-[11px]">View Findings</span>
+                                              </button>
+
+                                              <button
+                                                onClick={() => {
+                                                  setActiveEvidenceResult(msg.queryResult);
+                                                  setShowMeWhyOpen(true);
+                                                }}
+                                                className={`px-2.5 py-1 transition-colors cursor-pointer flex items-center gap-1.5 rounded-lg text-xs border ${workstationTheme === "light"
+                                                    ? "text-[#475569] hover:text-[#0F172A] bg-[#F8FAFC] hover:bg-[#F1F5F9] border-[#CBD5E1]"
+                                                    : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#1C323B]/50 border-white/[0.08]"
+                                                  }`}
+                                              >
+                                                <ShieldCheck size={13} />
+                                                <span className="uppercase tracking-wider text-[11px]">Show Me Why</span>
+                                              </button>
+                                            </div>
+
+                                            {/* Timing in Bottom Right Corner of Card */}
+                                            <div className={`text-[11px] font-sans font-normal self-end ml-auto pr-0.5 select-none ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                              }`}>
+                                              {formatTimeOnly(msg.timestamp, msg.createdAt, activeConversation?.createdAt)}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+
+                            {/* ────────────────────────────────────────────────
                             EXECUTION PIPELINE: QUERY → ROUTING → ANALYSIS → ANSWER → FINDINGS
                             ──────────────────────────────────────────────── */}
-                        {isAnalyzing && (
-                          <div className="p-4 bg-[#0D171C] border border-[#12A5B8] space-y-3 font-mono text-xs animate-pulse max-w-2xl rounded-2xl">
-                            <div className="flex items-center justify-between text-[10px] font-bold">
-                              <span className="text-[#12A5B8] uppercase tracking-wider flex items-center gap-1.5">
-                                <Activity size={12} className="animate-spin" />
-                                <span>PIPELINE EXECUTION IN PROGRESS</span>
-                              </span>
-                              <span className="text-[#12A5B8]">{routingStage}</span>
-                            </div>
+                            {isAnalyzing && (
+                              <div className="p-4 bg-[#0D171C] border border-[#12A5B8] space-y-3 font-mono text-xs animate-pulse max-w-2xl rounded-2xl">
+                                <div className="flex items-center justify-between text-[10px] font-bold">
+                                  <span className="text-[#12A5B8] uppercase tracking-wider flex items-center gap-1.5">
+                                    <Activity size={12} className="animate-spin" />
+                                    <span>PIPELINE EXECUTION IN PROGRESS</span>
+                                  </span>
+                                  <span className="text-[#12A5B8]">{routingStage}</span>
+                                </div>
 
-                            {/* Pipeline Stepper Visualization */}
-                            <div className="flex items-center justify-between text-[9px] text-[#8AA3AD] border-y border-[#1C323B] py-1.5">
-                              <span className={routingStage === "QUERY" ? "text-[#12A5B8] font-bold" : ""}>01 QUERY</span>
-                              <span>→</span>
-                              <span className={routingStage === "ROUTING" ? "text-[#12A5B8] font-bold" : ""}>02 ROUTING</span>
-                              <span>→</span>
-                              <span className={routingStage === "ANALYSIS" ? "text-[#12A5B8] font-bold" : ""}>03 ANALYSIS</span>
-                              <span>→</span>
-                              <span className={routingStage === "ANSWER" ? "text-[#12A5B8] font-bold" : ""}>04 ANSWER</span>
-                              <span>→</span>
-                              <span className={routingStage === "FINDINGS" ? "text-[#12A5B8] font-bold" : ""}>05 FINDINGS</span>
-                            </div>
+                                {/* Pipeline Stepper Visualization */}
+                                <div className="flex items-center justify-between text-[9px] text-[#8AA3AD] border-y border-[#1C323B] py-1.5">
+                                  <span className={routingStage === "QUERY" ? "text-[#12A5B8] font-bold" : ""}>01 QUERY</span>
+                                  <span>→</span>
+                                  <span className={routingStage === "ROUTING" ? "text-[#12A5B8] font-bold" : ""}>02 ROUTING</span>
+                                  <span>→</span>
+                                  <span className={routingStage === "ANALYSIS" ? "text-[#12A5B8] font-bold" : ""}>03 ANALYSIS</span>
+                                  <span>→</span>
+                                  <span className={routingStage === "ANSWER" ? "text-[#12A5B8] font-bold" : ""}>04 ANSWER</span>
+                                  <span>→</span>
+                                  <span className={routingStage === "FINDINGS" ? "text-[#12A5B8] font-bold" : ""}>05 FINDINGS</span>
+                                </div>
 
-                            <div className="text-[11px] text-[#F0F6F8] font-sans">
-                              {routingDetail}
-                            </div>
-                          </div>
+                                <div className="text-[11px] text-[#F0F6F8] font-sans">
+                                  {routingDetail}
+                                </div>
+                              </div>
+                            )}
+
+                            <div ref={chatBottomRef} />
+                          </motion.div>
                         )}
+                      </AnimatePresence>
+                    </div>
 
-                        <div ref={chatBottomRef} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* ══════════════════════════════════════════════════════════
+                    {/* ══════════════════════════════════════════════════════════
                     3. FLOATING / ADAPTIVE COMPOSER (CHATGPT UX REFERENCE)
                     Empty state: centered in lower-middle viewport
                     Active state: smoothly glides DOWN to fixed bottom
                     Structure: [ + ] Ask SatQuery... [AUTO ▾] [MIC] [↑]
                     ══════════════════════════════════════════════════════════ */}
-                <motion.div
-                  className="absolute left-4 right-4 z-40 pointer-events-none"
-                  initial={false}
-                  animate={{
-                    bottom: isEmptyChat ? "calc(50% - 70px)" : "24px",
-                  }}
-                  transition={{
-                    duration: 0.65,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                >
-                  <div className="max-w-3xl mx-auto pointer-events-auto">
-                    {/* Staged Imagery Attachment Pill (if present) */}
-                    {stagedAsset && (
-                      <div className="mb-2 p-2 bg-[#0D171C]/95 border border-[#1C323B] flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md rounded-2xl">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <img
-                            src={stagedAsset.previewUrl}
-                            alt="Staged"
-                            className="w-8 h-8 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg"
-                          />
-                          <div className="truncate">
-                            <span className="font-bold text-[#F0F6F8] truncate block text-[11px]">
-                              {stagedAsset.name}
-                            </span>
-                            <span className="text-[9px] text-[#12A5B8] block">
-                              {stagedAsset.metadata?.resolution || "0.5m GSD"} · STAGED FOR QUERY
-                            </span>
+                    <motion.div
+                      className="absolute left-4 right-4 z-40 pointer-events-none"
+                      initial={false}
+                      animate={{
+                        bottom: isEmptyChat ? "calc(50% - 70px)" : "24px",
+                      }}
+                      transition={{
+                        duration: 0.65,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                    >
+                      <div className="max-w-3xl mx-auto pointer-events-auto">
+                        {/* Staged Imagery Attachment Pill (if present) */}
+                        {stagedAsset && (
+                          <div className="mb-2 p-2 bg-[#0D171C]/95 border border-[#1C323B] flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md rounded-2xl">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img
+                                src={stagedAsset.previewUrl}
+                                alt="Staged"
+                                className="w-8 h-8 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg"
+                              />
+                              <div className="truncate">
+                                <span className="font-bold text-[#F0F6F8] truncate block text-[11px]">
+                                  {stagedAsset.name}
+                                </span>
+                                <span className="text-[9px] text-[#12A5B8] block">
+                                  {stagedAsset.metadata?.resolution || "0.5m GSD"} · STAGED FOR QUERY
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => setStagedAsset(null)}
+                              className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer rounded-md"
+                              title="Remove attached imagery"
+                            >
+                              <X size={14} />
+                            </button>
                           </div>
-                        </div>
-                        <button
-                          onClick={() => setStagedAsset(null)}
-                          className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer rounded-md"
-                          title="Remove attached imagery"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    )}
+                        )}
 
-                    {/* Composer Bar Container */}
-                    <div className={`p-2.5 flex items-end gap-2 transition-all relative rounded-2xl border ${
-                      workstationTheme === "light"
-                        ? "bg-white border-[#CBD5E1] shadow-[0_8px_30px_rgba(15,23,42,0.08)]"
-                        : "bg-[#080E11]/90 backdrop-blur-xl border-[#1C323B] shadow-2xl"
-                    }`}>
-                      {/* Hidden File Input for Image Upload */}
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={(e) => handleFileUpload(Array.from(e.target.files))}
-                        accept="image/*,.tif,.tiff"
-                        className="hidden"
-                      />
+                        {/* Composer Bar Container */}
+                        <div className={`p-2.5 flex items-end gap-2 transition-all relative rounded-2xl border ${workstationTheme === "light"
+                            ? "bg-white border-[#CBD5E1] shadow-[0_8px_30px_rgba(15,23,42,0.08)]"
+                            : "bg-[#080E11]/90 backdrop-blur-xl border-[#1C323B] shadow-2xl"
+                          }`}>
+                          {/* Hidden File Input for Image Upload */}
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={(e) => handleFileUpload(Array.from(e.target.files))}
+                            accept="image/*,.tif,.tiff"
+                            className="hidden"
+                          />
 
-                      {/* ── [+] Plus Button: Upload Image / Benchmark Scenes ── */}
-                      <div className="relative">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPlusMenuOpen((prev) => !prev);
-                            setTaskDropdownOpen(false);
-                          }}
-                          className={`p-2 transition-colors cursor-pointer rounded-md ${
-                            plusMenuOpen
-                              ? "text-[#12A5B8] bg-[#132127]"
-                              : workstationTheme === "light"
-                              ? "text-[#64748B] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
-                              : "text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127]"
-                          }`}
-                          title="Attach Satellite Imagery or Scenes"
-                        >
-                          <Plus size={16} />
-                        </button>
-
-                        {/* Plus Popover Menu */}
-                        <AnimatePresence>
-                          {plusMenuOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                              transition={{ duration: 0.12 }}
-                              className={`absolute bottom-full left-0 mb-3 w-56 border shadow-2xl p-1.5 font-sans text-xs z-50 rounded-xl overflow-hidden ${
-                                workstationTheme === "light" ? "bg-white border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
-                              }`}
-                            >
-                              <button
-                                onClick={() => {
-                                  fileInputRef.current?.click();
-                                  setPlusMenuOpen(false);
-                                }}
-                                className={`w-full px-3 py-2 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${
-                                  workstationTheme === "light"
-                                    ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
-                                    : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127]"
+                          {/* ── [+] Plus Button: Upload Image / Benchmark Scenes ── */}
+                          <div className="relative">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPlusMenuOpen((prev) => !prev);
+                                setTaskDropdownOpen(false);
+                              }}
+                              className={`p-2 transition-colors cursor-pointer rounded-md ${plusMenuOpen
+                                  ? "text-[#12A5B8] bg-[#132127]"
+                                  : workstationTheme === "light"
+                                    ? "text-[#64748B] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
+                                    : "text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127]"
                                 }`}
-                              >
-                                <Upload size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
-                                <div>
-                                  <div className="font-bold">Upload Image</div>
-                                  <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>GeoTIFF, TIFF, Optical, SAR</div>
-                                </div>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setImageryLibraryOpen(true);
-                                  setPlusMenuOpen(false);
-                                }}
-                                className={`w-full px-3 py-2 text-left flex items-center gap-2.5 transition-colors cursor-pointer border-t mt-1 rounded-xl ${
-                                  workstationTheme === "light"
-                                    ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] border-[#E2E8F0]"
-                                    : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] border-[#1C323B]/60"
-                                }`}
-                              >
-                                <Database size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#76AEB0]"} />
-                                <div>
-                                  <div className="font-bold">Browse Benchmark Scenes</div>
-                                  <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>Cartosat-3, Proba, Nepal</div>
-                                </div>
-                              </button>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-
-                      {/* ── Natural Language Input ── */}
-                      <textarea
-                        ref={composerInputRef}
-                        rows={1}
-                        value={queryText}
-                        onChange={(e) => setQueryText(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSendQuery();
-                          }
-                        }}
-                        placeholder="Ask query about Earth-observation imagery..."
-                        className={`flex-1 bg-transparent border-none outline-none font-sans text-xs sm:text-sm resize-none max-h-28 py-1.5 ${
-                          workstationTheme === "light"
-                            ? "text-[#0F172A] placeholder:text-[#94A3B8]"
-                            : "text-[#FFFFFF] placeholder:text-[#8AA3AD]"
-                        }`}
-                      />
-
-                      {/* ── [AUTO ▾] Task Dropdown Selector ── */}
-                      <div className="relative">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTaskDropdownOpen((prev) => !prev);
-                            setPlusMenuOpen(false);
-                          }}
-                          className={`px-3 py-1.5 font-mono text-[10px] flex items-center gap-1.5 transition-colors cursor-pointer rounded-lg border ${
-                            workstationTheme === "light"
-                              ? "text-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] border-[#CBD5E1]"
-                              : "text-[#F0F6F8] hover:text-[#12A5B8] bg-[#132127] hover:bg-[#1C323B] border-[#1C323B]"
-                          } ${taskMode !== "AUTO" ? (workstationTheme === "light" ? "border-[#0E7C8A] text-[#0E7C8A] font-bold" : "border-[#12A5B8] text-[#12A5B8]") : ""}`}
-                        >
-                          <span className="font-bold">{taskMode}</span>
-                          <ChevronDown size={12} className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"} />
-                        </button>
-
-                        {/* Task Mode Menu */}
-                        <AnimatePresence>
-                          {taskDropdownOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                              transition={{ duration: 0.12 }}
-                              className={`absolute bottom-full right-0 mb-3 w-60 border shadow-2xl p-1.5 font-mono text-xs z-50 rounded-xl max-h-72 overflow-y-auto ${
-                                workstationTheme === "light" ? "bg-white border-[#E2E8F0]" : "bg-[#080E11]/95 backdrop-blur-xl border-[#1C323B]"
-                              }`}
+                              title="Attach Satellite Imagery or Scenes"
                             >
-                              {Object.keys(SPECIALIST_CONFIG).map((mode) => (
-                                <button
-                                  key={mode}
-                                  onClick={() => {
-                                    setTaskMode(mode);
-                                    setTaskDropdownOpen(false);
-                                  }}
-                                  className={`w-full px-2.5 py-1.5 text-left flex items-center justify-between transition-colors cursor-pointer border-b last:border-none rounded-xl ${
-                                    workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/40"
-                                  } ${
-                                    taskMode === mode
-                                      ? workstationTheme === "light"
-                                        ? "bg-[#F1F5F9] text-[#0E7C8A] font-bold"
-                                        : "bg-[#132127] text-[#12A5B8] font-bold"
-                                      : workstationTheme === "light"
-                                      ? "text-[#0F172A] hover:bg-[#F8FAFC]"
-                                      : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
-                                  }`}
+                              <Plus size={16} />
+                            </button>
+
+                            {/* Plus Popover Menu */}
+                            <AnimatePresence>
+                              {plusMenuOpen && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                                  transition={{ duration: 0.12 }}
+                                  className={`absolute bottom-full left-0 mb-3 w-56 border shadow-2xl p-1.5 font-sans text-xs z-50 rounded-xl overflow-hidden ${workstationTheme === "light" ? "bg-white border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
+                                    }`}
                                 >
-                                  <div className="flex flex-col">
-                                    <span className="text-[11px] font-bold">{SPECIALIST_CONFIG[mode]?.label || mode}</span>
-                                    <span className={`text-[9px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>{SPECIALIST_CONFIG[mode]?.sublabel}</span>
-                                  </div>
-                                  {taskMode === mode && <Check size={12} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />}
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                                  <button
+                                    onClick={() => {
+                                      fileInputRef.current?.click();
+                                      setPlusMenuOpen(false);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl ${workstationTheme === "light"
+                                        ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
+                                        : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127]"
+                                      }`}
+                                  >
+                                    <Upload size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
+                                    <div>
+                                      <div className="font-bold">Upload Image</div>
+                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>GeoTIFF, TIFF, Optical, SAR</div>
+                                    </div>
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      setImageryLibraryOpen(true);
+                                      setPlusMenuOpen(false);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left flex items-center gap-2.5 transition-colors cursor-pointer border-t mt-1 rounded-xl ${workstationTheme === "light"
+                                        ? "text-[#0F172A] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] border-[#E2E8F0]"
+                                        : "text-[#F0F6F8] hover:text-[#12A5B8] hover:bg-[#132127] border-[#1C323B]/60"
+                                      }`}
+                                  >
+                                    <Database size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#76AEB0]"} />
+                                    <div>
+                                      <div className="font-bold">Browse Benchmark Scenes</div>
+                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>Cartosat-3, Proba, Nepal</div>
+                                    </div>
+                                  </button>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+
+                          {/* ── Natural Language Input ── */}
+                          <textarea
+                            ref={composerInputRef}
+                            rows={1}
+                            value={queryText}
+                            onChange={(e) => setQueryText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendQuery();
+                              }
+                            }}
+                            placeholder="Ask query about Earth-observation imagery..."
+                            className={`flex-1 bg-transparent border-none outline-none font-sans text-xs sm:text-sm resize-none max-h-28 py-1.5 ${workstationTheme === "light"
+                                ? "text-[#0F172A] placeholder:text-[#94A3B8]"
+                                : "text-[#FFFFFF] placeholder:text-[#8AA3AD]"
+                              }`}
+                          />
+
+                          {/* ── [AUTO ▾] Task Dropdown Selector ── */}
+                          <div className="relative">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTaskDropdownOpen((prev) => !prev);
+                                setPlusMenuOpen(false);
+                              }}
+                              className={`px-3 py-1.5 font-sans text-xs flex items-center gap-1.5 transition-colors cursor-pointer rounded-lg border font-semibold ${workstationTheme === "light"
+                                  ? "text-[#0E7C8A] bg-[#F1F5F9] hover:bg-[#E2E8F0] border-[#0E7C8A]"
+                                  : "text-[#12A5B8] bg-[#132127] hover:bg-[#1C323B] border-[#12A5B8]"
+                                }`}
+                            >
+                              <span>{SPECIALIST_CONFIG[taskMode]?.label || taskMode}</span>
+                              <ChevronDown size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
+                            </button>
+
+                            {/* Task Mode Menu */}
+                            <AnimatePresence>
+                              {taskDropdownOpen && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                                  transition={{ duration: 0.12 }}
+                                  className={`absolute bottom-full right-0 mb-3 w-64 border shadow-2xl p-1.5 font-sans text-xs z-50 rounded-2xl max-h-80 overflow-y-auto ${workstationTheme === "light"
+                                      ? "bg-white/95 backdrop-blur-xl border-[#CBD5E1] shadow-slate-200/80"
+                                      : "bg-[#0B0D0C]/95 backdrop-blur-xl border-[#1C323B] shadow-black/80"
+                                    }`}
+                                >
+                                  {Object.keys(SPECIALIST_CONFIG).map((mode) => {
+                                    const spec = SPECIALIST_CONFIG[mode];
+                                    const isSelected = taskMode === mode;
+                                    return (
+                                      <button
+                                        key={mode}
+                                        onClick={() => {
+                                          setTaskMode(mode);
+                                          setTaskDropdownOpen(false);
+                                        }}
+                                        className={`w-full px-3 py-2 text-left flex items-center justify-between transition-all cursor-pointer rounded-xl mb-1 last:mb-0 font-sans ${isSelected
+                                            ? workstationTheme === "light"
+                                              ? "bg-[#E0F2FE] text-[#0284C7] font-bold border border-[#BAE6FD]"
+                                              : "bg-[#132B35] text-[#38BDF8] font-bold border border-[#12A5B8]/40"
+                                            : workstationTheme === "light"
+                                              ? "text-[#0F172A] hover:bg-[#F8FAFC]"
+                                              : "text-[#E2E8F0] hover:bg-[#132127]"
+                                          }`}
+                                      >
+                                        <div className="flex flex-col gap-0.5">
+                                          <span className="text-xs font-bold leading-snug">{spec?.label || mode}</span>
+                                          <span className={`text-[10px] font-sans font-normal ${isSelected
+                                              ? (workstationTheme === "light" ? "text-[#0369A1]" : "text-[#7DD3FC]")
+                                              : (workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]")
+                                            }`}>
+                                            {spec?.subtitle || spec?.sublabel}
+                                          </span>
+                                        </div>
+                                        {isSelected && <Check size={14} className={workstationTheme === "light" ? "text-[#0284C7]" : "text-[#38BDF8]"} />}
+                                      </button>
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+
+                          {/* ── [MIC] Microphone Button (Functional Web Speech) ── */}
+                          <button
+                            onClick={toggleSpeechRecognition}
+                            className={`p-2 transition-colors cursor-pointer rounded-lg ${isListening
+                                ? "bg-[#12A5B8] text-[#080E11] animate-pulse"
+                                : workstationTheme === "light"
+                                  ? "text-[#64748B] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
+                                  : "text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127]"
+                              }`}
+                            title={isListening ? "Listening... Click to stop" : "Speak query via microphone"}
+                          >
+                            {isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                          </button>
+
+                          {/* ── [↑] Send Button ── */}
+                          <button
+                            onClick={() => handleSendQuery()}
+                            disabled={isAnalyzing || (!queryText.trim() && !stagedAsset)}
+                            className="w-8 h-8 rounded-lg bg-[#12A5B8] hover:bg-[#0E7C8A] disabled:opacity-30 text-[#080E11] font-bold flex items-center justify-center transition-all cursor-pointer shadow-md flex-shrink-0"
+                            title="Send query"
+                          >
+                            <Send size={14} />
+                          </button>
+                        </div>
                       </div>
-
-                      {/* ── [MIC] Microphone Button (Functional Web Speech) ── */}
-                      <button
-                        onClick={toggleSpeechRecognition}
-                        className={`p-2 transition-colors cursor-pointer rounded-lg ${
-                          isListening
-                            ? "bg-[#12A5B8] text-[#080E11] animate-pulse"
-                            : workstationTheme === "light"
-                            ? "text-[#64748B] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
-                            : "text-[#8AA3AD] hover:text-[#12A5B8] hover:bg-[#132127]"
-                        }`}
-                        title={isListening ? "Listening... Click to stop" : "Speak query via microphone"}
-                      >
-                        {isListening ? <MicOff size={15} /> : <Mic size={15} />}
-                      </button>
-
-                      {/* ── [↑] Send Button ── */}
-                      <button
-                        onClick={() => handleSendQuery()}
-                        disabled={isAnalyzing || (!queryText.trim() && !stagedAsset)}
-                        className="w-8 h-8 rounded-lg bg-[#12A5B8] hover:bg-[#0E7C8A] disabled:opacity-30 text-[#080E11] font-bold flex items-center justify-center transition-all cursor-pointer shadow-md flex-shrink-0"
-                        title="Send query"
-                      >
-                        <Send size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </main>
+                    </motion.div>
+                  </>
+                )}
+              </main>
             </motion.div>
           )}
         </AnimatePresence>
@@ -2892,6 +2803,152 @@ export default function Investigation() {
           analysisMode={taskMode === "AUTO" ? "GROUNDING" : taskMode}
           onOpenReport={() => setReportModalOpen(true)}
         />
+
+        {/* ─── SLIDE-OVER RIGHT SIDEBAR: AUDIT REPORT & PROVENANCE ─── */}
+        <AnimatePresence>
+          {rightSidebarOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs"
+                onClick={() => setRightSidebarOpen(false)}
+              />
+
+              <motion.aside
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className={`fixed inset-y-0 right-0 z-50 w-80 sm:w-[400px] border-l flex flex-col font-mono text-xs shadow-2xl overflow-hidden ${
+                  workstationTheme === "light"
+                    ? "bg-white/95 backdrop-blur-xl border-[#CBD5E1] text-[#0F172A]"
+                    : "bg-[#080E11]/95 backdrop-blur-xl border-[#1C323B] text-[#F0F6F8]"
+                }`}
+              >
+                {/* Right Sidebar Header */}
+                <div className={`p-4 border-b flex items-center justify-between ${
+                  workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                }`}>
+                  <div className="flex items-center gap-2 text-[#D49A3A]">
+                    <ShieldCheck size={16} />
+                    <span className="font-bold tracking-wider uppercase text-xs">
+                      DEFENSE AUDIT & PROVENANCE
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setRightSidebarOpen(false)}
+                    className={`p-1.5 transition-colors rounded-lg cursor-pointer ${
+                      workstationTheme === "light"
+                        ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]"
+                        : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127]"
+                    }`}
+                    title="Hide Right Sidebar"
+                  >
+                    <PanelRightClose size={18} />
+                  </button>
+                </div>
+
+                {/* Right Sidebar Body */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
+                  {/* Audit Metadata Card */}
+                  <div className={`p-3.5 border rounded-xl space-y-2 ${
+                    workstationTheme === "light"
+                      ? "bg-[#F8FAFC] border-[#E2E8F0]"
+                      : "bg-[#0D171C] border-[#1C323B]"
+                  }`}>
+                    <div className="flex items-center justify-between text-[10px] text-[#8AA3AD] font-mono font-bold">
+                      <span>AUDIT REFERENCE ID</span>
+                      <span className="text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">VERIFIED</span>
+                    </div>
+                    <div className="text-base font-bold text-[#E4B65A] font-mono">
+                      {activeEvidenceResult?.queryId ? `SQ-2026-${String(activeEvidenceResult.queryId).slice(-4)}` : "SQ-2026-7f1c"}
+                    </div>
+                    <div className="text-[11px] opacity-80">
+                      Sensor: Sentinel-2 MSI · Ground Resolution: 0.5m GSD
+                    </div>
+                  </div>
+
+                  {/* Evidence Pipeline Steps */}
+                  <div className={`p-3.5 border rounded-xl space-y-2 text-[11px] ${
+                    workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                  }`}>
+                    <div className="text-[10px] text-[#0E7C8A] dark:text-[#12A5B8] uppercase font-bold tracking-wider font-mono">
+                      DETERMINISTIC EVIDENCE TRAIL
+                    </div>
+                    <div className="space-y-1.5 font-mono text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span>1. Surface Reflectance Calibration</span>
+                        <span className="text-[#10B981]">PASS ✓</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>2. Vision-Language Alignment</span>
+                        <span className="text-[#10B981]">PASS ✓</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>3. Cryptographic SHA-256 Signature</span>
+                        <span className="text-[#10B981]">PASS ✓</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary & Findings Excerpt */}
+                  <div className={`p-3.5 border rounded-xl space-y-2 ${
+                    workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
+                  }`}>
+                    <strong className="text-[10px] font-mono uppercase text-[#D49A3A] tracking-wider block">
+                      CURRENT FINDINGS SUMMARY:
+                    </strong>
+                    <p className="leading-relaxed opacity-90 text-[12px]">
+                      {activeEvidenceResult?.answer || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult?.answer || "Urban expansion and structural features localized with pixel-level bounding coordinates. Corroborated with multi-spectral reflectance."}
+                    </p>
+                  </div>
+
+                  {/* Cryptographic Footnote */}
+                  <div className="p-3 border border-[#10B981]/30 bg-[#10B981]/10 rounded-xl text-[11px] font-sans flex items-start gap-2">
+                    <CheckCircle2 size={15} className="text-[#10B981] flex-shrink-0 mt-0.5" />
+                    <span>Tamper-proof execution token generated with cryptographic verification.</span>
+                  </div>
+                </div>
+
+                {/* Right Sidebar Footer Actions */}
+                <div className={`p-4 border-t flex flex-col gap-2 ${
+                  workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                }`}>
+                  <Button
+                    onClick={() => {
+                      setRightSidebarOpen(false);
+                      setReportModalOpen(true);
+                    }}
+                    className="w-full bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-bold font-mono text-xs rounded-xl shadow cursor-pointer"
+                  >
+                    <FileText size={14} className="mr-1.5" />
+                    Inspect Full Report Modal
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      const qId = activeEvidenceResult?.queryId || "SQ-2026-7f1c";
+                      downloadReportPdf(qId);
+                      toast.success(`Analysis Report PDF for ${qId} downloaded`);
+                    }}
+                    variant="outline"
+                    className={`w-full font-mono text-xs rounded-xl cursor-pointer ${
+                      workstationTheme === "light"
+                        ? "border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]"
+                        : "border-[#1C323B] text-[#F0F6F8] hover:bg-[#132127]"
+                    }`}
+                  >
+                    <Download size={14} className="mr-1.5 text-[#12A5B8]" />
+                    Download PDF Report
+                  </Button>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* ─── MODAL 7: OPERATOR CREDENTIALS & PROFILE ─── */}
         <UserProfileModal

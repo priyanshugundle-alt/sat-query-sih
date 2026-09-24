@@ -1843,48 +1843,120 @@
   }
 }
 
-/* Sonner toast styling for SatQuery AI */
-[data-sonner-toast] {
-  width: fit-content !important;
-  max-width: 440px !important;
-  height: fit-content !important;
-  background-color: #0D171C !important;
-  border-radius: 12px !important;
-  padding: 12px 18px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  position: relative !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  border: 1px solid #1C323B !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(18, 165, 184, 0.15) !important;
-  color: #F0F6F8 !important;
+/* Sonner toast styling for SatQuery AI - Theme Aware & Stack Safe */
+[data-sonner-toaster] {
   font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif !important;
 }
 
+[data-sonner-toast] {
+  width: fit-content !important;
+  max-width: 440px !important;
+  background-color: #0D171C;
+  border-radius: 12px;
+  padding: 12px 18px;
+  border: 1px solid #1C323B;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(18, 165, 184, 0.15);
+  color: #F0F6F8;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
 [data-sonner-toast]:hover {
-  background-color: #132127 !important;
-  border-color: #12A5B8 !important;
+  background-color: #132127;
+  border-color: #12A5B8;
 }
 
 [data-sonner-toast] svg {
-  color: #12A5B8 !important;
-  transform: scale(1.1) !important;
-  transition: 0.2s !important;
+  color: #12A5B8;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
 [data-sonner-toast] [data-content] {
-  margin: 0 !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  color: #F0F6F8 !important;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #F0F6F8;
 }
 
 [data-sonner-toast] [data-title] {
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  color: #F0F6F8 !important;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F0F6F8;
+}
+
+/* Light Theme Toasts for Workstation Light Mode */
+.workstation-light [data-sonner-toast],
+html.light [data-sonner-toast],
+[data-theme="light"] [data-sonner-toast] {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12), 0 0 12px rgba(14, 124, 138, 0.1) !important;
+}
+
+.workstation-light [data-sonner-toast]:hover,
+html.light [data-sonner-toast]:hover,
+[data-theme="light"] [data-sonner-toast]:hover {
+  background-color: #F8FAFC !important;
+  border-color: #0E7C8A !important;
+}
+
+.workstation-light [data-sonner-toast] [data-content],
+.workstation-light [data-sonner-toast] [data-title],
+html.light [data-sonner-toast] [data-content],
+html.light [data-sonner-toast] [data-title] {
+  color: #0F172A !important;
+}
+
+.workstation-light [data-sonner-toast] svg,
+html.light [data-sonner-toast] svg {
+  color: #0E7C8A !important;
+}
+
+/* Custom Animation Keyframes & Utilities */
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulseGlowAmber {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(212, 154, 58, 0.2);
+    border-color: rgba(212, 154, 58, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(212, 154, 58, 0.45);
+    border-color: rgba(212, 154, 58, 0.85);
+  }
+}
+
+@keyframes pulseGlowTeal {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(18, 165, 184, 0.2);
+    border-color: rgba(18, 165, 184, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(18, 165, 184, 0.5);
+    border-color: rgba(18, 165, 184, 0.8);
+  }
+}
+
+.animate-modal-pop {
+  animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-amber {
+  animation: pulseGlowAmber 2.5s infinite ease-in-out;
+}
+
+.animate-pulse-teal {
+  animation: pulseGlowTeal 2.5s infinite ease-in-out;
 }
 
 /* ─────────────────────────────────────────────────────────────────

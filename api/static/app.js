@@ -245,6 +245,7 @@ const elements = {
 document.addEventListener("DOMContentLoaded", async () => {
   setupSession();
   setupNavigation();
+  setupCommandPalette();
   setupInputToggles();
   setupQuickPrompts();
   setupFormSubmit();
@@ -269,6 +270,109 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadReceiptsLedger();
   await checkLatestBenchmark();
 });
+
+// Command Palette (Ctrl + K)
+function setupCommandPalette() {
+  const modal = document.getElementById("cmd-palette-modal");
+  const triggerBtn = document.getElementById("btn-cmd-trigger");
+  const input = document.getElementById("cmd-search-input");
+  const resultsContainer = document.getElementById("cmd-palette-results");
+
+  if (!modal || !input || !resultsContainer) return;
+
+  const studios = [
+    { name: "EO Visual Query & Land Cover", tab: "vqa", category: "Core Analysis", icon: "🛰️" },
+    { name: "Bi-Temporal Change Studio", tab: "change", category: "Core Analysis", icon: "⚔️" },
+    { name: "Multi-Modal Optical+SAR Fusion", tab: "multimodal", category: "Core Analysis", icon: "🔮" },
+    { name: "Leaflet GIS Map & GeoJSON Export", tab: "gis", category: "GIS & Disaster", icon: "🗺️" },
+    { name: "Disaster Response & Flood Assessment", tab: "disaster", category: "GIS & Disaster", icon: "🌊" },
+    { name: "AOI Swath Mosaic & Edge INT8 Engine", tab: "mosaic", category: "GIS & Disaster", icon: "🧩" },
+    { name: "Semantic Geo-Vector Search", tab: "search", category: "Advanced Intelligence", icon: "🔍" },
+    { name: "512-dim Feature Encoder & Grad-CAM XAI", tab: "embeddings", category: "Advanced Intelligence", icon: "🧠" },
+    { name: "Cryptographic Audit Trace Ledger", tab: "receipts", category: "Advanced Intelligence", icon: "📜" },
+    { name: "Automated SIH Benchmark Suite", tab: "benchmark", category: "Advanced Intelligence", icon: "📊" },
+    { name: "Multi-Temporal SAR & STAC Catalog", tab: "timeseries", category: "Advanced Intelligence", icon: "📈" }
+  ];
+
+  function openModal() {
+    modal.style.display = "flex";
+    input.value = "";
+    renderResults(studios);
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeModal() {
+    modal.style.display = "none";
+  }
+
+  function renderResults(filtered) {
+    resultsContainer.innerHTML = "";
+    if (filtered.length === 0) {
+      resultsContainer.innerHTML = `<div class="cmd-item" style="color:var(--text-muted); justify-content:center;">No matching studio found</div>`;
+      return;
+    }
+    filtered.forEach((item, index) => {
+      const el = document.createElement("div");
+      el.className = `cmd-item ${index === 0 ? "selected" : ""}`;
+      el.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span>${item.icon}</span>
+          <span>${item.name}</span>
+        </div>
+        <span class="cmd-item-category">${item.category}</span>
+      `;
+      el.addEventListener("click", () => {
+        selectTab(item.tab);
+        closeModal();
+      });
+      resultsContainer.appendChild(el);
+    });
+  }
+
+  function selectTab(tabId) {
+    const tabBtn = document.getElementById(`tab-btn-${tabId}`);
+    if (tabBtn) tabBtn.click();
+  }
+
+  if (triggerBtn) triggerBtn.addEventListener("click", openModal);
+
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      if (modal.style.display === "flex") {
+        closeModal();
+      } else {
+        openModal();
+      }
+    }
+    if (e.key === "Escape" && modal.style.display === "flex") {
+      closeModal();
+    }
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  input.addEventListener("input", () => {
+    const q = input.value.toLowerCase().trim();
+    if (!q) {
+      renderResults(studios);
+      return;
+    }
+    const filtered = studios.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q) || s.tab.toLowerCase().includes(q));
+    renderResults(filtered);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const selected = resultsContainer.querySelector(".cmd-item.selected") || resultsContainer.querySelector(".cmd-item");
+      if (selected) {
+        selected.click();
+      }
+    }
+  });
+}
 
 // Navigation Tabs
 function setupNavigation() {

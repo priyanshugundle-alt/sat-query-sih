@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
   Upload, 
@@ -65,60 +66,73 @@ export function CommandPaletteModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-100">
-      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] overflow-hidden font-mono text-xs rounded-2xl">
-        {/* Search Header */}
-        <div className="p-3 bg-[#040708] border-b border-[#1C323B] flex items-center gap-3">
-          <Search size={15} className="text-[#12A5B8]" />
-          <input
-            type="text"
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command or search action (Ctrl+K)..."
-            className="w-full bg-transparent border-none outline-none text-[#FFFFFF] placeholder:text-[#8AA3AD] font-sans text-xs"
-          />
-          <span className="px-1.5 py-0.5 bg-[#132127] border border-[#1C323B] text-[#8AA3AD] text-[9px] rounded-md">ESC</span>
-        </div>
+    <AnimatePresence>
+      <div 
+        className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/80 backdrop-blur-md p-4"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-[#0D171C] border border-[#1C323B] w-full max-w-xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] overflow-hidden font-mono text-xs rounded-2xl"
+        >
+          {/* Search Header */}
+          <div className="p-3 bg-[#040708] border-b border-[#1C323B] flex items-center gap-3">
+            <Search size={15} className="text-[#12A5B8]" />
+            <input
+              type="text"
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Type a command or search action (Ctrl+K)..."
+              className="w-full bg-transparent border-none outline-none text-[#FFFFFF] placeholder:text-[#8AA3AD] font-sans text-xs"
+            />
+            <span className="px-1.5 py-0.5 bg-[#132127] border border-[#1C323B] text-[#8AA3AD] text-[9px] rounded-md">ESC</span>
+          </div>
 
-        {/* Commands List */}
-        <div className="max-h-80 overflow-y-auto p-2 space-y-1">
-          {filtered.length === 0 ? (
-            <div className="p-4 text-center text-[#8AA3AD] text-[11px]">
-              No matching commands found.
-            </div>
-          ) : (
-            filtered.map((cmd) => {
-              const Icon = cmd.icon;
-              return (
-                <div
-                  key={cmd.id}
-                  onClick={() => {
-                    cmd.action();
-                    onClose();
-                  }}
-                  className="px-3 py-2 flex items-center justify-between hover:bg-[#132127] hover:text-[#FFFFFF] text-[#F0F6F8] cursor-pointer transition-colors rounded-xl group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon size={14} className="text-[#8AA3AD] group-hover:text-[#12A5B8] transition-colors" />
-                    <span className="font-sans text-xs">{cmd.label}</span>
+          {/* Commands List */}
+          <div className="max-h-80 overflow-y-auto p-2 space-y-1">
+            {filtered.length === 0 ? (
+              <div className="p-4 text-center text-[#8AA3AD] text-[11px]">
+                No matching commands found.
+              </div>
+            ) : (
+              filtered.map((cmd) => {
+                const Icon = cmd.icon;
+                return (
+                  <div
+                    key={cmd.id}
+                    onClick={() => {
+                      cmd.action();
+                      onClose();
+                    }}
+                    className="px-3 py-2 flex items-center justify-between hover:bg-[#132127] hover:text-[#FFFFFF] text-[#F0F6F8] cursor-pointer transition-colors rounded-xl group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon size={14} className="text-[#8AA3AD] group-hover:text-[#12A5B8] transition-colors" />
+                      <span className="font-sans text-xs">{cmd.label}</span>
+                    </div>
+                    <span className="text-[9px] text-[#8AA3AD]/70 uppercase tracking-widest">
+                      {cmd.category}
+                    </span>
                   </div>
-                  <span className="text-[9px] text-[#8AA3AD]/70 uppercase tracking-widest">
-                    {cmd.category}
-                  </span>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              })
+            )}
+          </div>
 
-        {/* Footer */}
-        <div className="p-2.5 bg-[#040708] border-t border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD]">
-          <span>SATQUERY COMMAND DISPATCHER</span>
-          <span className="text-[#12A5B8] font-bold">SPACE TECHNOLOGY</span>
-        </div>
+          {/* Footer */}
+          <div className="p-2.5 bg-[#040708] border-t border-[#1C323B] flex items-center justify-between text-[9px] text-[#8AA3AD]">
+            <span>SATQUERY COMMAND DISPATCHER</span>
+            <span className="text-[#12A5B8] font-bold">SPACE TECHNOLOGY</span>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }
 

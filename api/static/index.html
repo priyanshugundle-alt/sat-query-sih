@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/styles.css?v=2.0" />
 </head>
 <body>
   <div class="app-container">
@@ -30,53 +30,64 @@
       </div>
 
       <nav class="nav-tabs">
-        <button class="nav-tab active" data-tab="vqa" id="tab-btn-vqa">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          EO Visual Query & Land Cover
+        <button class="nav-tab active" data-tab="vqa" id="tab-btn-vqa" title="Visual Query & Land Cover">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Visual Query</span>
         </button>
-        <button class="nav-tab" data-tab="change" id="tab-btn-change">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L20.2 3.8M21 16v5h-5M15 15l5.1 5.1M4 4l5 5"/></svg>
-          Bi-Temporal Change Studio
+        <button class="nav-tab" data-tab="change" id="tab-btn-change" title="Bi-Temporal Change Detection">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L20.2 3.8M21 16v5h-5M15 15l5.1 5.1M4 4l5 5"/></svg>
+          <span>Change Studio</span>
         </button>
-        <button class="nav-tab" data-tab="embeddings" id="tab-btn-embeddings">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-          512-dim Feature Encoder
+        <button class="nav-tab" data-tab="multimodal" id="tab-btn-multimodal" title="Multi-Modal Optical+SAR Fusion">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          <span>Multimodal Fusion</span>
         </button>
-        <button class="nav-tab" data-tab="receipts" id="tab-btn-receipts">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Audit Trace Ledger
+
+        <div class="nav-divider"></div>
+
+        <button class="nav-tab" data-tab="gis" id="tab-btn-gis" title="Leaflet GIS Map & GeoJSON Export">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          <span>GIS Map</span>
         </button>
-        <button class="nav-tab" data-tab="multimodal" id="tab-btn-multimodal">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-          Multi-Modal Fusion
+        <button class="nav-tab" data-tab="disaster" id="tab-btn-disaster" title="Disaster & Flood Assessment">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>Disaster & Flood</span>
         </button>
-        <button class="nav-tab" data-tab="benchmark" id="tab-btn-benchmark">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-          Automated Benchmark
+        <button class="nav-tab" data-tab="mosaic" id="tab-btn-mosaic" title="AOI Swath Mosaic & Edge Optimization">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Swath Mosaic</span>
         </button>
-        <button class="nav-tab" data-tab="search" id="tab-btn-search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Semantic Geo-Search
+
+        <div class="nav-divider"></div>
+
+        <button class="nav-tab" data-tab="search" id="tab-btn-search" title="Semantic Geo-Vector Search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Vector Search</span>
         </button>
-        <button class="nav-tab" data-tab="gis" id="tab-btn-gis">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-          GIS Map & GeoJSON
+        <button class="nav-tab" data-tab="embeddings" id="tab-btn-embeddings" title="512-dim Feature Encoder & Grad-CAM XAI">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>Grad-CAM XAI</span>
         </button>
-        <button class="nav-tab" data-tab="disaster" id="tab-btn-disaster">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Disaster & Flood
+        <button class="nav-tab" data-tab="receipts" id="tab-btn-receipts" title="Cryptographic Audit Trace Ledger">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Audit Ledger</span>
         </button>
-        <button class="nav-tab" data-tab="mosaic" id="tab-btn-mosaic">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          AOI Mosaic & Edge
+        <button class="nav-tab" data-tab="benchmark" id="tab-btn-benchmark" title="Automated SIH Benchmark Suite">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          <span>Benchmarks</span>
         </button>
-        <button class="nav-tab" data-tab="timeseries" id="tab-btn-timeseries">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Temporal & STAC
+        <button class="nav-tab" data-tab="timeseries" id="tab-btn-timeseries" title="Multi-Temporal SAR Trajectories & STAC Catalog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>STAC Catalog</span>
         </button>
       </nav>
 
       <div class="header-actions">
+        <button class="btn-cmd-trigger" id="btn-cmd-trigger" title="Quick Studio Search (Ctrl + K)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Find Studio...</span>
+          <kbd class="kbd-badge">Ctrl K</kbd>
+        </button>
         <div class="model-mode-selector" id="model-mode-selector" title="Active AI Specialist Routing Mode">
           <span class="mode-label">Mode:</span>
           <select id="select-routing-mode" class="select-mode-dropdown">
@@ -1269,12 +1280,26 @@ Loading multimodal VLM prompt payload...
       </div>
     </div>
 
+    <!-- COMMAND PALETTE MODAL (Ctrl + K) -->
+    <div class="cmd-palette-backdrop" id="cmd-palette-modal" style="display: none;">
+      <div class="cmd-palette-card glass">
+        <div class="cmd-palette-header">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="cmd-search-input" class="cmd-search-input" placeholder="Type a studio name or shortcut (e.g. Flood, GIS, XAI, VQA)..." autocomplete="off" />
+          <kbd class="kbd-badge">ESC</kbd>
+        </div>
+        <div class="cmd-palette-results" id="cmd-palette-results">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- TAB 5: MULTI-MODAL OPTICAL + SAR FUSION STUDIO -->
   <!-- Inserted outside app-container so it stretches full-width within main -->
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2.0"></script>
 </body>
 </html>

@@ -1,18 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, ShieldCheck, CheckCircle2, ArrowRight, CornerDownRight, ExternalLink, MapPin, Clock, Eye, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
-/**
- * ShowMeWhyModal — Signature Scientific Forensic Evidence Journey
- * 
- * Strict Structure:
- * 1. OBSERVATION (visual evidence & surface reflectance)
- * 2. MODEL INTERPRETATION (spectral feature alignment)
- * 3. CONCLUSION (user-facing verified finding)
- * 
- * 6-Pillar Provenance:
- * WHAT · WHERE · WHEN · SOURCE · CONFIDENCE · CROSS-MODAL SUPPORT
- */
 export function ShowMeWhyModal({
   isOpen,
   onClose,
@@ -21,6 +11,16 @@ export function ShowMeWhyModal({
   asset,
   onOpenAnalysisDetails,
 }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !finding) return null;
 
   const targetLabel = finding.label || "TARGET 01";
@@ -32,8 +32,20 @@ export function ShowMeWhyModal({
   const sha256Hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-[#0D171C] border border-[#1C323B] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono text-xs rounded-2xl">
+    <AnimatePresence>
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: 10 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-[#0D171C] border border-[#1C323B] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden font-mono text-xs rounded-2xl"
+        >
         
         {/* Header */}
         <div className="p-4 bg-[#040708] border-b border-[#1C323B] flex items-center justify-between">
@@ -197,8 +209,9 @@ export function ShowMeWhyModal({
           </Button>
         </div>
 
-      </div>
+      </motion.div>
     </div>
+    </AnimatePresence>
   );
 }
 
