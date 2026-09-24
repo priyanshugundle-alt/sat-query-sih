@@ -50,7 +50,7 @@ export function ReportGenerationModal({
   const rawAnswer =
     queryResult?.answer ||
     queryResult?.summary ||
-    "Urban expansion and structural features localized with pixel-level bounding coordinates. Corroborated with multi-spectral reflectance.";
+    "No active analysis findings recorded for this session. Execute a query in the workstation to generate an audit report.";
   
   const isError = Boolean(
     queryResult?.isError ||
@@ -60,9 +60,12 @@ export function ReportGenerationModal({
 
   const referenceId = queryResult?.queryId
     ? `SQ-2026-${String(queryResult.queryId).slice(-4)}`
-    : "SQ-2026-7f1c";
-  const confidence = isError ? null : (queryResult?.confidence || 94);
-  const sensorName = imageAssets[0]?.modality || "OPTICAL";
+    : imageAssets[0]?.id
+    ? `ASSET-${String(imageAssets[0].id).slice(-6)}`
+    : "SQ-2026-LIVE";
+
+  const confidence = isError ? null : (queryResult?.confidence || (queryResult ? 95 : null));
+  const sensorName = imageAssets[0]?.modality || imageAssets[0]?.metadata?.format || "OPTICAL / SAR";
 
   return (
     <AnimatePresence>
