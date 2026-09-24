@@ -1690,23 +1690,6 @@ export default function Investigation() {
                       </button>
                     )}
 
-                    {/* Left Arrow Back Button (Opens New Chat) */}
-                    <button
-                      id="header-back-new-chat-btn"
-                      onClick={() => {
-                        handleNewChat();
-                      }}
-                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${workstationTheme === "light"
-                          ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
-                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08]"
-                        }`}
-                      title="Left Arrow Back Button: Open New Chat"
-                    >
-                      <ArrowLeft size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
-                      <span className={`text-[10px] hidden sm:inline font-mono ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#8AA3AD]"
-                        }`}>NEW CHAT</span>
-                    </button>
-
                     <div className="flex items-center gap-2 min-w-0">
                       <span className={`font-bold text-sm truncate font-sans ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
                         }`}>

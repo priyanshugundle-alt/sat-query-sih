@@ -5,7 +5,7 @@ const Toaster = ({ ...props }) => {
     <Sonner
       position="bottom-right"
       toastOptions={{
-        className: "satquery-toast-item",
+        className: "satquery-toast-container",
       }}
       {...props}
     />
@@ -13,4 +13,3 @@ const Toaster = ({ ...props }) => {
 };
 
 export { Toaster };
-
