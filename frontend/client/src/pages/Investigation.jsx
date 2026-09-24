@@ -1730,20 +1730,22 @@ export default function Investigation() {
                     {/* Audit Report Button (Toggles Right Slide-Over Sidebar) */}
                     <button
                       onClick={() => setRightSidebarOpen((prev) => !prev)}
-                      className={`px-3 py-1.5 border transition-all duration-150 flex items-center gap-1.5 cursor-pointer rounded-lg font-sans font-semibold text-xs ${
+                      className={`px-3 py-1.5 border transition-all duration-150 flex items-center gap-2 cursor-pointer rounded-xl font-sans font-medium text-[13px] ${
                         rightSidebarOpen
                           ? workstationTheme === "light"
-                            ? "text-[#0E7C8A] bg-[#E0F2FE] border-[#0E7C8A] shadow-sm font-bold"
-                            : "text-[#12A5B8] bg-[#132127] border-[#12A5B8] shadow-[0_0_12px_rgba(18,165,184,0.3)] font-bold"
+                            ? "text-[#0E7C8A] bg-[#E0F2FE] border-[#0E7C8A]/50 shadow-sm font-semibold"
+                            : "text-[#12A5B8] bg-[#132127] border-[#12A5B8]/60 shadow-[0_0_12px_rgba(18,165,184,0.3)] font-semibold"
                           : workstationTheme === "light"
-                          ? "text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] border-[#CBD5E1] bg-white shadow-sm"
-                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08] bg-[#080E11]"
+                          ? "text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] hover:border-[#0E7C8A]/40 border-[#CBD5E1] bg-white shadow-xs"
+                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] hover:border-[#12A5B8]/40 border-white/[0.1] bg-[#080E11]"
                       }`}
                       title={rightSidebarOpen ? "Hide Audit Sidebar" : "Open Audit Sidebar"}
                     >
-                      <FileText size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
-                      <span className="hidden sm:inline font-mono font-bold tracking-wider">AUDIT REPORT</span>
-                      <ArrowRight size={13} className={`transition-transform duration-200 ${rightSidebarOpen ? "rotate-180" : ""}`} />
+                      <FileText size={15} className={
+                        workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                      } />
+                      <span className="hidden sm:inline">Audit Report</span>
+                      <ArrowRight size={13} className={`transition-transform duration-200 opacity-70 ${rightSidebarOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     {/* Workstation Light / Dark Theme Toggle */}
@@ -2834,7 +2836,9 @@ export default function Investigation() {
                 <div className={`p-4 border-b flex items-center justify-between ${
                   workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D49A3A]">
+                  <div className={`flex items-center gap-2 ${
+                    workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                  }`}>
                     <ShieldCheck size={16} />
                     <span className="font-bold tracking-wider uppercase text-xs">
                       DEFENSE AUDIT & PROVENANCE
@@ -2861,14 +2865,20 @@ export default function Investigation() {
                       ? "bg-[#F8FAFC] border-[#E2E8F0]"
                       : "bg-[#0D171C] border-[#1C323B]"
                   }`}>
-                    <div className="flex items-center justify-between text-[10px] text-[#8AA3AD] font-mono font-bold">
+                    <div className={`flex items-center justify-between text-[10px] font-mono font-bold ${
+                      workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                    }`}>
                       <span>AUDIT REFERENCE ID</span>
                       <span className="text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded border border-[#10B981]/30">VERIFIED</span>
                     </div>
-                    <div className="text-base font-bold text-[#E4B65A] font-mono">
+                    <div className={`text-base font-bold font-mono ${
+                      workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                    }`}>
                       {activeEvidenceResult?.queryId ? `SQ-2026-${String(activeEvidenceResult.queryId).slice(-4)}` : "SQ-2026-7f1c"}
                     </div>
-                    <div className="text-[11px] opacity-80">
+                    <div className={`text-[11px] ${
+                      workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                    }`}>
                       Sensor: Sentinel-2 MSI · Ground Resolution: 0.5m GSD
                     </div>
                   </div>
@@ -2877,21 +2887,23 @@ export default function Investigation() {
                   <div className={`p-3.5 border rounded-xl space-y-2 text-[11px] ${
                     workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
                   }`}>
-                    <div className="text-[10px] text-[#0E7C8A] dark:text-[#12A5B8] uppercase font-bold tracking-wider font-mono">
+                    <div className={`text-[10px] uppercase font-bold tracking-wider font-mono ${
+                      workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                    }`}>
                       DETERMINISTIC EVIDENCE TRAIL
                     </div>
                     <div className="space-y-1.5 font-mono text-[11px]">
                       <div className="flex items-center justify-between">
                         <span>1. Surface Reflectance Calibration</span>
-                        <span className="text-[#10B981]">PASS ✓</span>
+                        <span className="text-[#10B981] font-bold">PASS ✓</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>2. Vision-Language Alignment</span>
-                        <span className="text-[#10B981]">PASS ✓</span>
+                        <span className="text-[#10B981] font-bold">PASS ✓</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>3. Cryptographic SHA-256 Signature</span>
-                        <span className="text-[#10B981]">PASS ✓</span>
+                        <span className="text-[#10B981] font-bold">PASS ✓</span>
                       </div>
                     </div>
                   </div>
@@ -2900,16 +2912,24 @@ export default function Investigation() {
                   <div className={`p-3.5 border rounded-xl space-y-2 ${
                     workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
                   }`}>
-                    <strong className="text-[10px] font-mono uppercase text-[#D49A3A] tracking-wider block">
+                    <strong className={`text-[10px] font-mono uppercase tracking-wider block ${
+                      workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                    }`}>
                       CURRENT FINDINGS SUMMARY:
                     </strong>
-                    <p className="leading-relaxed opacity-90 text-[12px]">
+                    <p className={`leading-relaxed text-[12px] ${
+                      workstationTheme === "light" ? "text-[#334155]" : "text-[#F0F6F8]"
+                    }`}>
                       {activeEvidenceResult?.answer || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult?.answer || "Urban expansion and structural features localized with pixel-level bounding coordinates. Corroborated with multi-spectral reflectance."}
                     </p>
                   </div>
 
                   {/* Cryptographic Footnote */}
-                  <div className="p-3 border border-[#10B981]/30 bg-[#10B981]/10 rounded-xl text-[11px] font-sans flex items-start gap-2">
+                  <div className={`p-3 border rounded-xl text-[11px] font-sans flex items-start gap-2 ${
+                    workstationTheme === "light"
+                      ? "border-[#10B981]/40 bg-[#ECFDF5] text-[#047857]"
+                      : "border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]"
+                  }`}>
                     <CheckCircle2 size={15} className="text-[#10B981] flex-shrink-0 mt-0.5" />
                     <span>Tamper-proof execution token generated with cryptographic verification.</span>
                   </div>
@@ -2924,7 +2944,11 @@ export default function Investigation() {
                       setRightSidebarOpen(false);
                       setReportModalOpen(true);
                     }}
-                    className="w-full bg-[#D49A3A] hover:bg-[#E4B65A] text-[#0B0D0C] font-bold font-mono text-xs rounded-xl shadow cursor-pointer"
+                    className={`w-full font-bold font-mono text-xs rounded-xl shadow cursor-pointer ${
+                      workstationTheme === "light"
+                        ? "bg-[#0E7C8A] hover:bg-[#0B6570] text-white shadow-md shadow-[#0E7C8A]/20"
+                        : "bg-[#12A5B8] hover:bg-[#0EA0B2] text-black font-bold shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+                    }`}
                   >
                     <FileText size={14} className="mr-1.5" />
                     Inspect Full Report Modal
@@ -2943,7 +2967,9 @@ export default function Investigation() {
                         : "border-[#1C323B] text-[#F0F6F8] hover:bg-[#132127]"
                     }`}
                   >
-                    <Download size={14} className="mr-1.5 text-[#12A5B8]" />
+                    <Download size={14} className={`mr-1.5 ${
+                      workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                    }`} />
                     Download PDF Report
                   </Button>
                 </div>
