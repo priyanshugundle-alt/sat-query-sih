@@ -278,6 +278,16 @@ export default function Investigation() {
     return null;
   });
 
+  // ── View Mode: 'landing' vs 'investigation' ────────────────────────
+  // If user is already logged in, enter investigation workstation directly
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem("satquery_auth_user");
+      if (saved) return "investigation";
+    } catch (e) { }
+    return "landing";
+  });
+
   // ── Workstation-Only Theme ('dark' | 'light') ──────────────────────
   const [workstationTheme, setWorkstationTheme] = useState(() => {
     try {
@@ -312,16 +322,6 @@ export default function Investigation() {
     } catch (e) { }
     toast.info(`Workstation switched to ${next.toUpperCase()} mode`);
   };
-
-  // ── View Mode: 'landing' vs 'investigation' ────────────────────────
-  // If user is already logged in, enter investigation workstation directly
-  const [viewMode, setViewMode] = useState(() => {
-    try {
-      const saved = localStorage.getItem("satquery_auth_user");
-      if (saved) return "investigation";
-    } catch (e) { }
-    return "landing";
-  });
 
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false);
