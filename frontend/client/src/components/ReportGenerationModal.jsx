@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Download, ShieldCheck, CheckCircle2, AlertTriangle, RefreshCw, Sun, Moon } from "lucide-react";
+import { X, Download, ShieldCheck, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -120,19 +120,6 @@ export function ReportGenerationModal({
             </div>
 
             <div className="flex items-center gap-1.5">
-              {/* Quick Light / Dark Theme Switcher */}
-              <button
-                onClick={handleToggleTheme}
-                className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                  isLight
-                    ? "border-[#CBD5E1] bg-white text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
-                    : "border-white/[0.1] bg-[#0D171C] text-[#8AA3AD] hover:text-white hover:bg-white/[0.06]"
-                }`}
-                title={`Switch to ${isLight ? "Dark" : "Light"} Theme`}
-              >
-                {isLight ? <Moon size={14} className="text-[#0E7C8A]" /> : <Sun size={14} className="text-[#12A5B8]" />}
-              </button>
-
               {/* Close Button */}
               <button
                 onClick={onClose}
