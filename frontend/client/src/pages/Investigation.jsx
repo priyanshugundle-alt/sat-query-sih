@@ -24,7 +24,7 @@ import {
   Layers, Search, Globe, ArrowUpRight, ArrowRight, Check, X,
   Maximize2, Eye, ShieldCheck, Target, Radar, Activity,
   Database, RefreshCw, PanelLeftClose, PanelLeftOpen, PanelRightClose, Trash2,
-  Sun, Moon, ArrowLeft, SquarePen
+  Sun, Moon, ArrowLeft, SquarePen, Download
 } from "lucide-react";
 import { toast } from "sonner";
 import {
