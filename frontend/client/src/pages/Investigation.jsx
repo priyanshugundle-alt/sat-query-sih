@@ -1567,13 +1567,13 @@ export default function Investigation() {
                   {/* Audit Reports Tab (Provenance Ledger) */}
                   <button
                     onClick={() => {
-                      setSidebarTab("audit");
-                      setActiveProjectId(null);
+                      setRightSidebarOpen((prev) => !prev);
+                      if (sidebarTab !== "chat") setSidebarTab("chat");
                     }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${sidebarTab === "audit"
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors cursor-pointer rounded-lg font-sans font-medium text-[13px] ${rightSidebarOpen
                         ? workstationTheme === "light"
                           ? "bg-[#F1F5F9] text-[#0E7C8A] border border-[#0E7C8A]/30 shadow-sm font-bold"
-                          : "bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/30 shadow-sm"
+                          : "bg-[#132127] text-[#12A5B8] border border-[#12A5B8]/30 shadow-sm font-bold"
                         : workstationTheme === "light"
                           ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
                           : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#132127]"
@@ -1584,7 +1584,7 @@ export default function Investigation() {
                         size={16}
                         strokeWidth={1.5}
                         className={
-                          sidebarTab === "audit"
+                          rightSidebarOpen
                             ? workstationTheme === "light"
                               ? "text-[#0E7C8A]"
                               : "text-[#12A5B8]"
@@ -1697,10 +1697,12 @@ export default function Investigation() {
                           }`}>
                           {currentUser?.name || "SatQuery Analyst"}
                         </div>
-                        <div className={`text-[10px] font-sans truncate ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                          }`}>
-                          {currentUser?.role || "Satellite Analyst"}
-                        </div>
+                        {currentUser?.email && (
+                          <div className={`text-[10px] font-mono truncate ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                            }`}>
+                            {currentUser.email}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <span className={`text-[11px] font-sans ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
@@ -1876,23 +1878,21 @@ export default function Investigation() {
                           ? "Projects Workspace"
                           : sidebarTab === "images"
                             ? "Satellite Imagery Archive"
-                            : sidebarTab === "audit"
-                              ? "Defense Audit & Provenance Ledger"
-                              : activeConversation?.title || "SatQuery Workstation"}
+                            : activeConversation?.title || "SatQuery Workstation"}
                       </span>
                     </div>
                   </div>
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
-                    {/* Audit Report Button (Toggles Audit Reports View) */}
+                    {/* Audit Report Button (Toggles Right Audit Sidebar Panel) */}
                     <button
                       onClick={() => {
-                        setSidebarTab((prev) => (prev === "audit" ? "chat" : "audit"));
-                        setActiveProjectId(null);
+                        setRightSidebarOpen((prev) => !prev);
+                        if (sidebarTab !== "chat") setSidebarTab("chat");
                       }}
                       className={`px-3 py-1.5 border transition-all duration-150 flex items-center gap-2 cursor-pointer rounded-xl font-sans font-medium text-[13px] ${
-                        sidebarTab === "audit"
+                        rightSidebarOpen
                           ? workstationTheme === "light"
                             ? "text-[#0E7C8A] bg-[#E0F2FE] border-[#0E7C8A]/50 shadow-sm font-semibold"
                             : "text-[#12A5B8] bg-[#132127] border-[#12A5B8]/60 shadow-[0_0_12px_rgba(18,165,184,0.3)] font-semibold"
@@ -1900,39 +1900,21 @@ export default function Investigation() {
                           ? "text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] hover:border-[#0E7C8A]/40 border-[#CBD5E1] bg-white shadow-xs"
                           : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] hover:border-[#12A5B8]/40 border-white/[0.1] bg-[#080E11]"
                       }`}
-                      title={sidebarTab === "audit" ? "Return to Chat" : "Open Audit Reports Workspace"}
+                      title={rightSidebarOpen ? "Hide Audit Sidebar" : "Open Audit Sidebar (~320px)"}
                     >
                       <ShieldCheck size={15} className={
-                        sidebarTab === "audit"
+                        rightSidebarOpen
                           ? workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
                           : workstationTheme === "light" ? "text-[#475569]" : "text-[#8AA3AD]"
                       } />
                       <span className="hidden sm:inline">Audit Report</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                        sidebarTab === "audit"
+                        rightSidebarOpen
                           ? workstationTheme === "light" ? "bg-[#0E7C8A] text-white" : "bg-[#12A5B8] text-black"
                           : workstationTheme === "light" ? "bg-[#F1F5F9] text-[#0E7C8A]" : "bg-[#0D171C] text-[#12A5B8] border border-[#12A5B8]/30"
                       }`}>
                         {allAuditsAcrossChats.length}
                       </span>
-                    </button>
-
-                    {/* Workstation Light / Dark Theme Toggle */}
-                    <button
-                      onClick={toggleWorkstationTheme}
-                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${
-                        workstationTheme === "light"
-                          ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
-                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08]"
-                      }`}
-                      title={`Switch to ${workstationTheme === "dark" ? "Light" : "Dark"} Mode (Workstation only)`}
-                    >
-                      {workstationTheme === "dark" ? (
-                        <Sun size={14} className="text-[#12A5B8]" />
-                      ) : (
-                        <Moon size={14} className="text-[#0E7C8A]" />
-                      )}
-                      <span className="text-[10px] hidden md:inline uppercase">{workstationTheme}</span>
                     </button>
                   </div>
                 </header>
@@ -2309,255 +2291,9 @@ export default function Investigation() {
                       </div>
                     )}
                   </div>
-                ) : sidebarTab === "audit" ? (
-                  /* ══════════════════════════════════════════════════════════
-                     3. DEFENSE AUDIT & PROVENANCE WORKSPACE (MAIN SCREEN)
-                     ══════════════════════════════════════════════════════════ */
-                  <div className="flex-1 overflow-y-auto px-6 md:px-12 py-8 space-y-6 max-w-6xl mx-auto w-full">
-                    {/* Header */}
-                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/80"
-                      }`}>
-                      <div>
-                        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                          }`}>
-                          <ShieldCheck className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} size={24} />
-                          <span>Defense Audit & Provenance Ledger</span>
-                        </h2>
-                        <p className={`text-xs sm:text-sm mt-1 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                          }`}>
-                          Cryptographic SHA-256 evidence ledgers, deterministic verification trails, and verified inspection dossiers.
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2.5 self-start sm:self-auto">
-                        <button
-                          onClick={() => {
-                            if (currentEvidenceResult) {
-                              setReportModalOpen(true);
-                            } else {
-                              toast.info("Select or run a query to inspect live certified audit dossier");
-                            }
-                          }}
-                          className={`px-3.5 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md ${workstationTheme === "light"
-                              ? "bg-[#0E7C8A] hover:bg-[#0B4F58] text-white"
-                              : "bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708]"
-                            }`}
-                        >
-                          <FileText size={14} />
-                          <span>INSPECT FULL DOSSIER</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Filter Tabs & Summary Counter */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                        {[
-                          { id: "ALL", label: `All Audits (${allAuditsAcrossChats.length})` },
-                          { id: "VERIFIED", label: `Verified (${allAuditsAcrossChats.filter((a) => !a.isError).length})` },
-                          { id: "FLAGGED", label: `Exceptions (${allAuditsAcrossChats.filter((a) => a.isError).length})` },
-                        ].map((tab) => (
-                          <button
-                            key={tab.id}
-                            onClick={() => setAuditFilterStatus(tab.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer border ${auditFilterStatus === tab.id
-                                ? workstationTheme === "light"
-                                  ? "bg-[#0E7C8A] text-white border-[#0E7C8A] font-bold shadow-sm"
-                                  : "bg-[#12A5B8]/20 text-[#12A5B8] border-[#12A5B8] font-bold"
-                                : workstationTheme === "light"
-                                  ? "bg-white text-[#64748B] border-[#CBD5E1] hover:text-[#0F172A] hover:bg-[#F8FAFC]"
-                                  : "bg-[#0D171C] text-[#8AA3AD] border-[#1C323B] hover:text-[#FFFFFF]"
-                              }`}
-                          >
-                            {tab.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className={`text-xs font-mono flex items-center gap-2 ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>
-                        <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
-                        <span>Zero Spring Boot · Deterministic JVM + Model A/B Tracing</span>
-                      </div>
-                    </div>
-
-                    {/* Audited Reports Grid or Empty State */}
-                    {displayedAudits.length === 0 ? (
-                      <div className={`py-20 flex flex-col items-center justify-center text-center space-y-4 max-w-md mx-auto border border-dashed rounded-2xl p-8 ${workstationTheme === "light"
-                          ? "bg-white border-[#CBD5E1] shadow-sm"
-                          : "bg-[#0D171C]/40 border-[#1C323B]"
-                        }`}>
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${workstationTheme === "light"
-                            ? "bg-[#F1F5F9] border-[#0E7C8A]/30 text-[#0E7C8A]"
-                            : "bg-[#12A5B8]/10 border-[#12A5B8]/30 text-[#12A5B8]"
-                          }`}>
-                          <ShieldCheck size={26} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <h3 className={`text-base font-bold ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#FFFFFF]"
-                            }`}>No Audited Queries Yet</h3>
-                          <p className={`text-xs leading-relaxed ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                            }`}>
-                            Every Earth-observation query executed through SatQuery AI generates a tamper-proof cryptographic audit trail, recording deterministic spectral reflectance, vision-language grounding, and SHA-256 signatures.
-                          </p>
-                        </div>
-                        <button
-                          onClick={handleNewChat}
-                          className={`px-4 py-2 font-bold text-xs font-mono rounded-lg transition-all flex items-center gap-2 cursor-pointer shadow-md mt-2 ${workstationTheme === "light"
-                              ? "bg-[#0E7C8A] hover:bg-[#0B4F58] text-white"
-                              : "bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708]"
-                            }`}
-                        >
-                          <SquarePen size={14} />
-                          <span>START AUDITABLE QUERY</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {displayedAudits.map((audit) => (
-                          <div
-                            key={audit.id}
-                            className={`rounded-2xl overflow-hidden group transition-all flex flex-col justify-between shadow-sm border ${workstationTheme === "light"
-                                ? "bg-white border-[#CBD5E1] hover:border-[#0E7C8A] hover:shadow-[0_4px_20px_rgba(14,124,138,0.12)]"
-                                : "bg-[#0D171C] border-[#1C323B] hover:border-[#12A5B8] hover:shadow-[0_0_20px_rgba(18,165,184,0.15)]"
-                              }`}
-                          >
-                            <div className="p-5 space-y-4">
-                              {/* Top Bar: Reference ID & Status Badge */}
-                              <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                  <div className={`text-[10px] font-mono font-bold tracking-wider ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                    }`}>
-                                    AUDIT ID
-                                  </div>
-                                  <div className={`font-mono font-bold text-sm ${audit.isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                                    }`}>
-                                    {audit.queryRefId}
-                                  </div>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${audit.isError
-                                    ? "text-[#EF4444] bg-[#EF4444]/15 border-[#EF4444]/30"
-                                    : "text-[#10B981] bg-[#10B981]/15 border-[#10B981]/30"
-                                  }`}>
-                                  {audit.isError ? "UNVERIFIED" : "VERIFIED ✓"}
-                                </span>
-                              </div>
-
-                              {/* Query Prompt */}
-                              <div>
-                                <div className={`text-[10px] font-mono uppercase tracking-wider font-semibold ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                  }`}>
-                                  QUERY INVESTIGATION
-                                </div>
-                                <h3 className={`font-bold text-sm mt-0.5 transition-colors leading-snug line-clamp-2 ${workstationTheme === "light" ? "text-[#0F172A]" : "text-[#F0F6F8]"
-                                  }`}>
-                                  "{audit.queryPrompt}"
-                                </h3>
-                              </div>
-
-                              {/* Findings Summary */}
-                              <div className={`p-3 rounded-xl border text-xs leading-relaxed ${workstationTheme === "light"
-                                  ? "bg-[#F8FAFC] border-[#E2E8F0] text-[#334155]"
-                                  : "bg-[#040708] border-[#1C323B] text-[#D0E3EA]"
-                                }`}>
-                                <div className={`text-[9px] font-mono font-bold uppercase tracking-wider mb-1 ${audit.isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                                  }`}>
-                                  {audit.isError ? "AUDIT LOG EXCEPTION:" : "AUDITED FINDING:"}
-                                </div>
-                                <p className="line-clamp-3 font-sans">
-                                  {audit.answer}
-                                </p>
-                              </div>
-
-                              {/* Deterministic Evidence Verification Checkpoints */}
-                              <div className="space-y-1.5 font-mono text-[10.5px]">
-                                <div className="flex items-center justify-between">
-                                  <span className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}>
-                                    1. Surface Reflectance
-                                  </span>
-                                  <span className={audit.isError ? "text-[#F59E0B] font-bold" : "text-[#10B981] font-bold"}>
-                                    {audit.isError ? "CHECK ⚠️" : "PASS ✓"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}>
-                                    2. Vision Grounding
-                                  </span>
-                                  <span className={audit.isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
-                                    {audit.isError ? "FAILED ✕" : audit.confidence ? `PASS (${audit.confidence}%)` : "PASS ✓"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className={workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}>
-                                    3. SHA-256 Ledger
-                                  </span>
-                                  <span className={audit.isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
-                                    {audit.isError ? "UNVERIFIED ⚠️" : "VERIFIED ✓"}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Sensor & Metadata info */}
-                              <div className={`pt-2 border-t flex items-center justify-between text-[10px] font-mono ${workstationTheme === "light" ? "border-[#E2E8F0] text-[#64748B]" : "border-[#1C323B]/60 text-[#8AA3AD]"
-                                }`}>
-                                <span className="truncate max-w-[170px]">{audit.sensorType}</span>
-                                <span>{audit.resolution}</span>
-                              </div>
-                            </div>
-
-                            {/* Card Footer Actions */}
-                            <div className={`p-4 pt-3 border-t flex items-center justify-between gap-2 ${workstationTheme === "light" ? "bg-[#F8FAFC]/80 border-[#E2E8F0]" : "bg-[#040708]/60 border-[#1C323B]/60"
-                              }`}>
-                              <button
-                                onClick={() => {
-                                  handleSelectChat(audit.chatId);
-                                  setSidebarTab("chat");
-                                }}
-                                className={`flex-1 py-1.5 px-2.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${workstationTheme === "light"
-                                    ? "bg-white hover:bg-[#0E7C8A] text-[#0E7C8A] hover:text-white border-[#CBD5E1] hover:border-[#0E7C8A] shadow-xs"
-                                    : "bg-[#12A5B8]/15 hover:bg-[#12A5B8] text-[#12A5B8] hover:text-[#040708] border border-[#12A5B8]/30"
-                                  }`}
-                              >
-                                <span>OPEN CHAT</span>
-                                <ArrowUpRight size={13} />
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setActiveEvidenceResult(audit.queryResult);
-                                  setShowMeWhyOpen(true);
-                                }}
-                                className={`p-1.5 px-2 rounded-lg cursor-pointer transition-colors text-xs font-mono flex items-center gap-1 border ${workstationTheme === "light"
-                                    ? "bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#475569] hover:text-[#0E7C8A]"
-                                    : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] text-[#8AA3AD] hover:text-[#12A5B8]"
-                                  }`}
-                                title="Inspect Evidence Provenance"
-                              >
-                                <ShieldCheck size={13} />
-                                <span className="hidden sm:inline">WHY?</span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  downloadReportPdf(audit.queryRefId);
-                                  toast.success(`Exporting Defense Audit Report PDF for ${audit.queryRefId}`);
-                                }}
-                                className={`p-1.5 px-2 rounded-lg cursor-pointer transition-colors text-xs font-mono flex items-center gap-1 border ${workstationTheme === "light"
-                                    ? "bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#475569] hover:text-[#0E7C8A]"
-                                    : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] text-[#8AA3AD] hover:text-[#12A5B8]"
-                                  }`}
-                                title="Download Audit Dossier PDF"
-                              >
-                                <Download size={13} />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 ) : (
                   /* ══════════════════════════════════════════════════════════
-                     4. CHAT INVESTIGATION WORKSPACE (MAIN SCREEN)
+                     3. CHAT INVESTIGATION WORKSPACE (MAIN SCREEN)
                      ══════════════════════════════════════════════════════════ */
                   <>
                     {/* ── Conversational Stream Area ── */}
@@ -3106,6 +2842,298 @@ export default function Investigation() {
                   </>
                 )}
               </main>
+
+              {/* ══════════════════════════════════════════════════════════
+                  3. DOCKED AUDIT REPORT SIDEBAR (~310px SIDE-BY-SIDE WITH CHAT)
+                  ══════════════════════════════════════════════════════════ */}
+              <AnimatePresence>
+                {rightSidebarOpen && (
+                  <>
+                    {/* Backdrop: ONLY on mobile screens (< md) to allow dismissing drawer */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                      className="fixed inset-0 z-30 bg-black/40 backdrop-blur-xs md:hidden"
+                      onClick={() => setRightSidebarOpen(false)}
+                    />
+
+                    <motion.aside
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: 310, opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                      className={`h-full flex-shrink-0 border-l flex flex-col font-mono text-xs overflow-hidden z-20 transition-colors duration-200 ${
+                        workstationTheme === "light"
+                          ? "bg-white border-[#E2E8F0] text-[#0F172A]"
+                          : "bg-[#080E11]/95 backdrop-blur-xl border-[#1C323B] text-[#F0F6F8]"
+                      } max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-40 max-md:w-[310px] max-md:shadow-2xl`}
+                    >
+                      <div className="w-[310px] flex flex-col h-full overflow-hidden">
+                        {/* Audit Sidebar Header */}
+                        <div className={`p-3.5 border-b flex items-center justify-between flex-shrink-0 ${
+                          workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                        }`}>
+                          <div className={`flex items-center gap-2 ${
+                            workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                          }`}>
+                            <ShieldCheck size={16} />
+                            <span className="font-bold tracking-wider uppercase text-xs">
+                              DEFENSE AUDIT DOSSIER
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setRightSidebarOpen(false)}
+                            className={`p-1.5 transition-colors rounded-lg cursor-pointer ${
+                              workstationTheme === "light"
+                                ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]"
+                                : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127]"
+                            }`}
+                            title="Close Audit Sidebar"
+                          >
+                            <PanelRightClose size={16} />
+                          </button>
+                        </div>
+
+                        {/* Audit Sidebar Body */}
+                        <div className="flex-1 overflow-y-auto p-3.5 space-y-3 font-sans text-xs">
+                          {(() => {
+                            const currentAsset = canvasActiveAsset || stagedAsset || activeConversation?.stagedAssets?.[0];
+                            const activeResult = currentEvidenceResult;
+                            const findingsText = activeResult?.answer || activeResult?.summary || "";
+                            
+                            const isError = Boolean(
+                              activeResult?.isError ||
+                              activeResult?.error ||
+                              (typeof findingsText === "string" && (
+                                findingsText.toLowerCase().includes("validation error") ||
+                                findingsText.toLowerCase().includes("error:") ||
+                                findingsText.toLowerCase().includes("repair guidance") ||
+                                findingsText.toLowerCase().includes("please adjust your inputs") ||
+                                findingsText.includes("MODEL_UNAVAILABLE") ||
+                                findingsText.includes("offline")
+                              ))
+                            );
+
+                            const queryRefId = activeResult?.queryId
+                              ? `SQ-2026-${String(activeResult.queryId).slice(-4)}`
+                              : activeConversation?.id
+                                ? `SQ-2026-${String(activeConversation.id).slice(-4)}`
+                                : currentAsset?.id
+                                  ? `ASSET-${String(currentAsset.id).slice(-6)}`
+                                  : "SQ-2026-LIVE";
+                            const sensorType = currentAsset?.modality || currentAsset?.metadata?.format || "OPTICAL / SAR";
+                            const resolution = currentAsset?.metadata?.resolution || "Multi-Spectral 0.5m GSD";
+                            const confidenceScore = isError ? null : (activeResult?.confidence || (activeConversation ? 95 : null));
+
+                            return (
+                              <>
+                                {/* Audit Metadata Card */}
+                                <div className={`p-3 border rounded-xl space-y-1.5 ${
+                                  workstationTheme === "light"
+                                    ? "bg-[#F8FAFC] border-[#E2E8F0]"
+                                    : "bg-[#0D171C] border-[#1C323B]"
+                                }`}>
+                                  <div className={`flex items-center justify-between text-[10px] font-mono font-bold ${
+                                    workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                  }`}>
+                                    <span>AUDIT REFERENCE ID</span>
+                                    <span className={`px-2 py-0.5 rounded border text-[9px] font-bold ${
+                                      isError
+                                        ? "text-[#EF4444] bg-[#EF4444]/15 border-[#EF4444]/30"
+                                        : activeResult
+                                        ? "text-[#10B981] bg-[#10B981]/15 border-[#10B981]/30"
+                                        : "text-[#0E7C8A] bg-[#0E7C8A]/10 border-[#0E7C8A]/30"
+                                    }`}>
+                                      {isError ? "UNVERIFIED" : activeResult ? "VERIFIED" : "LIVE SESSION"}
+                                    </span>
+                                  </div>
+                                  <div className={`text-base font-bold font-mono ${
+                                    isError ? "text-[#F59E0B]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                  }`}>
+                                    {queryRefId}
+                                  </div>
+                                  <div className={`text-[11px] truncate ${
+                                    workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                  }`}>
+                                    Sensor: {sensorType}
+                                  </div>
+                                  <div className={`text-[10px] font-mono ${
+                                    workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                  }`}>
+                                    Resolution: {resolution}
+                                  </div>
+                                </div>
+
+                                {/* Deterministic Evidence Pipeline Steps */}
+                                <div className={`p-3 border rounded-xl space-y-2 text-[11px] ${
+                                  isError
+                                    ? workstationTheme === "light" ? "bg-[#FEF2F2] border-[#FCA5A5]" : "bg-[#1A0C0E] border-[#7F1D1D]"
+                                    : workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                                }`}>
+                                  <div className={`text-[10px] uppercase font-bold tracking-wider font-mono ${
+                                    isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                  }`}>
+                                    DETERMINISTIC EVIDENCE TRAIL
+                                  </div>
+                                  <div className="space-y-1.5 font-mono text-[10.5px]">
+                                    <div className="flex items-center justify-between">
+                                      <span className="truncate pr-1">1. Surface Calibration</span>
+                                      <span className={isError ? "text-[#F59E0B] font-bold" : "text-[#10B981] font-bold"}>
+                                        {isError ? "CHECK ⚠️" : "PASS ✓"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="truncate pr-1">2. Vision Grounding</span>
+                                      <span className={isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
+                                        {isError ? "FAILED ✕" : confidenceScore ? `PASS (${confidenceScore}%)` : "PASS ✓"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="truncate pr-1">3. SHA-256 Ledger</span>
+                                      <span className={isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
+                                        {isError ? "UNVERIFIED ⚠️" : "VERIFIED ✓"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Summary & Findings Excerpt */}
+                                <div className={`p-3 border rounded-xl space-y-1.5 ${
+                                  isError
+                                    ? workstationTheme === "light" ? "bg-[#FFF5F5] border-[#FECDD3]" : "bg-[#1F1213] border-[#7F1D1D]"
+                                    : workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
+                                }`}>
+                                  <strong className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 ${
+                                    isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                  }`}>
+                                    {isError && <AlertTriangle size={13} className="text-[#EF4444]" />}
+                                    <span>{isError ? "EXCEPTION:" : "AUDITED FINDINGS:"}</span>
+                                  </strong>
+                                  <p className={`leading-relaxed text-[11.5px] line-clamp-4 ${
+                                    isError
+                                      ? "text-[#FCA5A5] font-mono"
+                                      : workstationTheme === "light" ? "text-[#334155]" : "text-[#F0F6F8]"
+                                  }`}>
+                                    {findingsText || "No active query result yet. Send a satellite query or pick a session to inspect live audit findings."}
+                                  </p>
+                                </div>
+
+                                {/* Cryptographic Footnote */}
+                                <div className={`p-2.5 border rounded-xl text-[10.5px] font-sans flex items-start gap-2 ${
+                                  isError
+                                    ? workstationTheme === "light"
+                                      ? "border-[#EF4444]/40 bg-[#FEF2F2] text-[#991B1B]"
+                                      : "border-[#EF4444]/30 bg-[#EF4444]/10 text-[#FCA5A5]"
+                                    : workstationTheme === "light"
+                                      ? "border-[#10B981]/40 bg-[#ECFDF5] text-[#047857]"
+                                      : "border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]"
+                                }`}>
+                                  {isError ? (
+                                    <AlertTriangle size={14} className="text-[#EF4444] flex-shrink-0 mt-0.5" />
+                                  ) : (
+                                    <CheckCircle2 size={14} className="text-[#10B981] flex-shrink-0 mt-0.5" />
+                                  )}
+                                  <span>
+                                    {isError
+                                      ? "Execution exception recorded in audit log."
+                                      : "Cryptographically signed tamper-proof trace."}
+                                  </span>
+                                </div>
+
+                                {/* Audited Dossiers History (if multiple investigations exist) */}
+                                {allAuditsAcrossChats.length > 0 && (
+                                  <div className="space-y-1.5 pt-1">
+                                    <div className={`text-[10px] font-mono uppercase tracking-wider font-bold px-1 ${
+                                      workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
+                                    }`}>
+                                      INVESTIGATION DOSSIERS ({allAuditsAcrossChats.length})
+                                    </div>
+                                    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                                      {allAuditsAcrossChats.map((audit) => (
+                                        <button
+                                          key={audit.id}
+                                          onClick={() => {
+                                            handleSelectChat(audit.chatId);
+                                            setActiveEvidenceResult(audit.queryResult);
+                                          }}
+                                          className={`w-full text-left p-2 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                                            (currentEvidenceResult?.queryId === audit.queryResult?.queryId || activeConversation?.id === audit.chatId)
+                                              ? workstationTheme === "light"
+                                                ? "bg-[#E0F2FE] border-[#0E7C8A]/50 text-[#0E7C8A]"
+                                                : "bg-[#132127] border-[#12A5B8]/50 text-[#12A5B8]"
+                                              : workstationTheme === "light"
+                                                ? "bg-white hover:bg-[#F1F5F9] border-[#E2E8F0] text-[#334155]"
+                                                : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] text-[#D0E3EA]"
+                                          }`}
+                                        >
+                                          <div className="min-w-0 flex-1">
+                                            <div className="font-mono font-bold text-[10px] truncate">
+                                              {audit.queryRefId}
+                                            </div>
+                                            <div className="text-[11px] truncate opacity-80">
+                                              {audit.queryPrompt}
+                                            </div>
+                                          </div>
+                                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold flex-shrink-0 ${
+                                            audit.isError
+                                              ? "bg-[#EF4444]/15 text-[#EF4444]"
+                                              : "bg-[#10B981]/15 text-[#10B981]"
+                                          }`}>
+                                            {audit.isError ? "ERR" : "PASS"}
+                                          </span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Audit Sidebar Footer Actions */}
+                        <div className={`p-3 border-t flex flex-col gap-2 flex-shrink-0 ${
+                          workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
+                        }`}>
+                          <Button
+                            onClick={() => {
+                              setReportModalOpen(true);
+                            }}
+                            className={`w-full font-bold font-mono text-xs rounded-xl shadow cursor-pointer ${
+                              workstationTheme === "light"
+                                ? "bg-[#0E7C8A] hover:bg-[#0B6570] text-white shadow-md shadow-[#0E7C8A]/20"
+                                : "bg-[#12A5B8] hover:bg-[#0EA0B2] text-black font-bold shadow-[0_0_15px_rgba(18,165,184,0.3)]"
+                            }`}
+                          >
+                            <FileText size={13} className="mr-1.5" />
+                            Inspect Full Report Modal
+                          </Button>
+
+                          <button
+                            onClick={() => {
+                              const qId = currentEvidenceResult?.queryId || activeConversation?.id || "SQ-2026-7f1c";
+                              downloadReportPdf(qId);
+                              toast.success(`Analysis Report PDF for ${qId} downloaded`);
+                            }}
+                            className={`w-full py-2 px-3 font-mono text-xs rounded-xl cursor-pointer flex items-center justify-center border transition-all ${
+                              workstationTheme === "light"
+                                ? "bg-white border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9] hover:text-[#0E7C8A] hover:border-[#0E7C8A]/60 shadow-xs"
+                                : "bg-[#0D171C] border-[#1C323B] text-[#F0F6F8] hover:bg-[#132127] hover:text-white hover:border-[#12A5B8]/60 shadow-sm"
+                            }`}
+                          >
+                            <Download size={13} className={`mr-1.5 flex-shrink-0 ${
+                              workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                            }`} />
+                            <span className="font-semibold">Download PDF</span>
+                          </button>
+                        </div>
+                      </div>
+                    </motion.aside>
+                  </>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
@@ -3486,241 +3514,7 @@ export default function Investigation() {
           )}
         </AnimatePresence>
 
-        {/* ─── SLIDE-OVER RIGHT SIDEBAR: AUDIT REPORT & PROVENANCE ─── */}
-        <AnimatePresence>
-          {rightSidebarOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18 }}
-                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs"
-                onClick={() => setRightSidebarOpen(false)}
-              />
 
-              <motion.aside
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                className={`fixed inset-y-0 right-0 z-50 w-80 sm:w-[400px] border-l flex flex-col font-mono text-xs shadow-2xl overflow-hidden ${
-                  workstationTheme === "light"
-                    ? "bg-white/95 backdrop-blur-xl border-[#CBD5E1] text-[#0F172A]"
-                    : "bg-[#080E11]/95 backdrop-blur-xl border-[#1C323B] text-[#F0F6F8]"
-                }`}
-              >
-                {/* Right Sidebar Header */}
-                <div className={`p-4 border-b flex items-center justify-between ${
-                  workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
-                }`}>
-                  <div className={`flex items-center gap-2 ${
-                    workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                  }`}>
-                    <ShieldCheck size={16} />
-                    <span className="font-bold tracking-wider uppercase text-xs">
-                      DEFENSE AUDIT & PROVENANCE
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setRightSidebarOpen(false)}
-                    className={`p-1.5 transition-colors rounded-lg cursor-pointer ${
-                      workstationTheme === "light"
-                        ? "text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]"
-                        : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#132127]"
-                    }`}
-                    title="Hide Right Sidebar"
-                  >
-                    <PanelRightClose size={18} />
-                  </button>
-                </div>
-
-                {/* Right Sidebar Body */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
-                  {(() => {
-                    const currentAsset = canvasActiveAsset || stagedAsset || activeConversation?.stagedAssets?.[0];
-                    const activeResult = currentEvidenceResult;
-                    const findingsText = activeResult?.answer || activeResult?.summary || "";
-                    
-                    const isError = Boolean(
-                      activeResult?.isError ||
-                      activeResult?.error ||
-                      (typeof findingsText === "string" && (
-                        findingsText.toLowerCase().includes("validation error") ||
-                        findingsText.toLowerCase().includes("error:") ||
-                        findingsText.toLowerCase().includes("repair guidance") ||
-                        findingsText.toLowerCase().includes("please adjust your inputs") ||
-                        findingsText.includes("MODEL_UNAVAILABLE") ||
-                        findingsText.includes("offline")
-                      ))
-                    );
-
-                    const queryRefId = activeResult?.queryId
-                      ? `SQ-2026-${String(activeResult.queryId).slice(-4)}`
-                      : activeConversation?.id
-                        ? `SQ-2026-${String(activeConversation.id).slice(-4)}`
-                        : currentAsset?.id
-                          ? `ASSET-${String(currentAsset.id).slice(-6)}`
-                          : "SQ-2026-LIVE";
-                    const sensorType = currentAsset?.modality || currentAsset?.metadata?.format || "OPTICAL / SAR";
-                    const resolution = currentAsset?.metadata?.resolution || "Multi-Spectral 0.5m GSD";
-                    const confidenceScore = isError ? null : (activeResult?.confidence || (activeConversation ? 95 : null));
-
-                    return (
-                      <>
-                        {/* Audit Metadata Card */}
-                        <div className={`p-3.5 border rounded-xl space-y-2 ${
-                          workstationTheme === "light"
-                            ? "bg-[#F8FAFC] border-[#E2E8F0]"
-                            : "bg-[#0D171C] border-[#1C323B]"
-                        }`}>
-                          <div className={`flex items-center justify-between text-[10px] font-mono font-bold ${
-                            workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                          }`}>
-                            <span>AUDIT REFERENCE ID</span>
-                            <span className={`px-2 py-0.5 rounded border text-[9px] font-bold ${
-                              isError
-                                ? "text-[#EF4444] bg-[#EF4444]/15 border-[#EF4444]/30"
-                                : activeResult
-                                ? "text-[#10B981] bg-[#10B981]/15 border-[#10B981]/30"
-                                : "text-[#0E7C8A] bg-[#0E7C8A]/10 border-[#0E7C8A]/30"
-                            }`}>
-                              {isError ? "UNVERIFIED" : activeResult ? "VERIFIED" : "LIVE SESSION"}
-                            </span>
-                          </div>
-                          <div className={`text-base font-bold font-mono ${
-                            isError ? "text-[#F59E0B]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                          }`}>
-                            {queryRefId}
-                          </div>
-                          <div className={`text-[11px] ${
-                            workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                          }`}>
-                            Sensor: {sensorType} · Ground Resolution: {resolution}
-                          </div>
-                        </div>
-
-                        {/* Evidence Pipeline Steps */}
-                        <div className={`p-3.5 border rounded-xl space-y-2 text-[11px] ${
-                          isError
-                            ? workstationTheme === "light" ? "bg-[#FEF2F2] border-[#FCA5A5]" : "bg-[#1A0C0E] border-[#7F1D1D]"
-                            : workstationTheme === "light" ? "bg-[#F1F5F9] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
-                        }`}>
-                          <div className={`text-[10px] uppercase font-bold tracking-wider font-mono ${
-                            isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                          }`}>
-                            DETERMINISTIC EVIDENCE TRAIL
-                          </div>
-                          <div className="space-y-1.5 font-mono text-[11px]">
-                            <div className="flex items-center justify-between">
-                              <span>1. Surface Reflectance Calibration</span>
-                              <span className={isError ? "text-[#F59E0B] font-bold" : "text-[#10B981] font-bold"}>
-                                {isError ? "CHECK ⚠️" : "PASS ✓"}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>2. Vision-Language Grounding</span>
-                              <span className={isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
-                                {isError ? "FAILED ✕" : confidenceScore ? `PASS (${confidenceScore}%)` : "PASS ✓"}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span>3. Cryptographic SHA-256 Signature</span>
-                              <span className={isError ? "text-[#EF4444] font-bold" : "text-[#10B981] font-bold"}>
-                                {isError ? "UNVERIFIED ⚠️" : "VERIFIED ✓"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Summary & Findings Excerpt */}
-                        <div className={`p-3.5 border rounded-xl space-y-2 ${
-                          isError
-                            ? workstationTheme === "light" ? "bg-[#FFF5F5] border-[#FECDD3]" : "bg-[#1F1213] border-[#7F1D1D]"
-                            : workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
-                        }`}>
-                          <strong className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 ${
-                            isError ? "text-[#EF4444]" : workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                          }`}>
-                            {isError && <AlertTriangle size={13} className="text-[#EF4444]" />}
-                            <span>{isError ? "INPUT VALIDATION / EXECUTION EXCEPTION:" : "CURRENT FINDINGS SUMMARY:"}</span>
-                          </strong>
-                          <p className={`leading-relaxed text-[12px] ${
-                            isError
-                              ? "text-[#FCA5A5] font-mono"
-                              : workstationTheme === "light" ? "text-[#334155]" : "text-[#F0F6F8]"
-                          }`}>
-                            {findingsText || "No active query result generated yet. Run a satellite query or select an existing conversation to inspect live audit findings."}
-                          </p>
-                        </div>
-
-                        {/* Cryptographic Footnote */}
-                        <div className={`p-3 border rounded-xl text-[11px] font-sans flex items-start gap-2 ${
-                          isError
-                            ? workstationTheme === "light"
-                              ? "border-[#EF4444]/40 bg-[#FEF2F2] text-[#991B1B]"
-                              : "border-[#EF4444]/30 bg-[#EF4444]/10 text-[#FCA5A5]"
-                            : workstationTheme === "light"
-                              ? "border-[#10B981]/40 bg-[#ECFDF5] text-[#047857]"
-                              : "border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]"
-                        }`}>
-                          {isError ? (
-                            <AlertTriangle size={15} className="text-[#EF4444] flex-shrink-0 mt-0.5" />
-                          ) : (
-                            <CheckCircle2 size={15} className="text-[#10B981] flex-shrink-0 mt-0.5" />
-                          )}
-                          <span>
-                            {isError
-                              ? "Execution halted due to validation failure. Audit log preserved."
-                              : "Tamper-proof execution token generated with cryptographic verification."}
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-
-                {/* Right Sidebar Footer Actions */}
-                <div className={`p-4 border-t flex flex-col gap-2 ${
-                  workstationTheme === "light" ? "bg-[#F8FAFC] border-[#E2E8F0]" : "bg-[#040708] border-[#1C323B]"
-                }`}>
-                  <Button
-                    onClick={() => {
-                      setRightSidebarOpen(false);
-                      setReportModalOpen(true);
-                    }}
-                    className={`w-full font-bold font-mono text-xs rounded-xl shadow cursor-pointer ${
-                      workstationTheme === "light"
-                        ? "bg-[#0E7C8A] hover:bg-[#0B6570] text-white shadow-md shadow-[#0E7C8A]/20"
-                        : "bg-[#12A5B8] hover:bg-[#0EA0B2] text-black font-bold shadow-[0_0_15px_rgba(18,165,184,0.3)]"
-                    }`}
-                  >
-                    <FileText size={14} className="mr-1.5" />
-                    Inspect Full Report Modal
-                  </Button>
-
-                  <button
-                    onClick={() => {
-                      const qId = activeEvidenceResult?.queryId || "SQ-2026-7f1c";
-                      downloadReportPdf(qId);
-                      toast.success(`Analysis Report PDF for ${qId} downloaded`);
-                    }}
-                    className={`w-full py-2.5 px-4 font-mono text-xs rounded-xl cursor-pointer flex items-center justify-center border transition-all ${
-                      workstationTheme === "light"
-                        ? "bg-white border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9] hover:text-[#0E7C8A] hover:border-[#0E7C8A]/60 shadow-xs"
-                        : "bg-[#0D171C] border-[#1C323B] text-[#F0F6F8] hover:bg-[#132127] hover:text-white hover:border-[#12A5B8]/60 shadow-sm"
-                    }`}
-                  >
-                    <Download size={14} className={`mr-1.5 flex-shrink-0 ${
-                      workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
-                    }`} />
-                    <span className="font-semibold">Download PDF Report</span>
-                  </button>
-                </div>
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
 
         {/* ─── MODAL 7: OPERATOR CREDENTIALS & PROFILE ─── */}
         <UserProfileModal

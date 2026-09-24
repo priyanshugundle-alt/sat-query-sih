@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { X, Mail, ShieldCheck, Building2, LogOut, CheckCircle2, Cpu } from "lucide-react";
+import { X, Mail, LogOut, CheckCircle2, Cpu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function UserProfileModal({ isOpen, onClose, user, onLogout }) {
@@ -15,7 +15,7 @@ export function UserProfileModal({ isOpen, onClose, user, onLogout }) {
 
   if (!isOpen) return null;
 
-  const initials = (user?.name || "SatQuery Analyst")
+  const initials = (user?.name || user?.email || "User")
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -64,17 +64,15 @@ export function UserProfileModal({ isOpen, onClose, user, onLogout }) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm text-[#FFFFFF] dark:text-[#FFFFFF] light:text-[#0F172A] truncate">
-                    {user?.name || "SatQuery Analyst"}
+                    {user?.name || "SatQuery User"}
                   </span>
                   <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981] flex-shrink-0" title="Active Session" />
                 </div>
-                <div className="text-xs text-[#8AA3AD] light:text-[#475569] font-mono truncate">
-                  {user?.role || "Lead Satellite Analyst"}
-                </div>
-                <div className="text-[10px] text-[#12A5B8] light:text-[#0E7C8A] font-mono mt-0.5 flex items-center gap-1 font-semibold">
-                  <ShieldCheck size={11} />
-                  <span>Level-3 Multispectral & SAR Certified</span>
-                </div>
+                {user?.email && (
+                  <div className="text-xs text-[#8AA3AD] light:text-[#475569] font-mono truncate mt-0.5">
+                    {user.email}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -86,17 +84,7 @@ export function UserProfileModal({ isOpen, onClose, user, onLogout }) {
                   <span>Operator Email:</span>
                 </div>
                 <span className="text-[#F0F6F8] dark:text-[#F0F6F8] light:text-[#0F172A] font-medium truncate max-w-[200px]">
-                  {user?.email || "analyst@satquery.ai"}
-                </span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-[#040708] dark:bg-[#040708] light:bg-[#F8FAFC] border border-[#1C323B] dark:border-[#1C323B] light:border-[#E2E8F0] flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[#8AA3AD] light:text-[#64748B]">
-                  <Building2 size={13} className="text-[#12A5B8] light:text-[#0E7C8A]" />
-                  <span>Organization:</span>
-                </div>
-                <span className="text-[#F0F6F8] dark:text-[#F0F6F8] light:text-[#0F172A] font-medium truncate max-w-[200px]">
-                  {user?.organization || "Earth Observation Directorate"}
+                  {user?.email || "user@satquery.ai"}
                 </span>
               </div>
 
