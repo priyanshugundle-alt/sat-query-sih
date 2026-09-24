@@ -1749,10 +1749,11 @@ export default function Investigation() {
                     {/* Workstation Light / Dark Theme Toggle */}
                     <button
                       onClick={toggleWorkstationTheme}
-                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${workstationTheme === "light"
+                      className={`p-1.5 border transition-colors rounded-md cursor-pointer flex items-center gap-1.5 ${
+                        workstationTheme === "light"
                           ? "text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] border-[#E2E8F0] bg-white"
                           : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] border-white/[0.08]"
-                        }`}
+                      }`}
                       title={`Switch to ${workstationTheme === "dark" ? "Light" : "Dark"} Mode (Workstation only)`}
                     >
                       {workstationTheme === "dark" ? (
@@ -2775,6 +2776,7 @@ export default function Investigation() {
         <ReportGenerationModal
           isOpen={reportModalOpen}
           onClose={() => setReportModalOpen(false)}
+          theme={workstationTheme}
           queryResult={activeEvidenceResult || activeConversation?.messages?.findLast((m) => m.queryResult)?.queryResult}
           imageAssets={activeConversation?.stagedAssets || []}
           onDownloadPdf={() => {
@@ -2962,6 +2964,13 @@ export default function Investigation() {
         <PersonalizationModal
           isOpen={isPersonalizationOpen}
           onClose={() => setIsPersonalizationOpen(false)}
+          theme={workstationTheme}
+          onThemeChange={(newTheme) => {
+            setWorkstationTheme(newTheme);
+            try {
+              localStorage.setItem("satquery_workstation_theme", newTheme);
+            } catch (e) {}
+          }}
         />
       </div>
     </BackgroundProvider>
