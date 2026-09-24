@@ -289,14 +289,20 @@ export default function Investigation() {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (workstationTheme === "light") {
-      root.classList.add("light", "workstation-light");
-      root.classList.remove("dark");
-    } else {
+    if (viewMode === "landing") {
+      // Cinematic Landing page is strictly dark themed
       root.classList.add("dark");
       root.classList.remove("light", "workstation-light");
+    } else {
+      if (workstationTheme === "light") {
+        root.classList.add("light", "workstation-light");
+        root.classList.remove("dark");
+      } else {
+        root.classList.add("dark");
+        root.classList.remove("light", "workstation-light");
+      }
     }
-  }, [workstationTheme]);
+  }, [workstationTheme, viewMode]);
 
   const toggleWorkstationTheme = () => {
     const next = workstationTheme === "dark" ? "light" : "dark";
