@@ -9,14 +9,16 @@ echo.
 
 REM Detect and set JAVA_HOME automatically
 set "DETECTED_JAVA="
-if exist "%USERPROFILE%\.java\jdk-26.0.1\bin\javac.exe" (
-    set "DETECTED_JAVA=%USERPROFILE%\.java\jdk-26.0.1"
-) else if exist "C:\Program Files\Java\jdk-26.0.2\bin\javac.exe" (
-    set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.2"
-) else if exist "C:\Program Files\Java\jdk-21.0.12.1\bin\javac.exe" (
-    set "DETECTED_JAVA=C:\Program Files\Java\jdk-21.0.12.1"
-) else if exist "C:\Users\SHUBHA~1\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64\bin\javac.exe" (
-    set "DETECTED_JAVA=C:\Users\SHUBHA~1\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64"
+if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" set "DETECTED_JAVA=%JAVA_HOME%"
+if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Java\jdk-26.0.1\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.1"
+if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Java\jdk-26.0.2\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.2"
+if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Java\jdk-21.0.12.1\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Java\jdk-21.0.12.1"
+if "%DETECTED_JAVA%"=="" if exist "%USERPROFILE%\.java\jdk-26.0.1\bin\java.exe" set "DETECTED_JAVA=%USERPROFILE%\.java\jdk-26.0.1"
+
+if "%DETECTED_JAVA%"=="" (
+    for /d %%d in ("C:\Program Files\Java\jdk*") do (
+        if exist "%%d\bin\java.exe" set "DETECTED_JAVA=%%d"
+    )
 )
 
 if "%DETECTED_JAVA%"=="" (
@@ -25,6 +27,7 @@ if "%DETECTED_JAVA%"=="" (
     pause
     exit /b 1
 )
+
 
 set "JAVA_HOME=%DETECTED_JAVA%"
 set "PATH=%JAVA_HOME%\bin;%PATH%"
