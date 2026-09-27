@@ -360,23 +360,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                         >
                           [{currentLanguage.code.toUpperCase()}]
                         </span>
-                        <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded ${
-                            isLight
-                              ? "bg-slate-200 text-[#475569]"
-                              : "bg-[#1C323B] text-[#8AA3AD]"
-                          }`}
-                        >
-                          {currentLanguage.speakers} Speakers
-                        </span>
-                      </div>
-                      <div
-                        className={`text-[11px] mt-0.5 ${
-                          isLight ? "text-[#64748B]" : "text-[#8AA3AD]"
-                        }`}
-                      >
-                        Script: <span className="font-semibold">{currentLanguage.script}</span> · Region:{" "}
-                        <span className="font-semibold">{currentLanguage.region}</span>
                       </div>
                     </div>
                   </div>
@@ -517,7 +500,7 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                               </div>
                             </div>
 
-                            {isSelected ? (
+                            {isSelected && (
                               <span
                                 className={`p-1 rounded-md ${
                                   isLight
@@ -527,36 +510,7 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                               >
                                 <Check size={13} strokeWidth={3} />
                               </span>
-                            ) : (
-                              <span
-                                className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${
-                                  isLight
-                                    ? "bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]"
-                                    : "bg-[#080D10] text-[#8AA3AD] border-[#1C323B]"
-                                }`}
-                              >
-                                {lang.speakers}
-                              </span>
                             )}
-                          </div>
-
-                          <div
-                            className={`text-[11px] space-y-0.5 ${
-                              isLight ? "text-[#64748B]" : "text-[#8AA3AD]"
-                            }`}
-                          >
-                            <div>
-                              <span className={isLight ? "text-[#94A3B8]" : "text-[#546A74]"}>
-                                Script:
-                              </span>{" "}
-                              {lang.script}
-                            </div>
-                            <div>
-                              <span className={isLight ? "text-[#94A3B8]" : "text-[#546A74]"}>
-                                Region:
-                              </span>{" "}
-                              {lang.region}
-                            </div>
                           </div>
                         </div>
 
