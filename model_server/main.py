@@ -8,11 +8,15 @@ app = FastAPI(title="SatQuery AI Agentic Model Server")
 registry = ModelRegistry()
 
 class QueryRequest(BaseModel):
+    job_id: Optional[str] = None
+    resume_stage: Optional[str] = "UPLOADED"
     task: Optional[str] = None
     query: Optional[str] = ""
     images: Optional[List[str]] = None
     image_paths: Optional[List[str]] = None
     parameters: Optional[dict] = None
+    cached_metadata: Optional[dict] = None
+    previous_turns: Optional[List[dict]] = None
 
 @app.post("/analyze")
 @app.post("/api/query")

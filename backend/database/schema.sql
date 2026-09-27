@@ -140,3 +140,31 @@ CREATE VIEW IF NOT EXISTS evidence_artifacts AS SELECT
     evidence_id, query_id, evidence_type, file_path, label, description, source_modality, created_at
     FROM evidence_items;
 
+-- 10. Space Registry Table (For 10 HF ZeroGPU Spaces Routing & Circuit Breaker)
+CREATE TABLE IF NOT EXISTS space_registry (
+    space_id TEXT PRIMARY KEY,
+    space_name TEXT NOT NULL,
+    space_url TEXT NOT NULL,
+    account_email TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    consecutive_failures INTEGER DEFAULT 0,
+    exhausted_until TEXT,
+    last_ping_at TEXT,
+    created_at TEXT NOT NULL
+);
+
+-- 11. Job Stages Table (For Stateful Multi-Stage Handover & Resumption)
+CREATE TABLE IF NOT EXISTS job_stages (
+    job_id TEXT PRIMARY KEY,
+    query_id TEXT NOT NULL,
+    current_stage TEXT NOT NULL,
+    stage_data_json TEXT,
+    last_active_space TEXT,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (query_id) REFERENCES analysis_requests(query_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_space_status ON space_registry(status);
+CREATE INDEX IF NOT EXISTS idx_job_query_id ON job_stages(query_id);
+
+

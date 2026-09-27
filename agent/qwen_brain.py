@@ -13,10 +13,33 @@ from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from peft import PeftModel
 from transformers import BitsAndBytesConfig
 
-# Assuming the adapter is in the project root or model_a/checkpoints
-ADAPTER_PATH = Path("satquery_qlora_adapter") 
-if not ADAPTER_PATH.exists():
-    ADAPTER_PATH = Path("model_a/checkpoints/satquery_qlora_adapter")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Check for local fine-tuned merged model (fused 10-chunk weights)
+MERGED_MODEL_PATH = None
+for candidate in [
+    PROJECT_ROOT / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
+    PROJECT_ROOT.parent / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
+    PROJECT_ROOT / "satquery_trainer" / "output" / "merged_model",
+    PROJECT_ROOT / "output" / "merged_model",
+]:
+    if candidate.exists() and (candidate / "config.json").exists():
+        MERGED_MODEL_PATH = candidate
+        break
+
+# Check for LoRA adapters
+ADAPTER_PATH = None
+for candidate in [
+    PROJECT_ROOT / "Team Elite" / "satquery_trainer" / "output" / "chunk_10_adapter",
+    PROJECT_ROOT / "Team Elite" / "satquery_trainer" / "output" / "lora_adapter",
+    PROJECT_ROOT.parent / "Team Elite" / "satquery_trainer" / "output" / "chunk_10_adapter",
+    PROJECT_ROOT / "satquery_qlora_adapter",
+    PROJECT_ROOT / "model_a" / "checkpoints" / "satquery_qlora_adapter",
+]:
+    if candidate.exists() and (candidate / "adapter_config.json").exists():
+        ADAPTER_PATH = candidate
+        break
+
 
 class QwenBrain:
     """Singleton class to load and prompt the fine-tuned Qwen-VL Super-Brain."""
@@ -29,37 +52,57 @@ class QwenBrain:
         return cls._instance
 
     def _initialize(self):
-        print("[Qwen Brain] Initializing Qwen2.5-VL-3B-Instruct with 4-bit QLoRA...")
-        self.model_id = "Qwen/Qwen2.5-VL-3B-Instruct"
+        print("[Qwen Brain] Initializing Qwen2.5-VL-3B-Instruct with fine-tuned weights...")
         
-        # 1. 4-bit Quantization Config (Saves massive VRAM)
-        quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-        )
+        has_cuda = torch.cuda.is_available()
+        device_type = "GPU (CUDA)" if has_cuda else "CPU"
+        print(f"[Qwen Brain] Device detected: {device_type}")
 
-        # 2. Load Base Model and Processor
+        model_kwargs = {
+            "trust_remote_code": True,
+            "low_cpu_mem_usage": True,
+        }
+
+        if has_cuda:
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+            )
+            model_kwargs["device_map"] = "auto"
+            model_kwargs["quantization_config"] = quantization_config
+            model_kwargs["torch_dtype"] = torch.float16
+        else:
+            model_kwargs["device_map"] = {"": "cpu"}
+            model_kwargs["torch_dtype"] = torch.float32
+
+        # 2. Prefer local merged 10-chunk fine-tuned model if available
+        if MERGED_MODEL_PATH:
+            self.model_id = str(MERGED_MODEL_PATH)
+            print(f"[Qwen Brain] Loading local fine-tuned merged model from: {MERGED_MODEL_PATH}")
+        else:
+            self.model_id = "Qwen/Qwen2.5-VL-3B-Instruct"
+            print(f"[Qwen Brain] Merged model not found locally; using base model ID: {self.model_id}")
+
+        # 3. Load Model and Processor
         try:
-            self.processor = AutoProcessor.from_pretrained(self.model_id)
+            self.processor = AutoProcessor.from_pretrained(self.model_id, trust_remote_code=True)
             base_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
                 self.model_id,
-                device_map="auto",
-                quantization_config=quantization_config,
-                torch_dtype=torch.float16
+                **model_kwargs
             )
 
-            # 3. Attach QLoRA Adapter if available
-            if ADAPTER_PATH.exists():
+            # 4. Attach QLoRA Adapter if using base model and adapter is available
+            if ADAPTER_PATH and not MERGED_MODEL_PATH:
                 print(f"[Qwen Brain] Attaching QLoRA Adapter from {ADAPTER_PATH}...")
                 self.model = PeftModel.from_pretrained(base_model, str(ADAPTER_PATH))
                 self.is_loaded = True
                 print("[Qwen Brain] QLoRA Adapter attached successfully. Ready for inference.")
             else:
-                print(f"[Qwen Brain] WARNING: QLoRA Adapter not found at {ADAPTER_PATH}. Running Base Qwen-VL instead.")
                 self.model = base_model
                 self.is_loaded = True
+                print("[Qwen Brain] Fine-tuned model loaded successfully. Ready for inference.")
                 
         except Exception as e:
             print(f"[Qwen Brain] ERROR loading model: {e}")

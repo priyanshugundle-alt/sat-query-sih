@@ -13,8 +13,22 @@ import torch
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
-# Base model — no fine-tuning, pure pretrained
-VLM_MODEL_ID = os.environ.get("SATQUERY_VLM_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Check for local fine-tuned merged model (fused 10-chunk weights)
+MERGED_MODEL_PATH = None
+for candidate in [
+    PROJECT_ROOT / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
+    PROJECT_ROOT.parent / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
+    PROJECT_ROOT / "satquery_trainer" / "output" / "merged_model",
+    PROJECT_ROOT / "output" / "merged_model",
+]:
+    if candidate.exists() and (candidate / "config.json").exists():
+        MERGED_MODEL_PATH = candidate
+        break
+
+# Base model fallback
+VLM_MODEL_ID = str(MERGED_MODEL_PATH) if MERGED_MODEL_PATH else os.environ.get("SATQUERY_VLM_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
 
 # Use local cache if already downloaded, else download
 HF_CACHE_DIR = os.environ.get(
@@ -24,14 +38,16 @@ HF_CACHE_DIR = os.environ.get(
 
 # Check if model already cached locally
 def _model_is_cached(model_id: str) -> bool:
+    p = Path(model_id)
+    if p.exists():
+        return True
     cache_path = Path(HF_CACHE_DIR) / "hub" / f"models--{model_id.replace('/', '--')}"
     return cache_path.exists() and any(cache_path.iterdir())
 
 
 class SatQueryVLM:
     """
-    VLM inference using pre-trained Qwen2.5-1.5B-Instruct.
-    No LoRA adapter — pure base model for reliable, general-purpose answers.
+    VLM inference engine supporting local fine-tuned merged weights and pre-trained backbones.
     """
     _instance = None
 
@@ -60,12 +76,15 @@ class SatQueryVLM:
         try:
             from transformers import AutoModelForCausalLM, AutoTokenizer
 
-            print(f"[SatQuery VLM] Loading {self.model_id} (pre-trained, no LoRA)...")
+            if MERGED_MODEL_PATH and str(MERGED_MODEL_PATH) == self.model_id:
+                print(f"[SatQuery VLM] Loading fine-tuned 10-chunk model from local path: {self.model_id}")
+            else:
+                print(f"[SatQuery VLM] Loading {self.model_id}...")
 
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.model_id,
                 trust_remote_code=True,
-                cache_dir=HF_CACHE_DIR,
+                cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
             )
 
             self.model = AutoModelForCausalLM.from_pretrained(
@@ -73,12 +92,12 @@ class SatQueryVLM:
                 torch_dtype=torch.float32,   # CPU — float32 for stability
                 device_map={"": "cpu"},
                 trust_remote_code=True,
-                cache_dir=HF_CACHE_DIR,
+                cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
                 low_cpu_mem_usage=True,       # reduces peak RAM during load
             )
             self.model.eval()
             self.is_loaded = True
-            print(f"[SatQuery VLM] [OK] {self.model_id} loaded successfully. Pure pretrained - no adapter.")
+            print(f"[SatQuery VLM] [OK] {self.model_id} loaded successfully.")
 
         except Exception as e:
             err_str = str(e)
