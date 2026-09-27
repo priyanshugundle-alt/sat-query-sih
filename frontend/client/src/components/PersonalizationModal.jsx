@@ -489,21 +489,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                           </div>
                         </div>
 
-                        {/* Sample Prompt Preview */}
-                        <div
-                          className={`mt-3 pt-2 border-t flex items-center justify-between text-[10px] ${
-                            isLight
-                              ? "border-[#E2E8F0] text-[#64748B]"
-                              : "border-[#1C323B] text-[#8AA3AD]"
-                          }`}
-                        >
-                          <span
-                            className="truncate italic opacity-85"
-                            title={lang.samplePrompt}
-                          >
-                            "{lang.samplePrompt.substring(0, 35)}..."
-                          </span>
-                        </div>
                       </motion.div>
                     );
                   })}
