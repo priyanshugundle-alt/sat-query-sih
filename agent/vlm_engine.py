@@ -18,6 +18,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # Check for local fine-tuned merged model (fused 10-chunk weights)
 MERGED_MODEL_PATH = None
 for candidate in [
+    PROJECT_ROOT / "model_server" / "model_weights" / "merged_model",
+    Path("D:/Team Elite/satquery_trainer/output/merged_model"),
     PROJECT_ROOT / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
     PROJECT_ROOT.parent / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
     PROJECT_ROOT / "satquery_trainer" / "output" / "merged_model",
@@ -74,30 +76,68 @@ class SatQueryVLM:
             print(f"[SatQuery VLM] Specialist rule-based engine will handle responses.")
 
         try:
-            from transformers import AutoModelForCausalLM, AutoTokenizer
+            import json
+            is_vl = False
+            config_file = Path(self.model_id) / "config.json"
+            if config_file.exists():
+                try:
+                    with open(config_file, "r") as cf:
+                        cfg = json.load(cf)
+                        if cfg.get("model_type") == "qwen2_5_vl" or any("VL" in str(a) for a in cfg.get("architectures", [])):
+                            is_vl = True
+                except Exception:
+                    pass
 
             if MERGED_MODEL_PATH and str(MERGED_MODEL_PATH) == self.model_id:
-                print(f"[SatQuery VLM] Loading fine-tuned 10-chunk model from local path: {self.model_id}")
+                print(f"[SatQuery VLM] Loading fine-tuned Team Elite merged model from: {self.model_id}")
             else:
                 print(f"[SatQuery VLM] Loading {self.model_id}...")
 
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                self.model_id,
-                trust_remote_code=True,
-                cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
-            )
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
 
-            self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_id,
-                torch_dtype=torch.float32,   # CPU — float32 for stability
-                device_map={"": "cpu"},
-                trust_remote_code=True,
-                cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
-                low_cpu_mem_usage=True,       # reduces peak RAM during load
-            )
+            if is_vl:
+                from transformers import AutoProcessor
+                try:
+                    from transformers import Qwen2_5_VLForConditionalGeneration
+                    ModelClass = Qwen2_5_VLForConditionalGeneration
+                except ImportError:
+                    from transformers import AutoModelForImageTextToText
+                    ModelClass = AutoModelForImageTextToText
+
+                self.processor = AutoProcessor.from_pretrained(
+                    self.model_id,
+                    trust_remote_code=True,
+                    cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
+                )
+                self.tokenizer = getattr(self.processor, "tokenizer", None)
+                self.model = ModelClass.from_pretrained(
+                    self.model_id,
+                    torch_dtype=dtype,
+                    device_map="auto" if torch.cuda.is_available() else {"": "cpu"},
+                    trust_remote_code=True,
+                    cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
+                    low_cpu_mem_usage=True,
+                )
+            else:
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    self.model_id,
+                    trust_remote_code=True,
+                    cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
+                )
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    self.model_id,
+                    torch_dtype=dtype,
+                    device_map="auto" if torch.cuda.is_available() else {"": "cpu"},
+                    trust_remote_code=True,
+                    cache_dir=HF_CACHE_DIR if not Path(self.model_id).exists() else None,
+                    low_cpu_mem_usage=True,
+                )
+
             self.model.eval()
             self.is_loaded = True
-            print(f"[SatQuery VLM] [OK] {self.model_id} loaded successfully.")
+            print(f"[SatQuery VLM] [OK] {self.model_id} loaded successfully (Vision-Language: {is_vl}).")
 
         except Exception as e:
             err_str = str(e)

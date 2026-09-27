@@ -88,7 +88,7 @@ class RemoteSensingVQAModel(nn.Module):
         top_prob = round(probabilities.get(top_label, pred_data.get("confidence", 0.85)) * 100, 1)
         model_tag = "Model-B ResNet-18" if modality == "Optical" else "Model-A SAR ResNet"
         if self.vlm and self.vlm.is_loaded:
-            model_tag += " + Qwen2.5-1.5B VLM"
+            model_tag = "Team Elite Qwen2.5-VL-3B Multimodal Model"
 
         return {
             "answer": ans,

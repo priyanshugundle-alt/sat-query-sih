@@ -42,7 +42,8 @@ env/
 .DS_Store
 Thumbs.db
 
-# Large model binaries
+# Large model binaries & weights
+model_server/model_weights/
 backend/trained_models/*.safetensors
 backend/trained_models/*.bin
 backend/trained_models/*.pth

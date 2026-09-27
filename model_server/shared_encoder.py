@@ -89,6 +89,23 @@ class QwenFeatureExtractor(nn.Module):
             except Exception as ex:
                 print(f"     [Encoder] Fusion model init notice: {ex}")
 
+        # 4. Team Elite Merged Multimodal Model (Qwen2.5-VL-3B-Instruct)
+        self.team_elite_vlm = None
+        elite_candidates = [
+            ROOT_DIR / "model_server" / "model_weights" / "merged_model",
+            Path(r"D:\Team Elite\satquery_trainer\output\merged_model"),
+            ROOT_DIR.parent / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
+        ]
+        for ec in elite_candidates:
+            if ec.exists() and (ec / "config.json").exists():
+                try:
+                    from agent.vlm_engine import SatQueryVLM
+                    self.team_elite_vlm = SatQueryVLM.get_instance(str(ec))
+                    print(f"     [Encoder] Team Elite Merged Multimodal VLM active ({ec}).")
+                    break
+                except Exception as ex:
+                    print(f"     [Encoder] Team Elite VLM init notice: {ex}")
+
         # Backward compatibility alias
         self.adapter = self.model_b
 
