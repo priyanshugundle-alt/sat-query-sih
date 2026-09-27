@@ -136,7 +136,7 @@ export function ObservationSweep({
                 <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#22D3EE]" />
 
                 {/* Region Tag */}
-                <div className="absolute -top-6 left-0 bg-[#040708]/95 border border-[#12A5B8] px-2 py-0.5 font-mono text-[9px] text-[#FFFFFF] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-sm rounded-md">
+                <div className="absolute -top-6 left-0 bg-[#040708]/95 border border-[#12A5B8] px-2.5 py-0.5 font-mono text-[10px] text-[#FFFFFF] font-bold flex items-center gap-1.5 whitespace-nowrap shadow-sm rounded-md">
                   <span>{region.label}</span>
                   <span className="text-[#8AA3AD] font-normal">[{region.confidence}]</span>
                 </div>
@@ -146,16 +146,16 @@ export function ObservationSweep({
         )}
 
         {/* Top-Left Telemetry Overlay */}
-        <div className="absolute top-3 left-3 bg-[#040708]/85 border border-white/[0.08] px-3 py-1.5 font-mono text-[10px] text-[#F0F6F8] backdrop-blur-md z-20 rounded-lg shadow-sm">
-          <div className="text-[#12A5B8] font-bold tracking-wider">{meta.source}</div>
-          {meta.coords && <div className="text-[#8AA3AD] text-[9px]">{meta.coords}</div>}
+        <div className="absolute top-3 left-3 bg-[#040708]/90 border border-white/[0.1] px-3.5 py-2 font-mono text-xs text-[#F0F6F8] backdrop-blur-md z-20 rounded-lg shadow-sm">
+          <div className="text-[#22D3EE] font-bold tracking-wider">{meta.source}</div>
+          {meta.coords && <div className="text-[#8AA3AD] text-[10px] mt-0.5">{meta.coords}</div>}
         </div>
 
         {/* Bottom-Right Sweep Controller */}
         <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
           <button
             onClick={restartScan}
-            className="px-3 py-1.5 bg-[#040708]/85 hover:bg-[#132127] border border-white/[0.1] hover:border-[#12A5B8] font-mono text-[10px] text-[#F0F6F8] transition-all rounded-md cursor-pointer backdrop-blur-md shadow-sm"
+            className="px-3.5 py-2 bg-[#040708]/90 hover:bg-[#132127] border border-white/[0.12] hover:border-[#12A5B8] font-mono text-xs font-semibold text-[#F0F6F8] transition-all rounded-lg cursor-pointer backdrop-blur-md shadow-sm flex items-center gap-1.5"
           >
             ↻ RE-SCAN
           </button>
@@ -163,40 +163,40 @@ export function ObservationSweep({
       </div>
 
       {/* ─── TECHNICAL EVIDENCE & VLM ANALYSIS PANEL ─── */}
-      <div className="w-full lg:w-[460px] xl:w-[480px] flex flex-col justify-between p-5 ios-glass-card rounded-xl border border-white/[0.08] shadow-lg space-y-3.5 self-stretch">
+      <div className="w-full lg:w-[480px] xl:w-[520px] flex flex-col justify-between p-5 sm:p-6 ios-glass-card rounded-2xl border border-white/[0.1] shadow-2xl space-y-4 self-stretch">
           
           {/* 1. Feature Identification & Title */}
           <div className="pb-3 border-b border-white/[0.08]">
-            <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
-                <span className="font-mono text-[10px] text-[#12A5B8] uppercase font-bold tracking-wider">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#12A5B8] shadow-[0_0_10px_#12A5B8]" />
+                <span className="font-mono text-xs sm:text-[12.5px] text-[#22D3EE] uppercase font-bold tracking-wider">
                   {featureInfo.badge}
                 </span>
               </div>
-              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-white/[0.06] text-[#8AA3AD] border border-white/[0.06] rounded">
+              <span className="font-mono text-[11px] px-2.5 py-0.5 bg-white/[0.08] text-[#9CB5C1] border border-white/[0.1] rounded-md font-medium tracking-wide">
                 SPECIALIST RS-VLM
               </span>
             </div>
-            <h3 className="font-heading font-sora text-base font-bold text-[#FFFFFF] tracking-tight">
+            <h3 className="font-heading font-sora text-xl sm:text-2xl font-bold text-[#FFFFFF] tracking-tight leading-tight">
               {featureTitle || featureInfo.title}
             </h3>
           </div>
 
           {/* 2. Feature Capability Explanation Card */}
-          <div className="p-3 bg-[#040708]/50 border border-white/[0.06] rounded-lg space-y-2">
-            <div className="flex items-center gap-1.5 text-[9.5px] font-mono text-[#8AA3AD] uppercase font-semibold">
-              <Info size={12} className="text-[#12A5B8]" />
+          <div className="p-4 bg-[#040708]/60 border border-white/[0.08] rounded-xl space-y-2.5">
+            <div className="flex items-center gap-2 text-[11px] font-mono text-[#8AA3AD] uppercase font-bold tracking-wider">
+              <Info size={14} className="text-[#22D3EE]" />
               <span>HOW THIS FEATURE WORKS</span>
             </div>
-            <p className="font-sans text-xs text-[#D0E3EA] leading-relaxed">
+            <p className="font-sans text-sm sm:text-[14px] text-[#D0E3EA] leading-relaxed">
               {featureDescription || featureInfo.description}
             </p>
-            <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-white/[0.06]">
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-white/[0.08]">
               {featureInfo.highlights.map((hl, idx) => (
                 <span
                   key={idx}
-                  className="font-mono text-[9px] px-1.5 py-0.5 bg-[#12A5B8]/10 text-[#12A5B8] border border-[#12A5B8]/20 rounded"
+                  className="font-mono text-[11px] sm:text-xs px-2.5 py-1 bg-[#12A5B8]/15 text-[#38BDF8] border border-[#12A5B8]/30 rounded-md font-medium"
                 >
                   {hl}
                 </span>
@@ -205,14 +205,14 @@ export function ObservationSweep({
           </div>
 
           {/* 3. Live Interactive Query Box */}
-          <div className="p-3 bg-[#040708]/35 border border-white/[0.06] rounded-lg space-y-1">
-            <div className="flex items-center justify-between text-[9px] font-mono">
-              <span className="text-[#12A5B8] font-bold uppercase tracking-wider">
+          <div className="p-4 bg-[#040708]/45 border border-white/[0.08] rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="text-[#22D3EE] font-bold uppercase tracking-wider">
                 DEMONSTRATION QUERY
               </span>
-              <span className="text-[#8AA3AD]">{featureInfo.engine}</span>
+              <span className="text-[#9CB5C1] font-mono">{featureInfo.engine}</span>
             </div>
-            <div className="text-xs font-semibold text-[#FFFFFF] leading-snug">
+            <div className="text-sm sm:text-base font-semibold text-[#FFFFFF] leading-snug">
               "{query}"
             </div>
           </div>
@@ -226,19 +226,19 @@ export function ObservationSweep({
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-2.5"
                 >
-                  <div className="p-3 bg-[#040708]/50 border-l-2 border-[#12A5B8] border-r border-t border-b border-white/[0.06] rounded-lg backdrop-blur-sm">
-                    <span className="text-[9px] font-bold text-[#12A5B8] block mb-1 uppercase tracking-wider font-mono">
+                  <div className="p-4 bg-[#040708]/60 border-l-[3px] border-[#12A5B8] border-r border-t border-b border-white/[0.08] rounded-xl backdrop-blur-md shadow-inner">
+                    <span className="text-[11px] sm:text-xs font-bold text-[#22D3EE] block mb-1.5 uppercase tracking-wider font-mono">
                       SATQUERY VLM {taskType === "VQA" ? "ANSWER" : "DETECTED FINDINGS"}
                     </span>
-                    <p className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
+                    <p className="font-sans text-sm sm:text-[14.5px] font-medium text-[#F0F6F8] leading-relaxed">
                       {answer}
                     </p>
                   </div>
                 </motion.div>
               ) : (
-                <div className="p-3.5 bg-[#040708]/40 border border-white/[0.06] flex items-center justify-center gap-2.5 text-[#8AA3AD] text-xs rounded-lg">
-                  <span className="w-2 h-2 rounded-full bg-[#12A5B8] animate-ping" />
-                  <span className="font-mono text-[11px] text-[#D0E3EA]">
+                <div className="p-4 bg-[#040708]/50 border border-white/[0.08] flex items-center justify-center gap-3 text-sm rounded-xl">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#12A5B8] animate-ping" />
+                  <span className="font-mono text-xs sm:text-sm text-[#D0E3EA]">
                     Sweeping imagery & synthesizing spatial response...
                   </span>
                 </div>

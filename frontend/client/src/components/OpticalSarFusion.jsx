@@ -119,56 +119,56 @@ export function OpticalSarFusion({ onInvestigateInWorkstation }) {
         </div>
 
         {/* Right (Col 9-12): Cross-Modal Natural Language Query Panel */}
-        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl space-y-3 h-full">
+        <div className="lg:col-span-4 flex flex-col justify-between p-5 sm:p-6 ios-glass-card border border-white/[0.1] rounded-2xl space-y-4 h-full shadow-2xl">
           
-          <div>
+          <div className="space-y-3.5">
             {/* Header / Query */}
             <div>
-              <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
+              <div className="font-mono text-xs sm:text-[12.5px] text-[#22D3EE] uppercase font-bold tracking-wider mb-1.5">
                 MULTIMODAL QUERY / FUSION
               </div>
-              <div className="text-sm font-bold text-[#FFFFFF]">
+              <div className="text-base sm:text-lg font-bold text-[#FFFFFF] tracking-tight leading-snug">
                 "Does the structure identified in the optical image have corresponding SAR evidence?"
               </div>
             </div>
 
             {/* Feature Capability Overview */}
-            <div className="p-2.5 bg-[#080E11]/70 border border-white/[0.06] rounded-lg space-y-1 mt-3">
-              <div className="flex items-center gap-1.5 text-[9px] font-mono text-[#8AA3AD] uppercase font-semibold">
-                <Info size={11} className="text-[#12A5B8]" />
+            <div className="p-3.5 sm:p-4 bg-[#080E11]/70 border border-white/[0.08] rounded-xl space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-mono text-[#8AA3AD] uppercase font-bold tracking-wider">
+                <Info size={14} className="text-[#22D3EE]" />
                 <span>HOW THIS FEATURE WORKS</span>
               </div>
-              <p className="font-sans text-[11px] text-[#D0E3EA] leading-relaxed">
+              <p className="font-sans text-xs sm:text-[13px] text-[#D0E3EA] leading-relaxed">
                 Fuses optical multispectral imagery with Sentinel-1 SAR C-band microwave backscatter to corroborate physical structures through cloud cover, smoke, and varying solar illumination.
               </p>
             </div>
 
             {/* Scientific Cross-Modal Findings */}
-            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs mt-3">
+            <div className="space-y-3 pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
               
-              <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#12A5B8] rounded-lg">
-                <div className="text-[9px] font-bold text-[#12A5B8] uppercase tracking-wider mb-0.5">
+              <div className="p-3.5 bg-[#080E11]/80 border border-white/[0.08] border-l-[3px] border-l-[#12A5B8] rounded-xl">
+                <div className="text-[11px] sm:text-xs font-bold text-[#22D3EE] uppercase tracking-wider mb-1">
                   OPTICAL EVIDENCE
                 </div>
-                <div className="font-sans text-xs text-[#F0F6F8]">
+                <div className="font-sans text-xs sm:text-[13.5px] text-[#F0F6F8] leading-relaxed">
                   Identified rectangular commercial footprint with high spectral reflectance.
                 </div>
               </div>
 
-              <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#0E7C8A] rounded-lg">
-                <div className="text-[9px] font-bold text-[#0E7C8A] uppercase tracking-wider mb-0.5">
+              <div className="p-3.5 bg-[#080E11]/80 border border-white/[0.08] border-l-[3px] border-l-[#0E7C8A] rounded-xl">
+                <div className="text-[11px] sm:text-xs font-bold text-[#38BDF8] uppercase tracking-wider mb-1">
                   SAR RADAR CORROBORATION
                 </div>
-                <div className="font-sans text-xs text-[#F0F6F8]">
+                <div className="font-sans text-xs sm:text-[13.5px] text-[#F0F6F8] leading-relaxed">
                   C-band backscatter confirms strong metallic corner-reflector dihedral return.
                 </div>
               </div>
 
-              <div className="p-2.5 bg-[#080E11]/80 border border-white/[0.06] border-l-2 border-l-[#22D3EE] rounded-lg">
-                <div className="text-[9px] font-bold text-[#22D3EE] uppercase tracking-wider mb-0.5">
+              <div className="p-3.5 bg-[#080E11]/80 border border-white/[0.08] border-l-[3px] border-l-[#22D3EE] rounded-xl">
+                <div className="text-[11px] sm:text-xs font-bold text-[#10B981] uppercase tracking-wider mb-1">
                   CROSS-SENSOR CONCLUSION
                 </div>
-                <div className="font-sans text-xs text-[#F0F6F8]">
+                <div className="font-sans text-xs sm:text-[13.5px] text-[#F0F6F8] leading-relaxed">
                   Confirmed permanent industrial structure. Zero shadow or optical artifact.
                 </div>
               </div>

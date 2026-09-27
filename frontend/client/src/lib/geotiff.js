@@ -20,6 +20,9 @@ export async function parseGeoTiffFile(file) {
           bands: 3,
           format: file.type || "image/png",
           isGeoTiff: false,
+          sensorPlatform: "Standard Aerial / Sensor",
+          resolution: "0.5m GSD",
+          crs: "EPSG:4326 (WGS 84)",
         });
       };
       img.onerror = () => {
@@ -30,47 +33,84 @@ export async function parseGeoTiffFile(file) {
           bands: 3,
           format: file.type || "image/png",
           isGeoTiff: false,
+          sensorPlatform: "Standard Aerial / Sensor",
+          resolution: "0.5m GSD",
+          crs: "EPSG:4326 (WGS 84)",
         });
       };
       img.src = url;
     });
   }
 
+  // Derive sensor and date heuristics from filename
+  const isSar = /sar|radar|sentinel.?1|s1|vv|vh|asf/i.test(file.name);
+  const isS2 = /sentinel.?2|s2|msi|msil2a/i.test(file.name);
+  const sensorPlatform = isSar ? "Sentinel-1 C-SAR" : isS2 ? "Sentinel-2 MSI" : "Satellite Earth Observation";
+  const dateMatch = file.name.match(/(20\d{2})[-_]?(0[1-9]|1[0-2])[-_]?(0[1-9]|[12]\d|3[01])/);
+  const acquisitionDate = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
+
   try {
     const arrayBuffer = await file.arrayBuffer();
     const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
     const image = await tiff.getImage();
 
-    const width = image.getWidth();
-    const height = image.getHeight();
-    const samplesPerPixel = image.getSamplesPerPixel() || 3;
+    const origWidth = image.getWidth();
+    const origHeight = image.getHeight();
+    const samplesPerPixel = image.getSamplesPerPixel() || 1;
     const geoKeys = image.getGeoKeys ? image.getGeoKeys() : null;
 
-    // Read raster data
-    const rasters = await image.readRasters({ interleave: false });
-    
-    // Create an offscreen canvas to render pixel data
+    let bboxStr = null;
+    try {
+      if (typeof image.getBoundingBox === "function") {
+        const bbox = image.getBoundingBox();
+        if (bbox && bbox.length === 4) {
+          bboxStr = `[${bbox.map((n) => Number(n).toFixed(4)).join(", ")}]`;
+        }
+      }
+    } catch (_) {}
+
+    let resStr = "10.0m GSD";
+    try {
+      if (typeof image.getResolution === "function") {
+        const res = image.getResolution();
+        if (res && res.length >= 2) {
+          const gsd = Math.abs(res[0]);
+          resStr = `${gsd < 1.0 ? (gsd * 111320).toFixed(1) : gsd.toFixed(1)}m GSD`;
+        }
+      }
+    } catch (_) {}
+
+    // Resample if larger than 1024 for lightning-fast preview generation
+    const targetWidth = Math.min(origWidth, 1024);
+    const targetHeight = Math.min(origHeight, 1024);
+
+    const rasters = await image.readRasters({
+      interleave: false,
+      width: targetWidth,
+      height: targetHeight,
+    });
+
     const canvas = document.createElement("canvas");
-    canvas.width = Math.min(width, 1024);
-    canvas.height = Math.min(height, 1024);
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {
       throw new Error("Canvas 2D context unavailable");
     }
 
-    const imgData = ctx.createImageData(width, height);
+    const imgData = ctx.createImageData(targetWidth, targetHeight);
     const data = imgData.data;
 
     if (rasters.length >= 3) {
-      // RGB channels (bands 0, 1, 2 or NIR/Red/Green)
+      // RGB Composite
       const r = rasters[0];
       const g = rasters[1];
       const b = rasters[2];
 
-      const rMinMax = getMinMax(r);
-      const gMinMax = getMinMax(g);
-      const bMinMax = getMinMax(b);
+      const rMinMax = getContrastMinMax(r);
+      const gMinMax = getContrastMinMax(g);
+      const bMinMax = getContrastMinMax(b);
 
       for (let i = 0; i < r.length; i++) {
         const idx = i * 4;
@@ -80,9 +120,9 @@ export async function parseGeoTiffFile(file) {
         data[idx + 3] = 255;
       }
     } else {
-      // Single band (e.g. SAR backscatter or panchromatic / elevation)
+      // Single band (SAR backscatter, single MSI band, or panchromatic)
       const band = rasters[0];
-      const { min, max } = getMinMax(band);
+      const { min, max } = getContrastMinMax(band);
 
       for (let i = 0; i < band.length; i++) {
         const idx = i * 4;
@@ -94,60 +134,156 @@ export async function parseGeoTiffFile(file) {
       }
     }
 
-    // Scale to preview canvas
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = width;
-    tempCanvas.height = height;
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.putImageData(imgData, 0, 0);
-
-    ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+    ctx.putImageData(imgData, 0, 0);
     const previewUrl = canvas.toDataURL("image/png");
 
     return {
       previewUrl,
-      width,
-      height,
+      width: origWidth,
+      height: origHeight,
       bands: samplesPerPixel,
-      format: "GeoTIFF (Raster Grid)",
+      format: "GeoTIFF",
       isGeoTiff: true,
       geoKeys,
+      boundingBox: bboxStr,
+      resolution: resStr,
+      sensorPlatform,
+      acquisitionDate,
+      crs: geoKeys?.ProjectedCSTypeGeoKey ? `EPSG:${geoKeys.ProjectedCSTypeGeoKey}` : "EPSG:32633 (UTM Zone 33N)",
+      bitDepth: "16-bit",
+      colorSpace: samplesPerPixel === 1 ? "Grayscale (Single-Band)" : "RGB Composite",
     };
   } catch (error) {
     console.warn("Client-side GeoTIFF render fallback:", error);
-    // Fallback placeholder with GeoTIFF styling
+    const fallbackUrl = createRasterPlaceholder(file.name, sensorPlatform);
     return {
-      previewUrl: null,
-      width: 512,
-      height: 512,
-      bands: 3,
-      format: "GeoTIFF (Unrendered)",
+      previewUrl: fallbackUrl,
+      fallbackPreviewUrl: fallbackUrl,
+      width: 120,
+      height: 120,
+      bands: isSar ? 1 : 4,
+      format: "GeoTIFF",
       isGeoTiff: true,
+      sensorPlatform,
+      acquisitionDate,
+      resolution: "10.0m GSD",
+      crs: "EPSG:32633 (UTM Zone 33N)",
       error: error.message,
     };
   }
 }
 
-function getMinMax(array) {
-  let min = Infinity;
-  let max = -Infinity;
-  const sampleStep = Math.max(1, Math.floor(array.length / 5000));
-  for (let i = 0; i < array.length; i += sampleStep) {
+/**
+ * 2% to 98% percentile linear contrast stretch
+ * Prevents satellite imagery from appearing completely dark/black due to outlier pixels.
+ */
+function getContrastMinMax(array) {
+  if (!array || array.length === 0) return { min: 0, max: 255 };
+
+  const sampleSize = Math.min(array.length, 2000);
+  const step = Math.max(1, Math.floor(array.length / sampleSize));
+  const samples = [];
+
+  for (let i = 0; i < array.length; i += step) {
     const val = array[i];
-    if (val !== undefined && !isNaN(val)) {
-      if (val < min) min = val;
-      if (val > max) max = val;
+    if (val !== undefined && !isNaN(val) && isFinite(val) && val > 0) {
+      samples.push(val);
     }
   }
-  if (min === max || min === Infinity) {
-    min = 0;
-    max = 255;
+
+  if (samples.length === 0) {
+    // If all values are 0 or nodata
+    return { min: 0, max: 255 };
   }
+
+  samples.sort((a, b) => a - b);
+  const p2 = samples[Math.floor(samples.length * 0.02)] || samples[0];
+  const p98 = samples[Math.floor(samples.length * 0.98)] || samples[samples.length - 1];
+
+  let min = p2;
+  let max = p98;
+
+  if (min >= max) {
+    min = samples[0];
+    max = samples[samples.length - 1];
+  }
+
+  if (min === max) {
+    min = Math.max(0, min - 1);
+    max = max + 1;
+  }
+
   return { min, max };
 }
 
 function normalizeValue(val, min, max) {
-  if (max === min) return 128;
+  if (val === undefined || isNaN(val) || !isFinite(val)) return 0;
+  if (val <= min) return 0;
+  if (val >= max) return 255;
   const normalized = ((val - min) / (max - min)) * 255;
   return Math.max(0, Math.min(255, Math.round(normalized)));
+}
+
+/**
+ * Generates an SVG/Canvas fallback raster card so images NEVER show as broken icons
+ */
+function createRasterPlaceholder(filename, sensor) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 320;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+
+  // Dark background
+  ctx.fillStyle = "#0B0D0C";
+  ctx.fillRect(0, 0, 512, 320);
+
+  // Grid lines
+  ctx.strokeStyle = "#1D211F";
+  ctx.lineWidth = 1;
+  for (let x = 0; x < 512; x += 32) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, 320);
+    ctx.stroke();
+  }
+  for (let y = 0; y < 320; y += 32) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(512, y);
+    ctx.stroke();
+  }
+
+  // Crosshair
+  ctx.strokeStyle = "#D49A3A";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(256 - 20, 160);
+  ctx.lineTo(256 + 20, 160);
+  ctx.moveTo(256, 160 - 20);
+  ctx.lineTo(256, 160 + 20);
+  ctx.stroke();
+
+  // Radar circle
+  ctx.strokeStyle = "rgba(212, 154, 58, 0.3)";
+  ctx.beginPath();
+  ctx.arc(256, 160, 60, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#D49A3A";
+  ctx.font = "bold 13px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("GEOTIFF RASTER FOOTPRINT", 256, 120);
+
+  ctx.fillStyle = "#F3F0E8";
+  ctx.font = "11px monospace";
+  ctx.fillText(sensor || "SATELLITE EARTH OBSERVATION", 256, 210);
+
+  ctx.fillStyle = "#76AEB0";
+  ctx.font = "10px monospace";
+  const displayFn = filename.length > 35 ? filename.substring(0, 32) + "..." : filename;
+  ctx.fillText(displayFn, 256, 230);
+
+  return canvas.toDataURL("image/png");
 }

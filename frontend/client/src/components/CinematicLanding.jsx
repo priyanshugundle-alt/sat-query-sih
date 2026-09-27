@@ -357,9 +357,9 @@ export function CinematicLanding({
                 </p>
               </div>
 
-              <div className="font-mono text-[11px] text-[#8AA3AD] flex items-center gap-2 flex-shrink-0">
-                <Clock size={13} className="text-[#12A5B8]" />
-                <span>SYABRU BESI, NEPAL · 18 OCT 2023 ↔ 27 AUG 2026</span>
+              <div className="font-mono text-xs sm:text-[12.5px] text-[#D0E3EA] flex items-center gap-2 flex-shrink-0 bg-white/[0.05] border border-white/[0.1] px-3.5 py-2 rounded-lg shadow-sm">
+                <Clock size={15} className="text-[#22D3EE]" />
+                <span className="font-semibold">SYABRU BESI, NEPAL · 18 OCT 2023 ↔ 27 AUG 2026</span>
               </div>
             </div>
 
@@ -450,19 +450,19 @@ export function CinematicLanding({
             </div>
 
             {/* 1. Core End-to-End Execution Flow (5 Sequential Steps) */}
-            <div className="p-5 sm:p-6 ios-glass-card border border-white/[0.08] rounded-xl space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/[0.06]">
-                <div className="font-mono text-[10px] text-[#12A5B8] uppercase tracking-widest font-bold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-sm bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]" />
+            <div className="p-5 sm:p-7 ios-glass-card border border-white/[0.1] rounded-2xl space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/[0.08]">
+                <div className="font-mono text-xs sm:text-[13px] text-[#22D3EE] uppercase tracking-widest font-bold flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#12A5B8] shadow-[0_0_10px_#12A5B8]" />
                   <span>5-STAGE AGENTIC EXECUTION FLOW</span>
                 </div>
-                <div className="font-mono text-[10px] text-[#8AA3AD]">
+                <div className="font-mono text-xs sm:text-[12.5px] text-[#8AA3AD]">
                   <span>CONTRACT: </span>
                   <span className="text-[#10B981] font-bold">DETERMINISTIC · ZERO HALLUCINATION</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 font-mono text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 font-mono">
                 {[
                   {
                     step: "01",
@@ -480,7 +480,7 @@ export function CinematicLanding({
                     engine: "InputValidator.java",
                     desc: "CRS & BBox Overlap Check",
                     sub: "Validates GeoTIFF metadata, WGS 84 spatial overlap, and GSD resolution bounds.",
-                    color: "#12A5B8",
+                    color: "#22D3EE",
                   },
                   {
                     step: "03",
@@ -489,7 +489,7 @@ export function CinematicLanding({
                     engine: "ToolRegistry.java",
                     desc: "Deterministic Task Selection",
                     sub: "Zero-Spring Java 21 engine verifies parameter rules and picks specialist handler.",
-                    color: "#0E7C8A",
+                    color: "#38BDF8",
                   },
                   {
                     step: "04",
@@ -512,25 +512,25 @@ export function CinematicLanding({
                 ].map((st) => (
                   <div
                     key={st.step}
-                    className="p-3.5 bg-[#040708]/35 border border-white/[0.08] hover:border-[#12A5B8]/40 transition-all flex flex-col justify-between rounded-lg backdrop-blur-sm shadow-sm"
+                    className="p-4 bg-[#040708]/50 border border-white/[0.08] hover:border-[#12A5B8]/60 transition-all flex flex-col justify-between rounded-xl backdrop-blur-sm shadow-md"
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] text-[#8AA3AD]">{st.step} · STEP</span>
-                        <span className="text-[8.5px] px-1.5 py-0.5 bg-white/[0.06] rounded font-bold text-[#D0E3EA]">
+                        <span className="text-[10px] sm:text-[11px] text-[#8AA3AD] font-bold">{st.step} · STEP</span>
+                        <span className="text-[9.5px] px-2 py-0.5 bg-white/[0.08] border border-white/[0.1] rounded font-bold text-[#D0E3EA]">
                           {st.badge}
                         </span>
                       </div>
-                      <span className="font-bold text-sm block mt-1" style={{ color: st.color }}>
+                      <span className="font-bold text-base sm:text-[17px] block mt-1.5" style={{ color: st.color }}>
                         {st.title}
                       </span>
-                      <span className="text-[9.5px] text-[#12A5B8] block font-mono mt-0.5">
+                      <span className="text-[11px] text-[#22D3EE] block font-mono mt-0.5 font-medium">
                         {st.engine}
                       </span>
                     </div>
-                    <div className="pt-2.5 border-t border-[#1C323B]/60 mt-3 text-[11px]">
-                      <div className="text-[#F0F6F8] font-semibold text-[11px] leading-snug">{st.desc}</div>
-                      <div className="text-[#8AA3AD] text-[9.5px] mt-1 leading-relaxed">{st.sub}</div>
+                    <div className="pt-3 border-t border-[#1C323B]/80 mt-3.5">
+                      <div className="text-[#F0F6F8] font-bold text-xs sm:text-[12.5px] leading-snug">{st.desc}</div>
+                      <div className="text-[#8AA3AD] text-[10.5px] sm:text-[11px] mt-1.5 leading-relaxed">{st.sub}</div>
                     </div>
                   </div>
                 ))}
@@ -538,20 +538,20 @@ export function CinematicLanding({
             </div>
 
             {/* 2. Interactive Multi-Specialist Engine Deep Dive */}
-            <div className="p-5 sm:p-6 ios-glass-card border border-white/[0.08] rounded-xl space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/[0.06]">
-                <div className="font-mono text-[10px] text-[#12A5B8] uppercase tracking-widest font-bold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-sm bg-[#22D3EE] shadow-[0_0_8px_#22D3EE]" />
+            <div className="p-5 sm:p-7 ios-glass-card border border-white/[0.1] rounded-2xl space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/[0.08]">
+                <div className="font-mono text-xs sm:text-[13px] text-[#22D3EE] uppercase tracking-widest font-bold flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#22D3EE] shadow-[0_0_10px_#22D3EE]" />
                   <span>TASK-SPECIALIZED VLM ENGINES (NO MONOLITHIC MODEL)</span>
                 </div>
-                <div className="font-mono text-[10px] text-[#8AA3AD]">
+                <div className="font-mono text-xs sm:text-[12.5px] text-[#8AA3AD]">
                   <span>SERVING PORT: </span>
-                  <span className="text-[#12A5B8] font-bold">PYTHON FASTAPI :8000</span>
+                  <span className="text-[#22D3EE] font-bold">PYTHON FASTAPI :8000</span>
                 </div>
               </div>
 
               {/* Specialist Selector Tabs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono">
                 {[
                   {
                     id: "geochat",
@@ -577,131 +577,131 @@ export function CinematicLanding({
                     <button
                       key={spec.id}
                       onClick={() => setActiveSpecialist(spec.id)}
-                      className={`p-3 text-left transition-all rounded-lg cursor-pointer border ${
+                      className={`p-3.5 sm:p-4 text-left transition-all rounded-xl cursor-pointer border ${
                         isActive
-                          ? "bg-[#12A5B8]/15 border-[#12A5B8] text-[#FFFFFF] shadow-[0_0_12px_rgba(18,165,184,0.2)]"
-                          : "bg-[#040708]/30 border-white/[0.08] text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#040708]/50"
+                          ? "bg-[#12A5B8]/20 border-[#12A5B8] text-[#FFFFFF] shadow-[0_0_14px_rgba(18,165,184,0.3)]"
+                          : "bg-[#040708]/40 border-white/[0.08] text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#040708]/60"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-[#F0F6F8]">{spec.name}</span>
-                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B8] shadow-[0_0_6px_#12A5B8]" />}
+                        <span className="font-bold text-sm sm:text-[14.5px] text-[#F0F6F8]">{spec.name}</span>
+                        {isActive && <span className="w-2 h-2 rounded-full bg-[#22D3EE] shadow-[0_0_8px_#22D3EE]" />}
                       </div>
-                      <div className="text-[10.5px] mt-1 text-[#D0E3EA]">{spec.task}</div>
-                      <div className="text-[9px] text-[#12A5B8] mt-1 font-semibold">{spec.tag}</div>
+                      <div className="text-xs sm:text-[12.5px] mt-1 text-[#D0E3EA]">{spec.task}</div>
+                      <div className="text-[10.5px] sm:text-[11px] text-[#22D3EE] mt-1.5 font-semibold">{spec.tag}</div>
                     </button>
                   );
                 })}
               </div>
 
               {/* Active Specialist Details Container */}
-              <div className="p-4 bg-[#040708]/35 border border-white/[0.08] rounded-lg font-mono text-xs space-y-3">
+              <div className="p-5 sm:p-6 bg-[#040708]/45 border border-white/[0.08] rounded-xl font-mono space-y-3">
                 {activeSpecialist === "geochat" && (
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-7 space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <div className="md:col-span-7 space-y-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#12A5B8] font-bold uppercase text-[10px]">MISSION:</span>
-                        <span className="text-[#FFFFFF] font-semibold text-xs">Zero-Shot Natural Language RS-VQA & Target Grounding</span>
+                        <span className="text-[#22D3EE] font-bold uppercase text-[11px] sm:text-xs tracking-wider">MISSION:</span>
+                        <span className="text-[#FFFFFF] font-bold text-sm sm:text-base">Zero-Shot Natural Language RS-VQA & Target Grounding</span>
                       </div>
-                      <p className="font-sans text-xs text-[#D0E3EA] leading-relaxed">
-                        Fine-tuned on 120,000 remote-sensing visual question pairs (VRSBench & RSVQA). Ingests high-resolution optical rasters, reasons across land cover and infrastructure, and localizes targets with normalized spatial bounding boxes <code className="text-[#12A5B8] bg-white/[0.06] px-1 py-0.5 rounded">[ymin, xmin, ymax, xmax]</code>.
+                      <p className="font-sans text-xs sm:text-[13.5px] text-[#D0E3EA] leading-relaxed">
+                        Fine-tuned on 120,000 remote-sensing visual question pairs (VRSBench & RSVQA). Ingests high-resolution optical rasters, reasons across land cover and infrastructure, and localizes targets with normalized spatial bounding boxes <code className="text-[#22D3EE] bg-white/[0.08] px-1.5 py-0.5 rounded font-mono">[ymin, xmin, ymax, xmax]</code>.
                       </p>
-                      <div className="pt-2 flex flex-wrap gap-2 text-[10px]">
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#22D3EE]">VQA BLEU-4: 94.2%</span>
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#12A5B8]">Grounding mIoU: 82.4%</span>
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#10B981]">Temp: 0.0 (Deterministic)</span>
+                      <div className="pt-2 flex flex-wrap gap-2 text-xs">
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">VQA BLEU-4: 94.2%</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#12A5B8] font-medium">Grounding mIoU: 82.4%</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#10B981] font-medium">Temp: 0.0 (Deterministic)</span>
                       </div>
                     </div>
-                    <div className="md:col-span-5 space-y-1.5 border-t md:border-t-0 md:border-l border-white/[0.08] pt-2 md:pt-0 md:pl-4 text-[10px]">
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <div className="md:col-span-5 space-y-2 border-t md:border-t-0 md:border-l border-white/[0.08] pt-3 md:pt-0 md:pl-5 text-xs sm:text-[12.5px]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">JAVA ADAPTER</span>
                         <span className="text-[#FFFFFF] font-bold">UniRSAdapter.java</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">TOOL BINDING</span>
-                        <span className="text-[#12A5B8]">VQA_TOOL / GROUNDING_TOOL</span>
+                        <span className="text-[#22D3EE] font-semibold">VQA_TOOL / GROUNDING_TOOL</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">SPATIAL OUTPUT</span>
-                        <span className="text-[#22D3EE]">Bounding Boxes (Normalized)</span>
+                        <span className="text-[#38BDF8] font-semibold">Bounding Boxes (Normalized)</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">BENCHMARK</span>
-                        <span className="text-[#10B981]">VRSBench · DIOR · RSVQA</span>
+                        <span className="text-[#10B981] font-semibold">VRSBench · DIOR · RSVQA</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {activeSpecialist === "vista" && (
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-7 space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <div className="md:col-span-7 space-y-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#12A5B8] font-bold uppercase text-[10px]">MISSION:</span>
-                        <span className="text-[#FFFFFF] font-semibold text-xs">Bi-Temporal Multi-Year Change Detection & Disaster Forensics</span>
+                        <span className="text-[#22D3EE] font-bold uppercase text-[11px] sm:text-xs tracking-wider">MISSION:</span>
+                        <span className="text-[#FFFFFF] font-bold text-sm sm:text-base">Bi-Temporal Multi-Year Change Detection & Disaster Forensics</span>
                       </div>
-                      <p className="font-sans text-xs text-[#D0E3EA] leading-relaxed">
+                      <p className="font-sans text-xs sm:text-[13.5px] text-[#D0E3EA] leading-relaxed">
                         Trained on the CDVQA paired change detection dataset. Compares co-registered pre-event (T1) and post-event (T2) satellite rasters. Discriminates real structural changes (floods, landslides, new construction) from seasonal canopy and atmospheric illumination noise.
                       </p>
-                      <div className="pt-2 flex flex-wrap gap-2 text-[10px]">
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#22D3EE]">Change F1 Score: 89.1%</span>
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#12A5B8]">Pair Validation: Strict WGS 84</span>
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#10B981]">Co-Registration: &lt; 0.4px</span>
+                      <div className="pt-2 flex flex-wrap gap-2 text-xs">
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">Change F1 Score: 89.1%</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#12A5B8] font-medium">Pair Validation: Strict WGS 84</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#10B981] font-medium">Co-Registration: &lt; 0.4px</span>
                       </div>
                     </div>
-                    <div className="md:col-span-5 space-y-1.5 border-t md:border-t-0 md:border-l border-white/[0.08] pt-2 md:pt-0 md:pl-4 text-[10px]">
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <div className="md:col-span-5 space-y-2 border-t md:border-t-0 md:border-l border-white/[0.08] pt-3 md:pt-0 md:pl-5 text-xs sm:text-[12.5px]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">JAVA ADAPTER</span>
                         <span className="text-[#FFFFFF] font-bold">ChangeQaAdapter.java</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">TOOL BINDING</span>
-                        <span className="text-[#12A5B8]">CHANGE_UNDERSTANDING_TOOL</span>
+                        <span className="text-[#22D3EE] font-semibold">CHANGE_UNDERSTANDING_TOOL</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">SPATIAL OUTPUT</span>
-                        <span className="text-[#22D3EE]">Difference Mask & Pixel Delta</span>
+                        <span className="text-[#38BDF8] font-semibold">Difference Mask & Pixel Delta</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">BENCHMARK</span>
-                        <span className="text-[#10B981]">CDVQA · LEVIR-CD · S2Looking</span>
+                        <span className="text-[#10B981] font-semibold">CDVQA · LEVIR-CD · S2Looking</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {activeSpecialist === "bigearthnet" && (
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-7 space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <div className="md:col-span-7 space-y-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#12A5B8] font-bold uppercase text-[10px]">MISSION:</span>
-                        <span className="text-[#FFFFFF] font-semibold text-xs">All-Weather Cross-Modal Sentinel-1 SAR + Sentinel-2 Optical Fusion</span>
+                        <span className="text-[#22D3EE] font-bold uppercase text-[11px] sm:text-xs tracking-wider">MISSION:</span>
+                        <span className="text-[#FFFFFF] font-bold text-sm sm:text-base">All-Weather Cross-Modal Sentinel-1 SAR + Sentinel-2 Optical Fusion</span>
                       </div>
-                      <p className="font-sans text-xs text-[#D0E3EA] leading-relaxed">
+                      <p className="font-sans text-xs sm:text-[13.5px] text-[#D0E3EA] leading-relaxed">
                         Foundation Remote-Sensing VLM fine-tuned on the 110GB BigEarthNet-v2.0 dataset (59GB Sentinel-1 C-band SAR + 51GB Sentinel-2 MSI). Leverages radar microwave backscatter to penetrate dense monsoon clouds and smoke while retaining optical spectral band accuracy.
                       </p>
-                      <div className="pt-2 flex flex-wrap gap-2 text-[10px]">
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#22D3EE]">Dataset: BigEarthNet-MM (110GB)</span>
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#12A5B8]">Cloud Resilience: 100% (SAR Penetration)</span>
-                        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[#10B981]">Modalities: Dual-Pass SAR + Optical</span>
+                      <div className="pt-2 flex flex-wrap gap-2 text-xs">
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">Dataset: BigEarthNet-MM (110GB)</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#12A5B8] font-medium">Cloud Resilience: 100% (SAR Penetration)</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#10B981] font-medium">Modalities: Dual-Pass SAR + Optical</span>
                       </div>
                     </div>
-                    <div className="md:col-span-5 space-y-1.5 border-t md:border-t-0 md:border-l border-white/[0.08] pt-2 md:pt-0 md:pl-4 text-[10px]">
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <div className="md:col-span-5 space-y-2 border-t md:border-t-0 md:border-l border-white/[0.08] pt-3 md:pt-0 md:pl-5 text-xs sm:text-[12.5px]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">JAVA ADAPTER</span>
                         <span className="text-[#FFFFFF] font-bold">EarthGptAdapter.java</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">TOOL BINDING</span>
-                        <span className="text-[#12A5B8]">FUSION_TOOL</span>
+                        <span className="text-[#22D3EE] font-semibold">FUSION_TOOL</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">SPATIAL OUTPUT</span>
-                        <span className="text-[#22D3EE]">Fused Land-Cover Class Vectors</span>
+                        <span className="text-[#38BDF8] font-semibold">Fused Land-Cover Class Vectors</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                      <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">BENCHMARK</span>
-                        <span className="text-[#10B981]">BigEarthNet-v2.0 · Corine LULC</span>
+                        <span className="text-[#10B981] font-semibold">BigEarthNet-v2.0 · Corine LULC</span>
                       </div>
                     </div>
                   </div>
@@ -710,15 +710,15 @@ export function CinematicLanding({
             </div>
 
             {/* 3. System Architecture Standards Bar */}
-            <div className="p-3 ios-glass-card border border-white/[0.08] rounded-xl flex flex-wrap items-center justify-between gap-3 text-[10px] text-[#8AA3AD] font-mono">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                <span className="text-[#D0E3EA] font-semibold">CORE JAVA 21 HTTP CONTROLLER (:8080)</span>
+            <div className="p-4 sm:p-4.5 ios-glass-card border border-white/[0.1] rounded-xl flex flex-wrap items-center justify-between gap-4 text-xs sm:text-[12.5px] text-[#D0E3EA] font-mono shadow-md">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
+                <span className="text-[#FFFFFF] font-bold">CORE JAVA 21 HTTP CONTROLLER (:8080)</span>
                 <span className="text-[#8AA3AD] hidden sm:inline">· ZERO SPRING BOOT AUDITABILITY</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span>SQLITE FORENSIC EVIDENCE DB</span>
-                <span className="text-[#12A5B8]">GDAL WGS 84 CALIBRATION</span>
+              <div className="flex items-center gap-4 sm:gap-6 font-semibold">
+                <span className="text-[#D0E3EA]">SQLITE FORENSIC EVIDENCE DB</span>
+                <span className="text-[#22D3EE]">GDAL WGS 84 CALIBRATION</span>
                 <span className="text-[#10B981]">SHA-256 PROVENANCE</span>
               </div>
             </div>

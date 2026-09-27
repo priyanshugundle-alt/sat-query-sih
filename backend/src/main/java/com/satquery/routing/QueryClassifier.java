@@ -31,7 +31,13 @@ public class QueryClassifier {
             return TaskType.CHANGE_ANALYSIS;
         }
 
-        if (text.contains("where") || text.contains("highlight") || text.contains("locate") || text.contains("box") || text.contains("bounding")) {
+        boolean hasGroundingAction = text.contains("where") || text.contains("highlight") || text.contains("locate") 
+            || text.contains("box") || text.contains("bounding") || text.contains("mark") 
+            || text.contains("marking") || text.contains("detect") || text.contains("segment") 
+            || text.contains("delineat") || text.contains("pinpoint") || text.contains("outline")
+            || text.contains("show where") || text.contains("point out") || text.contains("find");
+
+        if (hasGroundingAction || (text.contains("land type") && (text.contains("mark") || text.contains("show") || text.contains("detect")))) {
             return TaskType.GROUNDING;
         }
 

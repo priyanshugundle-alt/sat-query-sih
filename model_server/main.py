@@ -71,6 +71,52 @@ async def analyze_query(request: QueryRequest, req: Request):
 def health_check():
     return {"status": "ONLINE", "models_loaded": len(registry.models)}
 
+@app.post("/api/preview")
+def generate_preview(req: dict):
+    import os
+    filename = req.get("filename")
+    image_path = req.get("image_path")
+    if not image_path and filename:
+        candidates = [
+            os.path.join("..", "uploads", filename),
+            os.path.join("..", "backend", "uploads", filename),
+            os.path.join("uploads", filename),
+            os.path.join("backend", "uploads", filename)
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                image_path = c
+                break
+    if not image_path or not os.path.exists(image_path):
+        return {"status": "NOT_FOUND"}
+    
+    try:
+        from PIL import Image
+        import numpy as np
+        im = Image.open(image_path)
+        arr = np.array(im, dtype=np.float32)
+        if arr.ndim == 2:
+            norm = ((arr - arr.min()) / (arr.max() - arr.min() + 1e-6) * 255.0).clip(0, 255).astype(np.uint8)
+            out_img = Image.fromarray(norm)
+        elif arr.ndim == 3:
+            if arr.shape[0] in [1, 3, 4] and arr.shape[2] not in [1, 3, 4]:
+                arr = np.transpose(arr, (1, 2, 0))
+            channels = []
+            for c in range(min(arr.shape[2], 3)):
+                ch = arr[:, :, c]
+                ch_norm = ((ch - ch.min()) / (ch.max() - ch.min() + 1e-6) * 255.0).clip(0, 255).astype(np.uint8)
+                channels.append(ch_norm)
+            if len(channels) == 1:
+                out_img = Image.fromarray(channels[0])
+            else:
+                out_img = Image.fromarray(np.stack(channels, axis=-1))
+        
+        preview_path = image_path + ".png"
+        out_img.save(preview_path)
+        return {"status": "SUCCESS", "preview_path": preview_path, "previewUrl": f"/uploads/{os.path.basename(preview_path)}"}
+    except Exception as e:
+        return {"status": "ERROR", "error": str(e)}
+
 if __name__ == "__main__":
     print("Starting SatQuery AI Agentic Model Server on port 5000...")
     uvicorn.run(app, host="0.0.0.0", port=5000)

@@ -93,6 +93,7 @@ export function SatelliteImageryLibraryModal({
   isOpen,
   onClose,
   onSelectScene,
+  onOpenMap,
 }) {
   const [filterModality, setFilterModality] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -233,9 +234,21 @@ export function SatelliteImageryLibraryModal({
                       <span className="text-[#8AA3AD] block text-[9px] uppercase font-bold">CRS / PROJECTION</span>
                       <span className="text-[#12A5B8] font-semibold">{scene.projection}</span>
                     </div>
-                    <div>
-                      <span className="text-[#8AA3AD] block text-[9px] uppercase font-bold">COORDINATES</span>
-                      <span className="text-[#12A5B8] font-semibold">{scene.coordinates}</span>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onOpenMap) onOpenMap(scene.coordinates, scene.name);
+                      }}
+                      className="cursor-pointer hover:bg-[#0B0D0C] p-1 -m-1 border border-transparent hover:border-[#D49A3A]/40 transition-colors group"
+                      title="Click to view on Leaflet Satellite Map"
+                    >
+                      <span className="text-[#9A9A90] flex items-center justify-between text-[9px] uppercase font-bold">
+                        <span>COORDINATES</span>
+                        <span className="text-[#D49A3A] text-[8px] underline">MAP ↗</span>
+                      </span>
+                      <span className="text-[#D49A3A] group-hover:text-[#E4B65A] font-semibold underline decoration-dotted block truncate">
+                        {scene.coordinates}
+                      </span>
                     </div>
                   </div>
                 </div>

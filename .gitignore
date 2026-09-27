@@ -4,14 +4,25 @@ frontend/dist/
 dist/
 
 # Local databases and SQLite runtime
+*.db
+*.db-journal
+*.sqlite3
 backend/*.db
 backend/*.db-journal
+satquery.db
 
 # File uploads and reports generated during runtime
 backend/uploads/*
 !backend/uploads/.gitkeep
 backend/outputs/*
 !backend/outputs/.gitkeep
+
+# Root-level uploads folder - runtime satellite imagery (never commit these)
+uploads/*
+!uploads/.gitkeep
+
+# Presentation outputs
+*.pptx
 
 # IDE files
 .vscode/
@@ -20,6 +31,12 @@ backend/outputs/*
 # Dependencies
 node_modules/
 frontend/node_modules/
+
+# Python virtual environments
+.venv/
+venv/
+env/
+*.egg-info/
 
 # OS specific files
 .DS_Store

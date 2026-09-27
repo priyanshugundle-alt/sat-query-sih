@@ -141,59 +141,59 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
         </div>
 
         {/* Right (Col 9-12): Forensic Observation / Interpretation / Conclusion Panel */}
-        <div className="lg:col-span-4 flex flex-col justify-between p-5 ios-glass-card border border-white/[0.08] rounded-xl space-y-3 h-full">
+        <div className="lg:col-span-4 flex flex-col justify-between p-5 sm:p-6 ios-glass-card border border-white/[0.1] rounded-2xl space-y-4 h-full shadow-2xl">
           
-          <div>
+          <div className="space-y-3.5">
             {/* Header / Query */}
             <div>
-              <div className="font-mono text-[9px] text-[#12A5B8] uppercase font-bold tracking-widest mb-1">
+              <div className="font-mono text-xs sm:text-[12.5px] text-[#22D3EE] uppercase font-bold tracking-wider mb-1.5">
                 BI-TEMPORAL INVESTIGATION / CHANGE
               </div>
-              <div className="text-sm font-bold text-[#FFFFFF]">
+              <div className="text-base sm:text-lg font-bold text-[#FFFFFF] tracking-tight leading-snug">
                 "What changed between October 2023 and August 2026 in Syabru Besi?"
               </div>
             </div>
 
             {/* Feature Capability Overview */}
-            <div className="p-2.5 bg-[#040708]/60 border border-white/[0.06] rounded-lg space-y-1 mt-3">
-              <div className="flex items-center gap-1.5 text-[9px] font-mono text-[#8AA3AD] uppercase font-semibold">
-                <Info size={11} className="text-[#12A5B8]" />
+            <div className="p-3.5 sm:p-4 bg-[#040708]/60 border border-white/[0.08] rounded-xl space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-mono text-[#8AA3AD] uppercase font-bold tracking-wider">
+                <Info size={14} className="text-[#22D3EE]" />
                 <span>HOW THIS FEATURE WORKS</span>
               </div>
-              <p className="font-sans text-[11px] text-[#D0E3EA] leading-relaxed">
+              <p className="font-sans text-xs sm:text-[13px] text-[#D0E3EA] leading-relaxed">
                 Co-registers historical (T1) and post-event (T2) satellite passes to isolate genuine terrain alteration and structural destruction from seasonal atmospheric and illumination noise.
               </p>
             </div>
 
             {/* Strict Scientific Separation */}
-            <div className="space-y-2.5 pt-3 border-t border-[#1C323B]/80 font-mono text-xs mt-3">
+            <div className="space-y-3 pt-3 border-t border-[#1C323B]/80 font-mono text-xs">
               
               {/* 1. OBSERVATION */}
-              <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#8AA3AD] rounded-lg">
-                <div className="text-[9px] font-bold text-[#8AA3AD] uppercase tracking-wider mb-0.5">
+              <div className="p-3.5 bg-[#040708]/80 border border-white/[0.08] border-l-[3px] border-l-[#8AA3AD] rounded-xl">
+                <div className="text-[11px] sm:text-xs font-bold text-[#9CB5C1] uppercase tracking-wider mb-1">
                   01. SATELLITE OBSERVATION
                 </div>
-                <div className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
+                <div className="font-sans text-xs sm:text-[13.5px] text-[#F0F6F8] leading-relaxed">
                   Extensive slope failure and brown sedimentation visible across the main riverbank channel, replacing previous green vegetation canopy.
                 </div>
               </div>
 
               {/* 2. MODEL INTERPRETATION */}
-              <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#12A5B8] rounded-lg">
-                <div className="text-[9px] font-bold text-[#12A5B8] uppercase tracking-wider mb-0.5">
+              <div className="p-3.5 bg-[#040708]/80 border border-white/[0.08] border-l-[3px] border-l-[#12A5B8] rounded-xl">
+                <div className="text-[11px] sm:text-xs font-bold text-[#22D3EE] uppercase tracking-wider mb-1">
                   02. MODEL INTERPRETATION
                 </div>
-                <div className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
+                <div className="font-sans text-xs sm:text-[13.5px] text-[#F0F6F8] leading-relaxed">
                   CDVQA-Siamese model detected catastrophic debris flow / landslide inundation affecting ~18.4% of the localized swath.
                 </div>
               </div>
 
               {/* 3. CONCLUSION */}
-              <div className="p-2.5 bg-[#040708]/80 border border-white/[0.06] border-l-2 border-l-[#0E7C8A] rounded-lg">
-                <div className="text-[9px] font-bold text-[#0E7C8A] uppercase tracking-wider mb-0.5">
+              <div className="p-3.5 bg-[#040708]/80 border border-white/[0.08] border-l-[3px] border-l-[#0E7C8A] rounded-xl">
+                <div className="text-[11px] sm:text-xs font-bold text-[#38BDF8] uppercase tracking-wider mb-1">
                   03. AUDIT CONCLUSION
                 </div>
-                <div className="font-sans text-xs text-[#F0F6F8] leading-relaxed">
+                <div className="font-sans text-xs sm:text-[13.5px] text-[#F0F6F8] leading-relaxed">
                   Significant geological morphology shift and road/river obstruction confirmed in target sector.
                 </div>
               </div>
@@ -201,10 +201,10 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
             </div>
 
             {/* Metadata & Model Confidence */}
-            <div className="pt-2 border-t border-[#1C323B]/80 space-y-1.5 font-mono text-[10px] mt-3">
+            <div className="pt-3 border-t border-[#1C323B]/80 space-y-2 font-mono text-[11px] sm:text-xs">
               <div className="flex justify-between py-0.5">
                 <span className="text-[#8AA3AD]">MODEL CONFIDENCE</span>
-                <span className="text-[#12A5B8] font-bold">89.4% (CALIBRATED)</span>
+                <span className="text-[#22D3EE] font-bold">89.4% (CALIBRATED)</span>
               </div>
               <div className="flex justify-between py-0.5">
                 <span className="text-[#8AA3AD]">SOURCE IMAGERY</span>
@@ -212,7 +212,7 @@ export function BiTemporalInvestigator({ onInvestigateInWorkstation }) {
               </div>
               <div className="flex justify-between py-0.5">
                 <span className="text-[#8AA3AD]">LOCATION</span>
-                <span className="text-[#22D3EE]">Syabru Besi, Nepal (Approx)</span>
+                <span className="text-[#38BDF8] font-medium">Syabru Besi, Nepal (Approx)</span>
               </div>
             </div>
 

@@ -9,6 +9,8 @@ public class Evidence {
     private String label;
     private String description;
     private java.util.List<Number> coordinates;
+    private java.util.Map<String, Object> box;
+    private Double confidence;
 
     public Evidence() {}
 
@@ -33,4 +35,10 @@ public class Evidence {
 
     public java.util.List<Number> getCoordinates() { return coordinates; }
     public void setCoordinates(java.util.List<Number> coordinates) { this.coordinates = coordinates; }
+
+    public java.util.Map<String, Object> getBox() { return box; }
+    public void setBox(java.util.Map<String, Object> box) { this.box = box; }
+
+    public Double getConfidence() { return confidence; }
+    public void setConfidence(Double confidence) { this.confidence = confidence; }
 }

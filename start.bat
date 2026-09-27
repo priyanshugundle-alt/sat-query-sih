@@ -15,8 +15,8 @@ if exist "%USERPROFILE%\.java\jdk-26.0.1\bin\javac.exe" (
     set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.2"
 ) else if exist "C:\Program Files\Java\jdk-21.0.12.1\bin\javac.exe" (
     set "DETECTED_JAVA=C:\Program Files\Java\jdk-21.0.12.1"
-) else if exist "%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64\bin\javac.exe" (
-    set "DETECTED_JAVA=%USERPROFILE%\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64"
+) else if exist "C:\Users\SHUBHA~1\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64\bin\javac.exe" (
+    set "DETECTED_JAVA=C:\Users\SHUBHA~1\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64"
 )
 
 if "%DETECTED_JAVA%"=="" (
@@ -35,7 +35,11 @@ REM 1. Check and start Python Model Server on Port 5000
 netstat -ano | findstr /C:":5000 " | findstr /I "LISTENING" >nul
 if %errorlevel% neq 0 (
     echo [1/3] Starting Python Model Server on Port 5000...
-    start "SatQuery Model Server" cmd /k "cd /d %~dp0model_server && .\venv\Scripts\python.exe main.py"
+    if exist "%~dp0.venv\Scripts\python.exe" (
+        start "SatQuery Model Server" cmd /k "cd /d %~dp0model_server && ..\.venv\Scripts\python.exe main.py"
+    ) else (
+        start "SatQuery Model Server" cmd /k "cd /d %~dp0model_server && .\venv\Scripts\python.exe main.py"
+    )
 ) else (
     echo [1/3] Python Model Server is already active on Port 5000.
 )
@@ -44,7 +48,7 @@ REM 2. Check and start Java Backend on Port 8080
 netstat -ano | findstr /C:":8080 " | findstr /I "LISTENING" >nul
 if %errorlevel% neq 0 (
     echo [2/3] Starting Java Backend on Port 8080...
-    start "SatQuery Java Backend" cmd /k "set JAVA_HOME=%JAVA_HOME%&& cd /d %~dp0backend && .\mvnw.cmd exec:java"
+    start "SatQuery Java Backend" cmd /k "set \"JAVA_HOME=%JAVA_HOME%\" && cd /d %~dp0backend && .\mvnw.cmd exec:java"
 ) else (
     echo [2/3] Java Backend is already active on Port 8080.
 )

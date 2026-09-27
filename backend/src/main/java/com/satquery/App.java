@@ -480,6 +480,19 @@ public class App {
                 if (!file.exists()) {
                     file = new File("backend/" + relativePath);
                 }
+
+                // If browser requests a raw .tif/.tiff image, transparently serve the PNG preview if available
+                if (path.toLowerCase().endsWith(".tif") || path.toLowerCase().endsWith(".tiff")) {
+                    File pngCandidate = new File(file.getAbsolutePath() + ".png");
+                    if (!pngCandidate.exists()) {
+                        String base = file.getAbsolutePath().replaceAll("(?i)\\.tiff?$", "");
+                        pngCandidate = new File(base + "_preview.png");
+                    }
+                    if (pngCandidate.exists()) {
+                        file = pngCandidate;
+                        path = pngCandidate.getName();
+                    }
+                }
             } else {
                 // Serve files from the "sat-query-backend/web" or "web" folder in the project root
                 file = new File("web" + path);
@@ -500,6 +513,7 @@ public class App {
             else if (path.endsWith(".png")) contentType = "image/png";
             else if (path.endsWith(".jpg") || path.endsWith(".jpeg")) contentType = "image/jpeg";
             else if (path.endsWith(".pdf")) contentType = "application/pdf";
+            else if (path.endsWith(".tif") || path.endsWith(".tiff")) contentType = "image/tiff";
 
             byte[] bytes = Files.readAllBytes(file.toPath());
             
@@ -937,6 +951,17 @@ public class App {
         }
     }
 
+    private static boolean hasAsset(List<ImageAsset> list, ImageAsset candidate) {
+        if (candidate == null) return true;
+        for (ImageAsset img : list) {
+            if (img == candidate) return true;
+            if (candidate.getImageId() != null && candidate.getImageId().equals(img.getImageId())) return true;
+            if (candidate.getFilePath() != null && candidate.getFilePath().equalsIgnoreCase(img.getFilePath())) return true;
+            if (candidate.getFileName() != null && candidate.getFileName().equalsIgnoreCase(img.getFileName())) return true;
+        }
+        return false;
+    }
+
     private static List<ImageAsset> resolveImages(QueryRequest request) {
         List<ImageAsset> images = new ArrayList<>();
         if (request == null) return images;
@@ -945,7 +970,7 @@ public class App {
         if (ids != null) {
             for (String id : ids) {
                 ImageAsset asset = resolveSingleAsset(id, request);
-                if (asset != null && !images.contains(asset)) {
+                if (asset != null && !hasAsset(images, asset)) {
                     images.add(asset);
                 }
             }
@@ -956,10 +981,20 @@ public class App {
                 String fId = fAsset.containsKey("id") ? String.valueOf(fAsset.get("id")) : null;
                 if (fId != null) {
                     ImageAsset asset = resolveSingleAsset(fId, request);
-                    if (asset != null && !images.contains(asset)) {
+                    if (asset != null && !hasAsset(images, asset)) {
                         images.add(asset);
                     }
                 }
+            }
+        }
+
+        // Clamp to 1 image for single-image tasks if multiple duplicates were resolved
+        if (request.getRequestedTask() != null && images.size() > 1) {
+            String rt = request.getRequestedTask().toUpperCase();
+            if ("VQA".equals(rt) || "CAPTIONING".equals(rt) || "GROUNDING".equals(rt) || "INFORMATION_EXTRACTION".equals(rt)) {
+                ImageAsset first = images.get(0);
+                images.clear();
+                images.add(first);
             }
         }
 
