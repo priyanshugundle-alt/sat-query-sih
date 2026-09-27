@@ -23,6 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 public class App {
+    private static final Map<String, ImageAsset> imageRegistry = new ConcurrentHashMap<>();
+    private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
+    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000");
+    private static final AgentController agentController = new AgentController(modelClient);
+
     private static int getPort() {
         String envPort = System.getenv("PORT");
         if (envPort != null && !envPort.trim().isEmpty()) {
@@ -32,6 +39,7 @@ public class App {
         }
         return 8080;
     }
+
 
     public static void main(String[] args) throws IOException {
         // Ensure directories exist
@@ -67,7 +75,7 @@ public class App {
         server.createContext("/", new StaticFileHandler());
 
         server.setExecutor(Executors.newFixedThreadPool(10));
-        System.out.println("SatQuery Java Backend starting on port " + PORT + "...");
+        System.out.println("SatQuery Java Backend starting on port " + port + "...");
         server.start();
         System.out.println("SatQuery Java Backend is online.");
     }
