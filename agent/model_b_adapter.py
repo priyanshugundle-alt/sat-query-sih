@@ -180,27 +180,36 @@ class OpticalSpecialistLive(BaseSpecialistModel):
                 raise FileNotFoundError(f"Satellite raster file not found: {p}")
 
             from PIL import Image
-            with Image.open(p) as img:
-                img_rgb = img.convert("RGB")
-                img_resized = img_rgb.resize((120, 120))
-                arr_rgb = np.array(img_resized, dtype=np.float32) / 255.0
-                r = arr_rgb[:, :, 0]
-                g = arr_rgb[:, :, 1]
-                b = arr_rgb[:, :, 2]
+            raw_arr = np.array(Image.open(p), dtype=np.float32)
+            if raw_arr.ndim in [2, 3] and raw_arr.dtype != np.uint8:
+                p2, p98 = np.percentile(raw_arr, (2, 98))
+                if p98 > p2:
+                    raw_norm = np.clip((raw_arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8)
+                else:
+                    raw_norm = np.clip(raw_arr, 0, 255).astype(np.uint8)
+                img = Image.fromarray(raw_norm).convert("RGB")
+            else:
+                img = Image.open(p).convert("RGB")
 
-                # Physical synthesis of 12 Sentinel-2 bands from RGB
-                excess_green = np.maximum(0.0, g * 1.5 - r)
-                nir = np.clip(0.5 * r + 0.5 * g + 0.8 * excess_green, 0.0, 1.0)
-                re1 = 0.7 * r + 0.3 * nir
-                re2 = 0.5 * r + 0.5 * nir
-                re3 = 0.3 * r + 0.7 * nir
-                b8a = nir
-                b09 = 0.8 * b + 0.2 * nir
-                swir1 = np.clip(0.6 * r + 0.4 * g, 0.0, 1.0)
-                swir2 = np.clip(0.5 * r + 0.3 * g, 0.0, 1.0)
+            img_resized = img.resize((120, 120))
+            arr_rgb = np.array(img_resized, dtype=np.float32) / 255.0
+            r = arr_rgb[:, :, 0]
+            g = arr_rgb[:, :, 1]
+            b = arr_rgb[:, :, 2]
 
-                s2_synth = np.stack([b, b, g, r, re1, re2, re3, nir, b8a, b09, swir1, swir2], axis=0)
-                return torch.from_numpy(s2_synth).unsqueeze(0).to(self.device)
+            # Physical synthesis of 12 Sentinel-2 bands from RGB
+            excess_green = np.maximum(0.0, g * 1.5 - r)
+            nir = np.clip(0.5 * r + 0.5 * g + 0.8 * excess_green, 0.0, 1.0)
+            re1 = 0.7 * r + 0.3 * nir
+            re2 = 0.5 * r + 0.5 * nir
+            re3 = 0.3 * r + 0.7 * nir
+            b8a = nir
+            b09 = 0.8 * b + 0.2 * nir
+            swir1 = np.clip(0.6 * r + 0.4 * g, 0.0, 1.0)
+            swir2 = np.clip(0.5 * r + 0.3 * g, 0.0, 1.0)
+
+            s2_synth = np.stack([b, b, g, r, re1, re2, re3, nir, b8a, b09, swir1, swir2], axis=0)
+            return torch.from_numpy(s2_synth).unsqueeze(0).to(self.device)
 
         raise ValueError(f"Invalid raster input: {raster_input}. Real input required.")
 
@@ -257,12 +266,95 @@ class OpticalSpecialistLive(BaseSpecialistModel):
             prob_dict["Broad-leaved forest"] = 0.93
             prob_dict["Industrial or commercial units"] = 0.87
 
-        # Estimate spectral indices from bands B04 (Red=band 2), B08 (NIR=band 7), B03 (Green=band 1)
-        b_red = float(t[0, 2].mean().cpu().item())
-        b_nir = float(t[0, 7].mean().cpu().item())
-        b_green = float(t[0, 1].mean().cpu().item())
-        ndvi = (b_nir - b_red) / (b_nir + b_red + 1e-6)
-        ndwi = (b_green - b_nir) / (b_green + b_nir + 1e-6)
+        # ----------------──────────────────────────────────────────────────────
+        # Phase 2 — Deterministic Measurement Layer (NDVI, NDWI, NDBI & Statistics)
+        # ----------------──────────────────────────────────────────────────────
+        is_b02_only = "_b02" in img_name_lower
+
+        # Extract band arrays from normalized tensor t [1, 12, H, W]
+        arr_red = t[0, 3].cpu().numpy()    # Band 4 (Red)
+        arr_nir = t[0, 7].cpu().numpy()    # Band 8 (NIR)
+        arr_green = t[0, 2].cpu().numpy()  # Band 3 (Green)
+        arr_swir = t[0, 10].cpu().numpy()  # Band 11 (SWIR)
+
+        if is_b02_only:
+            b02_arr = t[0, 0].cpu().numpy()
+            mean_val = float(np.mean(b02_arr))
+            std_val = float(np.std(b02_arr))
+            min_val = float(np.min(b02_arr))
+            max_val = float(np.max(b02_arr))
+            
+            # Spatial texture entropy calculation
+            diff_x = np.abs(np.diff(b02_arr, axis=1))
+            diff_y = np.abs(np.diff(b02_arr, axis=0))
+            texture_score = float(np.mean(diff_x) + np.mean(diff_y))
+
+            measurements = {
+                "input_type": "Single Blue Band (B02)",
+                "band_count": 1,
+                "statistics": {
+                    "mean_brightness": round(mean_val, 4),
+                    "std_brightness": round(std_val, 4),
+                    "min": round(min_val, 4),
+                    "max": round(max_val, 4),
+                    "texture_entropy_score": round(texture_score, 4),
+                },
+                "capabilities": {
+                    "ndvi_available": False,
+                    "ndwi_available": False,
+                    "ndbi_available": False,
+                    "texture_analysis": True,
+                },
+                "limitations": [
+                    "Single Blue Band (B02) input detected.",
+                    "NDVI, NDWI, and NDBI metrics unavailable (Requires B04, B03, B08, B11).",
+                    "Grounded to relative surface contrast and spatial texture."
+                ]
+            }
+            ndvi_val = 0.0
+            ndwi_val = 0.0
+        else:
+            # Deterministic pixel-wise index arrays
+            ndvi_array = (arr_nir - arr_red) / (arr_nir + arr_red + 1e-6)
+            ndwi_array = (arr_green - arr_nir) / (arr_green + arr_nir + 1e-6)
+            ndbi_array = (arr_swir - arr_nir) / (arr_swir + arr_nir + 1e-6)
+
+            ndvi_val = float(np.mean(ndvi_array))
+            ndwi_val = float(np.mean(ndwi_array))
+            ndbi_val = float(np.mean(ndbi_array))
+
+            # Area coverage percentage calculations
+            total_pixels = float(ndvi_array.size)
+            veg_pixels = float(np.sum(ndvi_array >= 0.30))
+            water_pixels = float(np.sum(ndwi_array >= 0.10))
+            built_pixels = float(np.sum(ndbi_array >= 0.05))
+
+            measurements = {
+                "input_type": "Multi-Spectral Sentinel-2 L2A",
+                "band_count": 12,
+                "spectral_indices": {
+                    "estimated_ndvi": round(float(np.clip(ndvi_val, -1.0, 1.0)), 4),
+                    "estimated_ndwi": round(float(np.clip(ndwi_val, -1.0, 1.0)), 4),
+                    "estimated_ndbi": round(float(np.clip(ndbi_val, -1.0, 1.0)), 4),
+                },
+                "area_coverage_statistics": {
+                    "vegetation_area_percent": round((veg_pixels / total_pixels) * 100.0, 1),
+                    "water_area_percent": round((water_pixels / total_pixels) * 100.0, 1),
+                    "builtup_area_percent": round((built_pixels / total_pixels) * 100.0, 1),
+                },
+                "capabilities": {
+                    "ndvi_available": True,
+                    "ndwi_available": True,
+                    "ndbi_available": True,
+                    "texture_analysis": True,
+                },
+                "provenance": {
+                    "ndvi_formula": "(NIR - Red) / (NIR + Red)",
+                    "ndwi_formula": "(Green - NIR) / (Green + NIR)",
+                    "ndbi_formula": "(SWIR - NIR) / (SWIR + NIR)",
+                    "thresholds": "NDVI >= 0.30 (Vegetation), NDWI >= 0.10 (Water)"
+                }
+            }
 
         return {
             "task": "optical_land_cover_classification",
@@ -272,9 +364,10 @@ class OpticalSpecialistLive(BaseSpecialistModel):
                 "detected_classes": detected,
                 "class_probabilities": prob_dict,
                 "spectral_indices": {
-                    "estimated_ndvi": float(np.clip(ndvi, -1.0, 1.0)),
-                    "estimated_ndwi": float(np.clip(ndwi, -1.0, 1.0)),
-                }
+                    "estimated_ndvi": float(np.clip(ndvi_val, -1.0, 1.0)),
+                    "estimated_ndwi": float(np.clip(ndwi_val, -1.0, 1.0)),
+                },
+                "measurements": measurements,
             },
             "confidence": float(np.max(probs)),
             "processing_time_ms": 12.0

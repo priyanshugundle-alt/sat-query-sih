@@ -10,11 +10,21 @@ echo.
 REM Detect and set JAVA_HOME automatically
 set "DETECTED_JAVA="
 if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" set "DETECTED_JAVA=%JAVA_HOME%"
+if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Android\Android Studio\jbr\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Android\Android Studio\jbr"
 if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Java\jdk-26.0.1\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.1"
-if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Java\jdk-26.0.2\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Java\jdk-26.0.2"
 if "%DETECTED_JAVA%"=="" if exist "C:\Program Files\Java\jdk-21.0.12.1\bin\java.exe" set "DETECTED_JAVA=C:\Program Files\Java\jdk-21.0.12.1"
 if "%DETECTED_JAVA%"=="" if exist "%USERPROFILE%\.java\jdk-26.0.1\bin\java.exe" set "DETECTED_JAVA=%USERPROFILE%\.java\jdk-26.0.1"
 
+if "%DETECTED_JAVA%"=="" (
+    for /d %%d in ("C:\Program Files\Microsoft\jdk-21*") do (
+        if exist "%%d\bin\java.exe" set "DETECTED_JAVA=%%d"
+    )
+)
+if "%DETECTED_JAVA%"=="" (
+    for /d %%d in ("C:\Program Files\Eclipse Adoptium\jdk-21*") do (
+        if exist "%%d\bin\java.exe" set "DETECTED_JAVA=%%d"
+    )
+)
 if "%DETECTED_JAVA%"=="" (
     for /d %%d in ("C:\Program Files\Java\jdk*") do (
         if exist "%%d\bin\java.exe" set "DETECTED_JAVA=%%d"

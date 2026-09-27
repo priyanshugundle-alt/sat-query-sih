@@ -2,7 +2,10 @@
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 $candidateJdkPaths = @(
+    "C:\Program Files\Android\Android Studio\jbr",
+    "C:\Program Files\Microsoft\jdk-21",
     "C:\Program Files\Java\jdk-21.0.12.1",
+    "C:\Program Files\Java\jdk-26.0.1",
     "$env:USERPROFILE\.antigravity-ide\extensions\redhat.java-1.56.0-win32-x64\jre\21.0.12.1-win32-x86_64",
     "$env:APPDATA\Code\User\globalStorage\pleiades.java-extension-pack-jdk\java\21"
 )

@@ -194,6 +194,10 @@ public class App {
                 Path targetPath = Paths.get("uploads", filename);
                 Files.write(targetPath, fileData);
 
+                if (filename.toLowerCase().endsWith(".tif") || filename.toLowerCase().endsWith(".tiff")) {
+                    ensureTiffPreview(targetPath);
+                }
+
                 // Read metadata
                 ImageMetadata metadata = metadataReader.read(targetPath);
                 ImageAsset asset = new ImageAsset(imageId, filename, targetPath.toAbsolutePath().toString(), metadata);
@@ -223,6 +227,37 @@ public class App {
                 if (found) return i;
             }
             return -1;
+        }
+    }
+
+    public static void ensureTiffPreview(Path tiffPath) {
+        if (tiffPath == null || !Files.exists(tiffPath)) return;
+        try {
+            Path png1 = Paths.get(tiffPath.toString() + ".png");
+            String base = tiffPath.toString().replaceAll("(?i)\\.tiff?$", "");
+            Path png2 = Paths.get(base + "_preview.png");
+            if (Files.exists(png1) && Files.exists(png2)) return;
+
+            Path venvPy = Paths.get(".venv/Scripts/python.exe");
+            if (!Files.exists(venvPy)) venvPy = Paths.get("../.venv/Scripts/python.exe");
+            if (!Files.exists(venvPy)) venvPy = Paths.get("d:/SIH/sat-query-sih/.venv/Scripts/python.exe");
+            String pythonExe = Files.exists(venvPy) ? venvPy.toAbsolutePath().toString() : "python";
+
+            String pyCode = "import sys; from PIL import Image; import numpy as np; " +
+                    "p = sys.argv[1]; img = Image.open(p); arr = np.array(img, dtype=np.float32); " +
+                    "p2, p98 = np.percentile(arr, (2, 98)); " +
+                    "norm = np.clip((arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8) if p98 > p2 else np.clip(arr, 0, 255).astype(np.uint8); " +
+                    "preview = Image.fromarray(norm); preview.save(sys.argv[2]); preview.save(sys.argv[3])";
+
+            ProcessBuilder pb = new ProcessBuilder(pythonExe, "-c", pyCode,
+                    tiffPath.toAbsolutePath().toString(),
+                    png1.toAbsolutePath().toString(),
+                    png2.toAbsolutePath().toString());
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            p.waitFor(10, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (Exception e) {
+            System.err.println("[Preview] ensureTiffPreview note: " + e.getMessage());
         }
     }
 
@@ -493,11 +528,21 @@ public class App {
                 }
 
                 // If browser requests a raw .tif/.tiff image, transparently serve the PNG preview if available
-                if (path.toLowerCase().endsWith(".tif") || path.toLowerCase().endsWith(".tiff")) {
-                    File pngCandidate = new File(file.getAbsolutePath() + ".png");
+                // If browser requests a raw .tif/.tiff image or .tif.png, transparently serve the PNG preview
+                String lower = path.toLowerCase();
+                if (lower.endsWith(".tif") || lower.endsWith(".tiff") || lower.endsWith(".tif.png")) {
+                    File rawTif = file;
+                    if (lower.endsWith(".tif.png")) {
+                        String rawPath = file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - 4);
+                        rawTif = new File(rawPath);
+                    }
+                    File pngCandidate = new File(rawTif.getAbsolutePath() + ".png");
                     if (!pngCandidate.exists()) {
-                        String base = file.getAbsolutePath().replaceAll("(?i)\\.tiff?$", "");
+                        String base = rawTif.getAbsolutePath().replaceAll("(?i)\\.tiff?$", "");
                         pngCandidate = new File(base + "_preview.png");
+                    }
+                    if (!pngCandidate.exists() && rawTif.exists()) {
+                        ensureTiffPreview(rawTif.toPath());
                     }
                     if (pngCandidate.exists()) {
                         file = pngCandidate;

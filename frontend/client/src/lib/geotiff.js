@@ -137,6 +137,26 @@ export async function parseGeoTiffFile(file) {
     ctx.putImageData(imgData, 0, 0);
     const previewUrl = canvas.toDataURL("image/png");
 
+    const isB02Only = /_b02/i.test(file.name) || (samplesPerPixel === 1 && !isSar);
+    const capabilityProfile = {
+      bandCount: samplesPerPixel,
+      bandsDetected: isB02Only ? ["B02 (Blue)"] : (samplesPerPixel >= 3 ? ["B02 (Blue)", "B03 (Green)", "B04 (Red)", "B08 (NIR)"] : ["Single Channel"]),
+      capabilities: {
+        trueColour: samplesPerPixel >= 3,
+        ndvi: !isB02Only && samplesPerPixel >= 3,
+        ndwi: !isB02Only && samplesPerPixel >= 3,
+        textureAnalysis: true,
+        spatialContrast: true,
+        fullLandcoverCertainty: !isB02Only && samplesPerPixel >= 3,
+      },
+      limitations: isB02Only ? [
+        "Single Blue Band (B02) detected.",
+        "NDVI & NIR vegetation metrics unavailable (Requires B04 Red + B08 NIR).",
+        "Analysis grounded to surface brightness, spatial texture & relative contrast."
+      ] : [],
+      recommendedUpload: "Attach B02, B03, B04, B08 for full multispectral vegetation analysis."
+    };
+
     return {
       previewUrl,
       width: origWidth,
@@ -151,7 +171,8 @@ export async function parseGeoTiffFile(file) {
       acquisitionDate,
       crs: geoKeys?.ProjectedCSTypeGeoKey ? `EPSG:${geoKeys.ProjectedCSTypeGeoKey}` : "EPSG:32633 (UTM Zone 33N)",
       bitDepth: "16-bit",
-      colorSpace: samplesPerPixel === 1 ? "Grayscale (Single-Band)" : "RGB Composite",
+      colorSpace: samplesPerPixel === 1 ? (isB02Only ? "Grayscale (B02 Single-Band)" : "Grayscale (Single-Band)") : "RGB Composite",
+      capabilityProfile,
     };
   } catch (error) {
     console.warn("Client-side GeoTIFF render fallback:", error);

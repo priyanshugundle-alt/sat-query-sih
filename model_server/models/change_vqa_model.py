@@ -50,14 +50,23 @@ class ChangeVQAModel(nn.Module):
         t1_str = ", ".join(t1_classes[:2]) if t1_classes else "Baseline Surface"
         t2_str = ", ".join(t2_classes[:2]) if t2_classes else "Temporal Target"
 
+        is_b02_only = any("b02" in str(p).lower() for p in [img_t1, img_t2])
+
         ans_text = (
             f"Bi-temporal satellite inspection between T1 ({Path(img_t1).name}) and T2 ({Path(img_t2).name}) "
             f"identifies a {shift_pct}% surface reflectance change. Baseline T1 characterized by [{t1_str}], "
             f"transitioning in T2 to [{t2_str}]."
         )
+        if is_b02_only:
+            ans_text += " Note: Input rasters include single-band B02 (Blue band); temporal shift reflects blue surface reflectance & intensity variance."
+
+        limitations = ["Coregistration and atmospheric reflectance normalization applied across temporal scenes."]
+        if is_b02_only:
+            limitations.append("Single-band B02 input detected; multi-spectral vegetation (NDVI) change detection suppressed due to missing Red/NIR bands.")
 
         return {
             "answer": ans_text,
+            "capability_profile": "B02-only" if is_b02_only else "Multispectral",
             "evidence": [{
                 "evidenceType": "CHANGE_MAP",
                 "type": "CHANGE_MAP",
@@ -65,6 +74,6 @@ class ChangeVQAModel(nn.Module):
                 "label": f"Bi-temporal Shift ({shift_pct}%)",
                 "description": f"Pixel difference mask computed across temporal pair: T1 ({t1_str}) vs T2 ({t2_str})."
             }],
-            "limitations": ["Coregistration and atmospheric reflectance normalization applied across temporal scenes."]
+            "limitations": limitations
         }
 

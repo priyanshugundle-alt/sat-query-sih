@@ -18,6 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # Check for local fine-tuned merged model (fused 10-chunk weights)
 MERGED_MODEL_PATH = None
 for candidate in [
+    PROJECT_ROOT / "model_server" / "model_weights" / "merged_model",
     PROJECT_ROOT / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
     PROJECT_ROOT.parent / "Team Elite" / "satquery_trainer" / "output" / "merged_model",
     PROJECT_ROOT / "satquery_trainer" / "output" / "merged_model",

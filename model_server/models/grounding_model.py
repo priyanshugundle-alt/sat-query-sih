@@ -105,7 +105,7 @@ class GroundingModel(nn.Module):
                             "filePath": img_path,
                             "label": veg_label,
                             "confidence": max(80, min(99, veg_conf)),
-                            "coordinates": [vy1, vx1, vy2, vy2],
+                            "coordinates": [vy1, vx1, vy2, vx2],
                             "box": {
                                 "top": round(vy1 / h * 100, 1),
                                 "left": round(vx1 / w * 100, 1),

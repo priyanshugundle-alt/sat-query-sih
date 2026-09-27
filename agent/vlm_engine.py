@@ -30,7 +30,7 @@ for candidate in [
         break
 
 # Base model fallback
-VLM_MODEL_ID = str(MERGED_MODEL_PATH) if MERGED_MODEL_PATH else os.environ.get("SATQUERY_VLM_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+VLM_MODEL_ID = str(MERGED_MODEL_PATH) if MERGED_MODEL_PATH else os.environ.get("SATQUERY_VLM_MODEL", "Qwen/Qwen2.5-VL-7B-Instruct")
 
 # Use local cache if already downloaded, else download
 HF_CACHE_DIR = os.environ.get(
@@ -87,6 +87,7 @@ class SatQueryVLM:
                             is_vl = True
                 except Exception:
                     pass
+            self.is_vl = is_vl
 
             if MERGED_MODEL_PATH and str(MERGED_MODEL_PATH) == self.model_id:
                 print(f"[SatQuery VLM] Loading fine-tuned Team Elite merged model from: {self.model_id}")
@@ -155,18 +156,113 @@ class SatQueryVLM:
         probabilities: Dict[str, float],
         spectral_info: Optional[str] = None,
         modality: str = "Optical",
-        image_path: Optional[str] = None,   # accepted but not used in text-only mode
+        image_path: Optional[str] = None,
     ) -> Optional[str]:
         """
-        Generates an answer using Qwen2.5-1.5B-Instruct with satellite context.
+        Generates an answer using fine-tuned Qwen2.5-VL with real image pixels.
         """
-        if not self.is_loaded or self.model is None or self.tokenizer is None:
+        if not self.is_loaded or self.model is None:
+            return None
+
+        # 1. Primary path: True Multimodal Vision-Language Inference on real pixels
+        if getattr(self, "is_vl", False) and image_path and self.processor is not None:
+            p_img = Path(image_path)
+            if not p_img.is_absolute():
+                p_img = PROJECT_ROOT / p_img
+            if p_img.exists():
+                try:
+                    from qwen_vl_utils import process_vision_info
+                    img_to_feed = str(p_img)
+
+                    # If it's a TIFF raster, use or generate an RGB/grayscale PNG preview for PIL
+                    if str(p_img).lower().endswith((".tif", ".tiff")):
+                        candidate_png = str(p_img) + ".png"
+                        if Path(candidate_png).exists():
+                            img_to_feed = candidate_png
+                        else:
+                            candidate_preview = str(p_img).rsplit(".", 1)[0] + "_preview.png"
+                            if Path(candidate_preview).exists():
+                                img_to_feed = candidate_preview
+                            else:
+                                try:
+                                    from PIL import Image
+                                    import numpy as np
+                                    tiff_img = Image.open(p_img)
+                                    arr = np.array(tiff_img, dtype=np.float32)
+                                    p2, p98 = np.percentile(arr, (2, 98))
+                                    norm = np.clip((arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8) if p98 > p2 else np.clip(arr, 0, 255).astype(np.uint8)
+                                    prev = Image.fromarray(norm)
+                                    prev.save(candidate_png)
+                                    img_to_feed = candidate_png
+                                except Exception as ex:
+                                    print(f"[SatQuery VLM] TIFF preview conversion notice: {ex}")
+
+                    user_content = [
+                        {"type": "image", "image": img_to_feed},
+                        {"type": "text", "text": query or "What is in this satellite image?"}
+                    ]
+                    messages = [
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are SatQuery AI, an expert Senior Earth Observation & Remote Sensing Scientist. "
+                                "Thoroughly analyze the satellite scene imagery, describing visual features, spatial geometry, agricultural parcel patterns, road infrastructure, and land-cover categories in clear scientific detail."
+                            )
+                        },
+                        {"role": "user", "content": user_content}
+                    ]
+
+                    text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+                    image_inputs, video_inputs, *rest = process_vision_info(messages)
+
+                    inputs = self.processor(
+                        text=[text],
+                        images=image_inputs,
+                        padding=True,
+                        return_tensors="pt"
+                    )
+
+                    device = next(self.model.parameters()).device
+                    inputs = {k: v.to(device) if hasattr(v, "to") else v for k, v in inputs.items()}
+
+                    with torch.inference_mode():
+                        out_ids = self.model.generate(
+                            **inputs,
+                            max_new_tokens=300,
+                            do_sample=False,
+                        )
+
+                    new_tokens = [
+                        out_ids[i][len(inputs["input_ids"][i]):] for i in range(len(inputs["input_ids"]))
+                    ]
+                    answer = self.processor.batch_decode(
+                        new_tokens,
+                        skip_special_tokens=True,
+                        clean_up_tokenization_spaces=False
+                    )[0].strip()
+
+                    if answer:
+                        # If the fine-tuned model outputs a short 1-3 word VQA label (e.g. 'water body'), enrich it scientifically
+                        words = answer.strip().split()
+                        if len(words) <= 4 and detected_classes:
+                            sensor_desc = "Multispectral optical" if modality == "Optical" else "Sentinel-1 SAR"
+                            classes_str = ", ".join(detected_classes[:3])
+                            answer = f"Based on {sensor_desc} satellite analysis, the target is identified as **{answer.strip()}**. Primary land-cover features mapped include {classes_str}.{spectral_info or ''}"
+
+                        print(f"[SatQuery VLM] True Vision-Language Answer: '{answer}' ({len(answer)} chars)")
+                        return answer
+
+                except Exception as e:
+                    print(f"[SatQuery VLM] Multimodal vision inference warning: {e}")
+
+        # 2. Secondary fallback: Semantic text reasoning with telemetry context
+        if self.tokenizer is None:
             return None
 
         try:
             classes_str = ", ".join(detected_classes[:5]) if detected_classes else "Unclassified terrain"
-            top_class   = detected_classes[0] if detected_classes else "Unknown"
-            top_prob    = probabilities.get(top_class, 0.90)
+            top_class = detected_classes[0] if detected_classes else "Unknown"
+            top_prob = probabilities.get(top_class, 0.90)
 
             context_parts = [
                 f"Sensor: {modality} satellite",
@@ -196,14 +292,6 @@ class SatQueryVLM:
                 }
             ]
 
-            # Multi-threaded CPU acceleration
-            try:
-                import multiprocessing
-                torch.set_num_threads(multiprocessing.cpu_count())
-            except Exception:
-                pass
-
-            # Apply Qwen chat template
             text = self.tokenizer.apply_chat_template(
                 messages,
                 tokenize=False,
@@ -211,6 +299,8 @@ class SatQueryVLM:
             )
 
             inputs = self.tokenizer([text], return_tensors="pt")
+            device = next(self.model.parameters()).device
+            inputs = {k: v.to(device) if hasattr(v, "to") else v for k, v in inputs.items()}
 
             with torch.inference_mode():
                 out_ids = self.model.generate(
@@ -222,15 +312,14 @@ class SatQueryVLM:
                     repetition_penalty=1.1,
                 )
 
-            # Strip input tokens — only keep generated part
-            new_tokens = out_ids[0][len(inputs.input_ids[0]):]
+            new_tokens = out_ids[0][len(inputs["input_ids"][0]):]
             answer = self.tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
             if answer:
-                print(f"[SatQuery VLM] Generated answer ({len(answer)} chars)")
+                print(f"[SatQuery VLM] Generated telemetry answer ({len(answer)} chars)")
                 return answer
 
         except Exception as e:
-            print(f"[SatQuery VLM] Generation warning: {e}")
+            print(f"[SatQuery VLM] Telemetry fallback warning: {e}")
 
         return None
