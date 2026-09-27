@@ -8,13 +8,7 @@ import {
   Sparkles,
   Layers,
   Sliders,
-  Volume2,
-  ShieldCheck,
   Compass,
-  Sun,
-  Moon,
-  Palette,
-  CheckCircle2,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { toast } from "sonner";
@@ -40,7 +34,7 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
           description:
             newTheme === "light"
               ? "Cartosat Solar Light palette active with high daylight contrast."
-              : "ISRO Deep Space Dark palette active with telemetry glow.",
+              : "Deep Space Dark palette active with telemetry glow.",
         }
       );
     }
@@ -70,21 +64,8 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
   const handleSelectLanguage = (lang) => {
     setLanguage(lang);
     toast.success(`Active Language: ${lang.name} (${lang.nativeName})`, {
-      description: `ISRO VQA Prompt parsing & multi-script OCR calibrated for ${lang.script}`,
+      description: `Language preset activated for spatial query engine.`,
     });
-  };
-
-  const handleSpeakSample = (e, promptText) => {
-    e.stopPropagation();
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(promptText);
-      utterance.rate = 0.95;
-      window.speechSynthesis.speak(utterance);
-      toast.info("Synthesizing audio preview in local phonetics...");
-    } else {
-      toast.error("Text-to-Speech audio not supported in this browser");
-    }
   };
 
   return (
@@ -271,33 +252,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
-                    <button
-                      onClick={(e) => handleSpeakSample(e, currentLanguage.samplePrompt)}
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                        isLight
-                          ? "bg-white border-[#CBD5E1] text-[#0F172A] hover:border-[#0E7C8A] hover:bg-[#F0FDFA]"
-                          : "bg-[#132127] border-[#1C323B] text-[#F0F6F8] hover:border-[#12A5B8] hover:bg-[#192E37]"
-                      }`}
-                    >
-                      <Volume2
-                        size={14}
-                        className={isLight ? "text-[#0E7C8A]" : "text-[#12A5B8]"}
-                      />
-                      <span>Audio Preview</span>
-                    </button>
-
-                    <div
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 ${
-                        isLight
-                          ? "bg-emerald-50 border-emerald-300 text-emerald-800"
-                          : "bg-[#10B981]/15 border-[#10B981]/30 text-[#10B981]"
-                      }`}
-                    >
-                      <ShieldCheck size={14} />
-                      <span>ISRO VQA Prompt Ready</span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Grid of Languages */}
