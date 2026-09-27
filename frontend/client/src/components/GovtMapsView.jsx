@@ -32,7 +32,10 @@ import {
   Database,
   X,
   ArrowUpRight,
-  Crop
+  Crop,
+  Key,
+  Lock,
+  HelpCircle
 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -79,7 +82,7 @@ const MAP_PROVIDERS = [
     description: '100% legally compliant official map of India featuring accurate international borders, state boundaries, district limits, and topographic benchmarks.',
     updateFreq: 'Continuous Govt Registry',
     protocol: 'OGC WMS / National Topo DB',
-    officialUrl: 'https://soi.geoportal.gov.in/',
+    officialUrl: 'https://surveyofindia.gov.in/',
     wmsUrl: 'https://soi.geoportal.gov.in/geoserver/wms',
     wmsLayers: 'soi:boundary_national',
     tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
@@ -99,7 +102,7 @@ const MAP_PROVIDERS = [
     description: "India's most accurate street-level map provider with house-level address search, doorstep geocoding, live traffic overlays, and pincode boundaries.",
     updateFreq: 'Real-Time / Turn-by-Turn',
     protocol: 'REST API & Vector Map Tiles',
-    officialUrl: 'https://www.mappls.com/',
+    officialUrl: 'https://apis.mappls.com/console/',
     wmsUrl: 'https://mappls.com/api/wms',
     wmsLayers: 'mappls:street_basemap',
     tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
@@ -165,6 +168,86 @@ const MAP_PROVIDERS = [
     tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Source: PM Gati Shakti National Master Plan GIS (DPIIT & BISAG-N, Govt. of India)',
     sublayers: ['National Highways & Freight', 'Railway & Port Corridors', 'Utility & Gas Pipelines']
+  },
+  {
+    id: 'openstreetmap',
+    title: 'OpenStreetMap Worldwide',
+    subtitle: 'Open Community Global Vector Basemap',
+    authority: 'OpenStreetMap Foundation (OSMF)',
+    govtDept: 'Open-Source Community GIS',
+    category: 'Global Open Data',
+    badge: 'OpenStreetMap',
+    badgeColor: '#10b981',
+    icon: Globe,
+    description: 'Free, editable open-source map of the whole world created by volunteers and updated live with worldwide road networks, transit, and building footprints.',
+    updateFreq: 'Real-Time Open Community',
+    protocol: 'XYZ Standard Raster Tiles',
+    officialUrl: 'https://www.openstreetmap.org/',
+    wmsUrl: '',
+    wmsLayers: '',
+    tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© OpenStreetMap contributors',
+    sublayers: ['Standard OpenStreetMap', 'Humanitarian Features', 'Transit & Trails']
+  },
+  {
+    id: 'esri-satellite',
+    title: 'Esri World Satellite',
+    subtitle: 'Sub-Meter High-Resolution Global Imagery',
+    authority: 'Esri Earth Observation / Maxar',
+    govtDept: 'Commercial High-Res Satellite',
+    category: 'Global Satellite',
+    badge: 'Esri Satellite',
+    badgeColor: '#06b6d4',
+    icon: Globe,
+    description: 'High-resolution satellite imagery across the globe powered by Maxar, Airbus, Earthstar Geographics, and USDA remote sensing satellites.',
+    updateFreq: 'High-Resolution Sub-Meter',
+    protocol: 'ArcGIS REST MapServer Tile Service',
+    officialUrl: 'https://www.esri.com/',
+    wmsUrl: '',
+    wmsLayers: '',
+    tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Source: Esri, Maxar, Earthstar Geographics',
+    sublayers: ['Satellite Imagery', 'Hybrid Reference Labels', 'Elevation Shading']
+  },
+  {
+    id: 'esri-topo',
+    title: 'Esri World Topographic',
+    subtitle: 'Global Topography, Relief & Elevation',
+    authority: 'Esri & USGS National Map',
+    govtDept: 'Global Topographic Survey',
+    category: 'Topography & Contours',
+    badge: 'Esri Topographic',
+    badgeColor: '#84cc16',
+    icon: MapIcon,
+    description: 'World topographic basemap featuring hillshade contours, elevation benchmarks, parks, water bodies, and administrative limits.',
+    updateFreq: 'Continuous Topographic Registry',
+    protocol: 'ArcGIS REST MapServer Tile Service',
+    officialUrl: 'https://www.esri.com/',
+    wmsUrl: '',
+    wmsLayers: '',
+    tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Source: Esri, USGS, NOAA, Garmin',
+    sublayers: ['Topographic Relief', 'Contours & Benchmarks', 'Forest Reserves']
+  },
+  {
+    id: 'esri-street',
+    title: 'Esri World Street Map',
+    subtitle: 'Global Highways, Streets & Urban Transit',
+    authority: 'Esri & HERE Navigation',
+    govtDept: 'Global Navigation & Transit',
+    category: 'Navigation & Road Network',
+    badge: 'Esri Street Map',
+    badgeColor: '#f59e0b',
+    icon: Navigation,
+    description: 'Detailed street basemap including highways, city streets, major arterials, railways, airports, water features, and landmark labels.',
+    updateFreq: 'Weekly Street & Transit',
+    protocol: 'ArcGIS REST MapServer Tile Service',
+    officialUrl: 'https://www.esri.com/',
+    wmsUrl: '',
+    wmsLayers: '',
+    tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Source: Esri, HERE, Garmin, METI/NASA',
+    sublayers: ['City Street Network', 'Highways & Arterials', 'Landmarks & Airports']
   }
 ];
 
@@ -213,6 +296,13 @@ export function GovtMapsView({ workstationTheme = 'dark', onToggleTheme, onSendQ
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [aiAnalysisResult, setAiAnalysisResult] = useState(null);
+
+  // Map Provider Custom API Keys State & Storage
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [mapplsKey, setMapplsKey] = useState(() => localStorage.getItem('satquery_mappls_api_key') || import.meta.env.VITE_MAPPLS_API_KEY || '');
+  const [bhuvanToken, setBhuvanToken] = useState(() => localStorage.getItem('satquery_bhuvan_api_key') || import.meta.env.VITE_BHUVAN_API_KEY || '');
+  const [mapboxToken, setMapboxToken] = useState(() => localStorage.getItem('satquery_mapbox_token') || import.meta.env.VITE_MAPBOX_TOKEN || '');
+  const [googleKey, setGoogleKey] = useState(() => localStorage.getItem('satquery_google_key') || import.meta.env.VITE_FRONTEND_FORGE_API_KEY || '');
 
   const mapContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
@@ -271,43 +361,74 @@ export function GovtMapsView({ workstationTheme = 'dark', onToggleTheme, onSendQ
     // ISRO Bhuvan
     '2D Satellite': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     'High Resolution Topo': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-    'Land Cover LULC': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    'Land Cover LULC': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 
     // Survey of India
-    'International Boundary': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-    'State & District Limits': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    'International Boundary': 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    'State & District Limits': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     'Topographic Contours': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
 
     // Mappls
     'Street & House No.': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-    'Live Traffic Flow': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-    'Pincode Polygons': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+    'Live Traffic Flow': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'Pincode Polygons': 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
 
     // MOSDAC
     'INSAT-3D Cloud Cover': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    'Doppler Weather Radar': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    'Doppler Weather Radar': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     'Cyclone Warning Track': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 
     // NIC Bhu-Naksha
-    'Khasra / Plot Polygons': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-    'Village Revenue Limits': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    'Khasra / Plot Polygons': 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    'Village Revenue Limits': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     'Property Ownership Boundaries': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
 
     // PM Gati Shakti
     'National Highways & Freight': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-    'Railway & Port Corridors': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-    'Utility & Gas Pipelines': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+    'Railway & Port Corridors': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'Utility & Gas Pipelines': 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+
+    // OpenStreetMap
+    'Standard OpenStreetMap': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'Humanitarian Features': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'Transit & Trails': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+    // Esri Satellite
+    'Satellite Imagery': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'Hybrid Reference Labels': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'Elevation Shading': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
+
+    // Esri Topo
+    'Topographic Relief': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    'Contours & Benchmarks': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    'Forest Reserves': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+
+    // Esri Street
+    'City Street Network': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    'Highways & Arterials': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    'Landmarks & Airports': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
   };
 
-  // Helper to create layer (WMS vs Standard Tile Layer with automatic fail-safe fallback)
+  // Helper to create layer (WMS vs Standard Tile Layer with custom API key support and fail-safe fallback)
   const createTileLayer = (provider, isWmsMode, sublayerName) => {
-    const fallbackTileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+    const fallbackTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     const defaultImagery = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-    const activeTileUrl = (sublayerName && SUBLAYER_TILE_MAP[sublayerName]) || provider.tileUrl || defaultImagery;
+    
+    // Resolve URL based on custom API keys if present
+    let resolvedTileUrl = (sublayerName && SUBLAYER_TILE_MAP[sublayerName]) || provider.tileUrl || defaultImagery;
+    
+    if (provider.id === 'mappls-mapmyindia' && mapplsKey) {
+      resolvedTileUrl = `https://apis.mappls.com/advancedmaps/v1/${mapplsKey}/tile/{z}/{x}/{y}.png`;
+    } else if (provider.id === 'isro-bhuvan' && bhuvanToken) {
+      resolvedTileUrl = `https://bhuvan-vec1.nrsc.gov.in/bhuvan/gwc/service/wmts?token=${bhuvanToken}&service=WMTS&request=GetTile&version=1.0.0&layer=bhuvan:india3&style=default&tilematrixset=EPSG:900913&TileMatrix=EPSG:900913:{z}&TileRow={y}&TileCol={x}&format=image/png`;
+    } else if (mapboxToken) {
+      resolvedTileUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`;
+    }
+
     let layer;
 
     if (isWmsMode && provider.wmsUrl && provider.wmsLayers) {
-      layer = L.tileLayer.wms(provider.wmsUrl, {
+      const wmsParams = {
         layers: provider.wmsLayers,
         format: 'image/jpeg',
         transparent: true,
@@ -315,16 +436,20 @@ export function GovtMapsView({ workstationTheme = 'dark', onToggleTheme, onSendQ
         attribution: provider.attribution,
         maxZoom: 19,
         maxNativeZoom: 17
-      });
-    } else if (activeTileUrl.includes('{s}')) {
-      layer = L.tileLayer(activeTileUrl, {
+      };
+      if (provider.id === 'isro-bhuvan' && bhuvanToken) {
+        wmsParams.token = bhuvanToken;
+      }
+      layer = L.tileLayer.wms(provider.wmsUrl, wmsParams);
+    } else if (resolvedTileUrl.includes('{s}')) {
+      layer = L.tileLayer(resolvedTileUrl, {
         attribution: provider.attribution,
         maxZoom: 19,
         maxNativeZoom: 18,
         subdomains: ['a', 'b', 'c']
       });
     } else {
-      layer = L.tileLayer(activeTileUrl, {
+      layer = L.tileLayer(resolvedTileUrl, {
         attribution: provider.attribution,
         maxZoom: 19,
         maxNativeZoom: 17
@@ -1006,6 +1131,18 @@ export function GovtMapsView({ workstationTheme = 'dark', onToggleTheme, onSendQ
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <button
+            onClick={() => setIsApiKeyModalOpen(true)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer border whitespace-nowrap shrink-0 ${isLight
+              ? 'bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[#0369A1] border-[#7DD3FC]'
+              : 'bg-[#12A5B8]/20 hover:bg-[#12A5B8]/35 text-[#12A5B8] border-[#12A5B8]/50 shadow-[0_0_12px_rgba(18,165,184,0.25)]'
+              }`}
+            title="Configure Map API Keys for Mappls, ISRO Bhuvan, Mapbox, and Google Maps"
+          >
+            <Key size={13} className="shrink-0" />
+            <span className="whitespace-nowrap">MAP API KEYS</span>
+          </button>
+
+          <button
             onClick={() => setUseOfficialWms(prev => !prev)}
             className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer border whitespace-nowrap shrink-0 ${useOfficialWms
                 ? isLight
@@ -1585,6 +1722,185 @@ export function GovtMapsView({ workstationTheme = 'dark', onToggleTheme, onSendQ
         </div>
 
       </div>
+
+      {/* Map API Key Configuration Modal */}
+      <AnimatePresence>
+        {isApiKeyModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className={`w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden ${isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#0D171C] border-[#1C323B] text-slate-100'}`}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-inherit">
+                <div className="flex items-center gap-2.5">
+                  <Key className="text-[#12A5B8]" size={20} />
+                  <h3 className="font-bold text-lg tracking-tight">Configure Map API Keys & Tokens</h3>
+                </div>
+                <button
+                  onClick={() => setIsApiKeyModalOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-500/10 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                <div className={`p-4 rounded-xl border text-xs leading-relaxed ${isLight ? 'bg-sky-50 border-sky-200 text-sky-900' : 'bg-[#0A232D] border-[#12A5B8]/30 text-[#A2E8F4]'}`}>
+                  <div className="flex items-center gap-2 mb-1.5 font-bold">
+                    <Info size={16} className="shrink-0" />
+                    <span>Why do government & commercial map services require API Keys?</span>
+                  </div>
+                  Direct Indian government geospatial APIs (ISRO Bhuvan WMS, Mappls MapmyIndia, Survey of India, Mapbox) require origin whitelisting or API key tokens for high-speed tile serving. If no custom API key is configured, SatQuery AI automatically uses high-resolution ESRI / CartoDB fallback basemaps.
+                </div>
+
+                {/* Mappls / MapmyIndia Key */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono font-bold uppercase tracking-wider text-[#12A5B8]">
+                      Mappls (MapmyIndia) REST API Key
+                    </label>
+                    <a
+                      href="https://mappls.com/developer/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-sky-400 hover:underline flex items-center gap-1"
+                    >
+                      Get Mappls Key <ExternalLink size={11} />
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    value={mapplsKey}
+                    onChange={(e) => setMapplsKey(e.target.value)}
+                    placeholder="Enter your Mappls REST API Key..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl border font-mono text-xs transition-all outline-none ${isLight ? 'bg-slate-50 border-slate-300 focus:border-[#0E7C8A]' : 'bg-[#070D10] border-[#1C323B] focus:border-[#12A5B8] text-white'}`}
+                  />
+                  <p className="text-[10px] text-slate-400">Used for doorstep house-level address geocoding, live street tiles, and pincode boundaries.</p>
+                </div>
+
+                {/* ISRO Bhuvan Token */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono font-bold uppercase tracking-wider text-sky-400">
+                      ISRO Bhuvan API Token / Key
+                    </label>
+                    <a
+                      href="https://bhuvan-app1.nrsc.gov.in/api/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-sky-400 hover:underline flex items-center gap-1"
+                    >
+                      Bhuvan Developer Portal <ExternalLink size={11} />
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    value={bhuvanToken}
+                    onChange={(e) => setBhuvanToken(e.target.value)}
+                    placeholder="Enter your ISRO Bhuvan API Token..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl border font-mono text-xs transition-all outline-none ${isLight ? 'bg-slate-50 border-slate-300 focus:border-[#0E7C8A]' : 'bg-[#070D10] border-[#1C323B] focus:border-[#12A5B8] text-white'}`}
+                  />
+                  <p className="text-[10px] text-slate-400">Enables direct WMTS / WMS authentication to NRSC / ISRO Indian Earth Observation Satellite layers.</p>
+                </div>
+
+                {/* Mapbox Access Token */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
+                      Mapbox Access Token (pk.eyJ...)
+                    </label>
+                    <a
+                      href="https://account.mapbox.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-sky-400 hover:underline flex items-center gap-1"
+                    >
+                      Get Mapbox Token <ExternalLink size={11} />
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    value={mapboxToken}
+                    onChange={(e) => setMapboxToken(e.target.value)}
+                    placeholder="pk.eyJ1..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl border font-mono text-xs transition-all outline-none ${isLight ? 'bg-slate-50 border-slate-300 focus:border-[#0E7C8A]' : 'bg-[#070D10] border-[#1C323B] focus:border-[#12A5B8] text-white'}`}
+                  />
+                  <p className="text-[10px] text-slate-400">Unlocks sub-meter Mapbox Satellite-v9 imagery and vector dark/light basemaps.</p>
+                </div>
+
+                {/* Google Maps Key */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
+                      Google Maps JavaScript API Key
+                    </label>
+                    <a
+                      href="https://console.cloud.google.com/google/maps-apis"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-sky-400 hover:underline flex items-center gap-1"
+                    >
+                      Google Cloud Console <ExternalLink size={11} />
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    value={googleKey}
+                    onChange={(e) => setGoogleKey(e.target.value)}
+                    placeholder="AIzaSy..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl border font-mono text-xs transition-all outline-none ${isLight ? 'bg-slate-50 border-slate-300 focus:border-[#0E7C8A]' : 'bg-[#070D10] border-[#1C323B] focus:border-[#12A5B8] text-white'}`}
+                  />
+                  <p className="text-[10px] text-slate-400">Used for Google 3D Satellite, Places Autocomplete, and Street View components.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between px-6 py-4 border-t border-inherit bg-inherit">
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem('satquery_mappls_api_key');
+                    localStorage.removeItem('satquery_bhuvan_api_key');
+                    localStorage.removeItem('satquery_mapbox_token');
+                    localStorage.removeItem('satquery_google_key');
+                    setMapplsKey('');
+                    setBhuvanToken('');
+                    setMapboxToken('');
+                    setGoogleKey('');
+                    alert('API keys cleared. Maps will use high-resolution ESRI fallback tiles.');
+                  }}
+                  className="px-3.5 py-2 rounded-xl text-xs font-mono text-rose-400 hover:bg-rose-500/10 transition-colors"
+                >
+                  CLEAR ALL KEYS
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (mapplsKey) localStorage.setItem('satquery_mappls_api_key', mapplsKey.trim());
+                    if (bhuvanToken) localStorage.setItem('satquery_bhuvan_api_key', bhuvanToken.trim());
+                    if (mapboxToken) localStorage.setItem('satquery_mapbox_token', mapboxToken.trim());
+                    if (googleKey) localStorage.setItem('satquery_google_key', googleKey.trim());
+                    setIsApiKeyModalOpen(false);
+                    if (leafletMapRef.current) {
+                      const newLayer = createTileLayer(activeProvider, useOfficialWms, activeSublayer);
+                      if (tileLayerRef.current) leafletMapRef.current.removeLayer(tileLayerRef.current);
+                      newLayer.addTo(leafletMapRef.current);
+                      tileLayerRef.current = newLayer;
+                      leafletMapRef.current.invalidateSize();
+                    }
+                    alert('API keys saved successfully! Map layers updated.');
+                  }}
+                  className="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-[#12A5B8] hover:bg-[#0E7C8A] text-[#040708] shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check size={14} /> SAVE & APPLY KEYS
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
