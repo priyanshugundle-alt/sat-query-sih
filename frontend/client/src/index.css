@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Righteous&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=stardom@400&f[]=gambarino@400&f[]=melodrama@400,500,600,700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -80,19 +81,22 @@
   --color-input: var(--sq-surface);
   --color-ring: var(--sq-cyan-bright);
 
-  /* Indian Type Foundry Typography System */
-  --font-chillax: "Chillax", "Space Grotesk", "Inter", sans-serif;
-  --font-stardom: "Stardom", "Gambarino", Georgia, serif;
-  --font-gambarino: "Gambarino", "Stardom", Georgia, serif;
-  --font-melodrama: "Melodrama", "Stardom", Georgia, serif;
+  /* Primary Typography System: Righteous (Heading/Display) + Roboto (Body/Sans) */
+  --font-righteous: "Righteous", cursive, sans-serif;
+  --font-roboto: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-  --font-sans: "Inter", "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Chillax", "Stardom", "Sora", sans-serif;
-  --font-display: "Stardom", "Chillax", "Gambarino", serif;
-  --font-sora: "Sora", sans-serif;
-  --font-inter: "Inter", sans-serif;
+  --font-heading: "Righteous", cursive, sans-serif;
+  --font-display: "Righteous", cursive, sans-serif;
+  --font-sans: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sora: "Righteous", cursive, sans-serif;
+  --font-chillax: "Righteous", cursive, sans-serif;
+  --font-stardom: "Righteous", cursive, sans-serif;
+  --font-gambarino: "Righteous", cursive, sans-serif;
+  --font-melodrama: "Righteous", cursive, sans-serif;
+  --font-serif: "Righteous", cursive, sans-serif;
+  --font-inter: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "Noto Sans Mono", ui-monospace, monospace;
-  --font-serif: "Stardom", "Gambarino", "Melodrama", Georgia, serif;
 }
 
 :root {
@@ -114,25 +118,48 @@
   --destructive-foreground: #FFFFFF;
 }
 
-/* Indian Type Foundry Utility Font Classes */
+/* Typography Utility Classes: Righteous (Heading/Display) + Roboto (Body/Sans) */
+.font-righteous {
+  font-family: "Righteous", cursive, sans-serif !important;
+}
+
+.font-roboto {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+.font-heading {
+  font-family: "Righteous", cursive, sans-serif !important;
+}
+
+.font-display {
+  font-family: "Righteous", cursive, sans-serif !important;
+}
+
+.font-sora {
+  font-family: "Righteous", cursive, sans-serif !important;
+}
+
 .font-chillax {
-  font-family: "Chillax", "Space Grotesk", "Inter", sans-serif !important;
+  font-family: "Righteous", cursive, sans-serif !important;
 }
 
 .font-sans {
-  font-family: "Inter", "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
 }
 
-.font-stardom {
-  font-family: "Stardom", "Gambarino", Georgia, serif !important;
+.font-body {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
 }
 
-.font-gambarino {
-  font-family: "Gambarino", "Stardom", Georgia, serif !important;
+.font-inter {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
 }
 
-.font-melodrama {
-  font-family: "Melodrama", "Stardom", Georgia, serif !important;
+.font-stardom,
+.font-gambarino,
+.font-melodrama,
+.font-serif {
+  font-family: "Righteous", cursive, sans-serif !important;
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -280,9 +307,9 @@
 
   /* ─── SHARED ─────────────────────────────────────────── */
 
-  .font-display { font-family: var(--font-sans); }
+  .font-display { font-family: var(--font-heading); }
   .font-mono    { font-family: var(--font-mono); }
-  .font-serif   { font-family: var(--font-serif); }
+  .font-serif   { font-family: var(--font-heading); }
 
   /* Brand icon (used in both states) */
   .sq-brand-icon {
@@ -1595,7 +1622,7 @@
 }
 
 .entry-wordmark-title {
-  font-family: "Noto Sans", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(36px, 6vw, 64px);
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -1845,7 +1872,7 @@
 
 /* Sonner toast styling for SatQuery AI - Theme Aware & High Contrast */
 [data-sonner-toaster] {
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif !important;
+  font-family: var(--font-sans) !important;
 }
 
 [data-sonner-toast] {
@@ -1980,7 +2007,7 @@ html.light [data-sonner-toast] svg {
     0px 7px 15px rgba(0, 0, 0, 0.9), 0px 0px 30px rgba(18, 165, 184, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-sans);
   position: relative;
 }
 
@@ -2008,6 +2035,7 @@ html.light [data-sonner-toast] svg {
 
 .sq_title {
   margin: 0;
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
   color: #FFFFFF;
