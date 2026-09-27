@@ -146,39 +146,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
 
             {/* Header Right Actions */}
             <div className="flex items-center gap-2">
-              {/* Quick Theme Switcher Pill in Header */}
-              <div
-                className={`flex items-center p-1 rounded-xl border transition-colors ${
-                  isLight
-                    ? "bg-white border-[#CBD5E1]"
-                    : "bg-[#080D10] border-[#1C323B]"
-                }`}
-                title="Switch Workstation Theme"
-              >
-                <button
-                  onClick={() => handleToggleTheme("light")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    isLight
-                      ? "bg-[#0E7C8A] text-white shadow-sm"
-                      : "text-[#8AA3AD] hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Sun size={13} />
-                  <span className="hidden sm:inline">White</span>
-                </button>
-                <button
-                  onClick={() => handleToggleTheme("dark")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    !isLight
-                      ? "bg-[#12A5B8] text-black font-bold shadow-sm"
-                      : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100"
-                  }`}
-                >
-                  <Moon size={13} />
-                  <span className="hidden sm:inline">Dark</span>
-                </button>
-              </div>
-
               {/* Close Button */}
               <button
                 onClick={onClose}
@@ -226,41 +193,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
               )}
               <Globe size={15} className="flex-shrink-0" />
               <span>01 LANGUAGES & SCRIPTS ({languages.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("theme")}
-              className={`relative px-5 py-3 flex items-center gap-2.5 transition-all cursor-pointer border-r whitespace-nowrap text-xs ${
-                isLight ? "border-[#E2E8F0]" : "border-[#1C323B]"
-              } ${
-                activeTab === "theme"
-                  ? isLight
-                    ? "bg-white text-[#0E7C8A] font-bold shadow-sm"
-                    : "bg-[#132127] text-[#12A5B8] font-bold"
-                  : isLight
-                  ? "text-[#64748B] hover:text-[#0F172A] hover:bg-white/60 font-medium"
-                  : "text-[#8AA3AD] hover:text-[#F0F6F8] hover:bg-[#0E171D] font-medium"
-              }`}
-            >
-              {activeTab === "theme" && (
-                <div
-                  className={`absolute bottom-0 left-0 right-0 h-[2.5px] ${
-                    isLight ? "bg-[#0E7C8A]" : "bg-[#12A5B8] shadow-[0_0_8px_#12A5B8]"
-                  }`}
-                />
-              )}
-              <Palette size={15} className="flex-shrink-0" />
-              <span>02 APPEARANCE & THEME</span>
-              <span
-                className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase leading-none ${
-                  isLight
-                    ? "bg-[#0E7C8A]/10 text-[#0E7C8A]"
-                    : "bg-[#12A5B8]/20 text-[#12A5B8]"
-                }`}
-              >
-                {theme.toUpperCase()}
-              </span>
             </button>
 
             <button
@@ -365,59 +297,6 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                       <ShieldCheck size={14} />
                       <span>ISRO VQA Prompt Ready</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Filter & Search Toolbar */}
-                <div
-                  className={`p-2.5 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-colors ${
-                    isLight
-                      ? "bg-[#F8FAFC] border-[#E2E8F0]"
-                      : "bg-[#0E171D] border-[#1C323B]"
-                  }`}
-                >
-                  <div className="relative flex-1">
-                    <Search
-                      size={14}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                        isLight ? "text-[#94A3B8]" : "text-[#546A74]"
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Search language name, native script, Devanagari, Gurmukhi, Tamil, etc..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className={`w-full rounded-lg pl-9 pr-3 py-1.5 text-xs transition-colors focus:outline-none ${
-                        isLight
-                          ? "bg-white border border-[#CBD5E1] text-[#0F172A] placeholder-[#94A3B8] focus:border-[#0E7C8A]"
-                          : "bg-[#080D10] border border-[#1C323B] text-[#F0F6F8] placeholder-[#546A74] focus:border-[#12A5B8]"
-                      }`}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-xs">
-                    {[
-                      { id: "ALL", label: `ALL (${languages.length})` },
-                      { id: "SCHEDULED", label: "SCHEDULED 22" },
-                      { id: "REGIONAL", label: "N-EAST & HILLS" },
-                    ].map((btn) => (
-                      <button
-                        key={btn.id}
-                        onClick={() => setCategoryFilter(btn.id)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs transition-all cursor-pointer font-semibold ${
-                          categoryFilter === btn.id
-                            ? isLight
-                              ? "bg-[#0E7C8A] text-white border-[#0E7C8A] shadow-sm"
-                              : "bg-[#12A5B8] text-black border-[#12A5B8] font-bold shadow-[0_0_12px_rgba(18,165,184,0.3)]"
-                            : isLight
-                            ? "bg-white text-[#64748B] border-[#E2E8F0] hover:text-[#0F172A] hover:bg-slate-100"
-                            : "bg-[#080D10] text-[#8AA3AD] border-[#1C323B] hover:text-[#F0F6F8] hover:bg-[#132127]"
-                        }`}
-                      >
-                        {btn.label}
-                      </button>
-                    ))}
                   </div>
                 </div>
 
