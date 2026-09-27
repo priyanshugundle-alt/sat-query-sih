@@ -225,9 +225,6 @@ public class SatQueryTest {
     }
 
     @Test
-    public void testRegistryAndPngJpgBenchmarkValidation() {
-        // Prepare request and files
-    @Test
     public void testQueryClassifier() {
         com.satquery.routing.QueryClassifier classifier = new com.satquery.routing.QueryClassifier();
         QueryRequest req = new QueryRequest("q-test", "Where is the river?", List.of(), "2026");
