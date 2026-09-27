@@ -51,6 +51,7 @@ import PersonalizationModal from "@/components/PersonalizationModal";
 import SatQueryLogo from "@/components/SatQueryLogo";
 import { GovtMapsView } from "@/components/GovtMapsView";
 import { useLanguage } from "@/context/LanguageContext";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // ─────────────────────────────────────────────────────────────────
 // SPECIALIST ENGINES CONFIGURATION
@@ -1927,27 +1928,11 @@ export default function Investigation() {
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
-                    {/* Theme Toggle Button (Beside Govt Maps) */}
-                    <button
-                      onClick={toggleWorkstationTheme}
-                      className={`px-3 py-1.5 border transition-all duration-150 flex items-center gap-2 cursor-pointer rounded-xl font-sans font-medium text-[13px] ${workstationTheme === "light"
-                          ? "text-[#475569] hover:text-[#0E7C8A] hover:bg-[#F1F5F9] hover:border-[#0E7C8A]/40 border-[#CBD5E1] bg-white shadow-xs"
-                          : "text-[#8AA3AD] hover:text-[#FFFFFF] hover:bg-[#0D171C] hover:border-[#12A5B8]/40 border-white/[0.1] bg-[#080E11]"
-                        }`}
-                      title={workstationTheme === "light" ? "Switch to Dark Theme" : "Switch to Light Theme"}
-                    >
-                      {workstationTheme === "light" ? (
-                        <>
-                          <Moon size={15} className="text-[#0E7C8A]" />
-                          <span className="hidden sm:inline">Dark Theme</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sun size={15} className="text-[#12A5B8]" />
-                          <span className="hidden sm:inline">Light Theme</span>
-                        </>
-                      )}
-                    </button>
+                    {/* Theme Toggle Switch */}
+                    <ThemeToggle
+                      theme={workstationTheme}
+                      onToggle={toggleWorkstationTheme}
+                    />
 
                     {/* Govt Maps Button */}
                     <button

@@ -9,6 +9,8 @@ import {
 import { useLanguage } from "../context/LanguageContext";
 import { toast } from "sonner";
 
+import ThemeToggle from "./ThemeToggle";
+
 export default function PersonalizationModal({ isOpen, onClose, theme = "dark", onThemeChange }) {
   const { currentLanguage, setLanguage, languages } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,7 +106,13 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
             </div>
 
             {/* Header Right Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <ThemeToggle
+                theme={theme}
+                onToggle={(newTheme) => {
+                  if (onThemeChange) onThemeChange(newTheme);
+                }}
+              />
               {/* Close Button */}
               <button
                 onClick={onClose}

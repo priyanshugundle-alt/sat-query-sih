@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from './ThemeToggle';
 import {
   Globe,
   Map as MapIcon,
@@ -1021,17 +1022,10 @@ export function GovtMapsView({ workstationTheme = 'dark', onToggleTheme, onSendQ
           </button>
 
           {onToggleTheme && (
-            <button
-              onClick={onToggleTheme}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer border whitespace-nowrap shrink-0 ${isLight
-                ? 'bg-white hover:bg-[#F1F5F9] text-[#0F172A] border-[#CBD5E1]'
-                : 'bg-[#0D171C] hover:bg-[#132127] text-[#12A5B8] border-[#12A5B8]/40'
-                }`}
-              title={isLight ? "Switch to Dark Theme" : "Switch to Light Theme"}
-            >
-              {isLight ? <Moon size={13} className="text-[#0E7C8A] shrink-0" /> : <Sun size={13} className="text-[#12A5B8] shrink-0" />}
-              <span className="whitespace-nowrap">{isLight ? "DARK THEME" : "LIGHT THEME"}</span>
-            </button>
+            <ThemeToggle
+              theme={workstationTheme}
+              onToggle={onToggleTheme}
+            />
           )}
 
           <button
