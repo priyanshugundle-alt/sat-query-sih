@@ -140,32 +140,7 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                   >
                     Personalization & System Customization
                   </h2>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border tracking-wider ${
-                      isLight
-                        ? "bg-[#0E7C8A]/10 text-[#0E7C8A] border-[#0E7C8A]/25"
-                        : "bg-[#12A5B8]/15 text-[#12A5B8] border-[#12A5B8]/30"
-                    }`}
-                  >
-                    27 Indian Languages
-                  </span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border tracking-wider ${
-                      isLight
-                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                        : "bg-[#D49A3A]/15 text-[#D49A3A] border-[#D49A3A]/30"
-                    }`}
-                  >
-                    Theme: {isLight ? "White / Light" : "Dark Space"}
-                  </span>
                 </div>
-                <p
-                  className={`text-[11px] mt-0.5 ${
-                    isLight ? "text-[#64748B]" : "text-[#8AA3AD]"
-                  }`}
-                >
-                  Configure multi-script VQA prompt engines, visual display palettes & geospatial presets
-                </p>
               </div>
             </div>
 
@@ -523,22 +498,11 @@ export default function PersonalizationModal({ isOpen, onClose, theme = "dark", 
                           }`}
                         >
                           <span
-                            className="truncate pr-2 italic opacity-85"
+                            className="truncate italic opacity-85"
                             title={lang.samplePrompt}
                           >
-                            "{lang.samplePrompt.substring(0, 30)}..."
+                            "{lang.samplePrompt.substring(0, 35)}..."
                           </span>
-                          <button
-                            onClick={(e) => handleSpeakSample(e, lang.samplePrompt)}
-                            className={`p-1 rounded transition-colors cursor-pointer flex-shrink-0 ${
-                              isLight
-                                ? "hover:text-[#0E7C8A] hover:bg-[#F1F5F9]"
-                                : "hover:text-[#12A5B8] hover:bg-[#132127]"
-                            }`}
-                            title="Speak audio preview"
-                          >
-                            <Volume2 size={13} />
-                          </button>
                         </div>
                       </motion.div>
                     );
