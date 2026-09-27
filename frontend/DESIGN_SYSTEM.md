@@ -58,18 +58,16 @@ SatQuery AI adopts a **"certified government instrument"** aesthetic — restrai
 ### Font Stack
 
 ```css
---font-sans: "Space Grotesk"      /* UI elements, buttons, nav */
---font-serif: "Georgia"           /* Official content: titles, headers, seal */
+--font-heading: "Righteous"        /* Display personality, titles, hero headers */
+--font-sans: "Roboto"             /* UI elements, body copy, buttons, nav, forms */
 --font-mono: "IBM Plex Mono"      /* Data: IDs, timestamps, coordinates, confidence */
 ```
 
 ### Usage Rules
 
-- **Serif (Georgia)**: Page titles, section headers, Certified Analysis Seal text, report headings
+- **Heading / Display (Righteous)**: Page titles, section headers, hero statements, navigation brand titles, key callouts
+- **Sans / Body (Roboto)**: Body copy, buttons, form labels, descriptions, chat dialogs
 - **Monospace (IBM Plex Mono)**: Reference IDs, timestamps, coordinates, confidence scores, sensor names, trace logs
-- **Sans (Space Grotesk)**: Body copy, buttons, form labels, navigation items
-
-**Never mix in system-ui/Inter fallback** — verify fonts load in production.
 
 ---
 
