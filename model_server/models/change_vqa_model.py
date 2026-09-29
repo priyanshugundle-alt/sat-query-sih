@@ -5,6 +5,12 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 
+try:
+    from agent.api_fallback import SatQueryApiFallback
+except ImportError:
+    SatQueryApiFallback = None
+
+
 class ChangeVQAModel(nn.Module):
     def __init__(self, encoder):
         super().__init__()
@@ -69,11 +75,22 @@ class ChangeVQAModel(nn.Module):
 
         is_b02_only = any("b02" in str(p).lower() for p in [img_t1, img_t2])
 
-        ans_text = (
-            f"Bi-temporal satellite inspection between T1 ({Path(img_t1).name}) and T2 ({Path(img_t2).name}) "
-            f"identifies a {shift_pct}% surface reflectance change. Baseline T1 characterized by [{t1_str}], "
-            f"transitioning in T2 to [{t2_str}]."
-        )
+        ans_text = None
+        if SatQueryApiFallback and SatQueryApiFallback.is_available():
+            ans_text = SatQueryApiFallback.query_vlm_api(
+                query=query or "Compare these bi-temporal satellite images and explain what changed.",
+                detected_classes=t1_classes + t2_classes,
+                modality="Bi-Temporal Change Pair",
+                image_path=img_t2,
+                context_extra=f"T1 ({Path(img_t1).name}) vs T2 ({Path(img_t2).name}). Reflectance shift: {shift_pct}%. T1 features: [{t1_str}], T2 features: [{t2_str}]."
+            )
+
+        if not ans_text:
+            ans_text = (
+                f"Bi-temporal satellite inspection between T1 ({Path(img_t1).name}) and T2 ({Path(img_t2).name}) "
+                f"identifies a {shift_pct}% surface reflectance change. Baseline T1 characterized by [{t1_str}], "
+                f"transitioning in T2 to [{t2_str}]."
+            )
         if is_b02_only:
             ans_text += " Note: Input rasters include single-band B02 (Blue band); temporal shift reflects blue surface reflectance & intensity variance."
 

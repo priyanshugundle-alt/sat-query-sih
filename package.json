@@ -5,7 +5,8 @@
   "scripts": {
     "start": "start start.bat",
     "start:ps": "powershell -ExecutionPolicy Bypass -File ./start.ps1",
-    "dev": "concurrently \"npm --prefix backend run exec\" \"npm --prefix frontend run dev\""
+    "dev": "npm --prefix frontend run dev",
+    "dev:all": "powershell -ExecutionPolicy Bypass -File ./start.ps1"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

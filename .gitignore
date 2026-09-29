@@ -3,6 +3,13 @@ backend/target/
 frontend/dist/
 dist/
 
+# Local environment variables & API keys
+.env
+*.env
+model_server/.env
+backend/.env
+frontend/.env
+
 # Local databases and SQLite runtime
 *.db
 *.db-journal

@@ -4,6 +4,12 @@ import torch.nn as nn
 from pathlib import Path
 import numpy as np
 
+try:
+    from agent.api_fallback import SatQueryApiFallback
+except ImportError:
+    SatQueryApiFallback = None
+
+
 class OpticalSARFusionModel(nn.Module):
     def __init__(self, encoder):
         super().__init__()
@@ -48,12 +54,23 @@ class OpticalSARFusionModel(nn.Module):
 
         class_summary = ", ".join(fused_classes[:3])
 
-        ans_text = (
-            f"Optical-SAR Joint Sensor Fusion verified via SatQueryUnifiedFusionNet (Alignment: {cross_sensor_cosine:.2f}). "
-            f"Joint multi-modal analysis identified primary land-cover: [{class_summary}]. "
-            f"Sentinel-1 SAR C-band radar backscatter confirmed physical ground structure and surface dielectric "
-            f"boundaries beneath Sentinel-2 optical spectral features."
-        )
+        ans_text = None
+        if SatQueryApiFallback and SatQueryApiFallback.is_available():
+            ans_text = SatQueryApiFallback.query_vlm_api(
+                query=query or "Analyze this Optical + SAR dual-sensor fusion satellite observation.",
+                detected_classes=fused_classes,
+                modality="Optical Sentinel-2 + SAR Sentinel-1",
+                image_path=img_opt,
+                context_extra=f"Cross-sensor cosine alignment: {cross_sensor_cosine:.2f}. Fused classes: [{class_summary}]."
+            )
+
+        if not ans_text:
+            ans_text = (
+                f"Optical-SAR Joint Sensor Fusion verified via SatQueryUnifiedFusionNet (Alignment: {cross_sensor_cosine:.2f}). "
+                f"Joint multi-modal analysis identified primary land-cover: [{class_summary}]. "
+                f"Sentinel-1 SAR C-band radar backscatter confirmed physical ground structure and surface dielectric "
+                f"boundaries beneath Sentinel-2 optical spectral features."
+            )
 
         return {
             "answer": ans_text,

@@ -53,10 +53,20 @@ import { GovtMapsView } from "@/components/GovtMapsView";
 import { useLanguage } from "@/context/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 
+import { BiTemporalInvestigator } from "@/components/BiTemporalInvestigator";
+import { OpticalSarFusion } from "@/components/OpticalSarFusion";
+
 // ─────────────────────────────────────────────────────────────────
 // SPECIALIST ENGINES CONFIGURATION
 // ─────────────────────────────────────────────────────────────────
 const SPECIALIST_CONFIG = {
+  AUTO: {
+    id: "AUTO",
+    label: "Auto Intent ⚡",
+    engine: "SatQuery Auto Router (Intent Classifier)",
+    subtitle: "Automatic Multi-Model Intent Detection",
+    sublabel: "AUTO ROUTE ⚡",
+  },
   VQA: {
     id: "VQA",
     label: "Visual QA",
@@ -529,10 +539,11 @@ export default function Investigation() {
 
   // ── Composer & Task Mode State ────────────────────────────────────
   const [queryText, setQueryText] = useState("");
-  const [taskMode, setTaskMode] = useState("VQA"); // VQA, GROUNDING, CHANGE, OPTICAL + SAR, CAPTIONING, CHANGE_UNDERSTANDING
+  const [taskMode, setTaskMode] = useState("AUTO"); // AUTO, VQA, GROUNDING, CHANGE, OPTICAL + SAR, CAPTIONING, CHANGE_UNDERSTANDING
   const [taskDropdownOpen, setTaskDropdownOpen] = useState(false);
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
-  const [stagedAsset, setStagedAsset] = useState(null); // Current pending image attachment in composer
+  const [stagedAsset, setStagedAsset] = useState(null); // Current pending primary image attachment (T1 / Optical)
+  const [stagedAssetT2, setStagedAssetT2] = useState(null); // Current pending secondary image attachment (T2 / SAR)
   const [isListening, setIsListening] = useState(false); // Web Speech API mic state
 
   // ── Active Investigation Execution State ──────────────────────────
@@ -2718,6 +2729,28 @@ export default function Investigation() {
                                             {msg.text}
                                           </div>
 
+                                          {/* Interactive Bi-Temporal Split Slider (For CHANGE & CHANGE_UNDERSTANDING modes) */}
+                                          {(msg.mode === "CHANGE" || msg.mode === "CHANGE_UNDERSTANDING") && (
+                                            <div className="my-3 border border-[#12A5B8]/30 rounded-xl overflow-hidden bg-[#080E11] p-3 shadow-lg">
+                                              <div className="flex items-center justify-between text-[11px] font-mono text-[#12A5B8] mb-2 px-1 font-bold">
+                                                <span className="flex items-center gap-1.5"><Layers size={13} /> INTERACTIVE BI-TEMPORAL SPLIT SLIDER</span>
+                                                <span className="text-[10px] text-[#8AA3AD]">PRE-EVENT T1 ↔ POST-EVENT T2</span>
+                                              </div>
+                                              <BiTemporalInvestigator />
+                                            </div>
+                                          )}
+
+                                          {/* Interactive Optical + SAR Radar Blend Slider (For OPTICAL + SAR mode) */}
+                                          {msg.mode === "OPTICAL + SAR" && (
+                                            <div className="my-3 border border-[#76AEB0]/30 rounded-xl overflow-hidden bg-[#080E11] p-3 shadow-lg">
+                                              <div className="flex items-center justify-between text-[11px] font-mono text-[#76AEB0] mb-2 px-1 font-bold">
+                                                <span className="flex items-center gap-1.5"><Radar size={13} /> MULTI-MODAL OPTICAL + SAR BLEND VIEW</span>
+                                                <span className="text-[10px] text-[#8AA3AD]">SENTINEL-1 SAR & SENTINEL-2 RGB</span>
+                                              </div>
+                                              <OpticalSarFusion />
+                                            </div>
+                                          )}
+
                                           {/* Action Triggers + Bottom Right Timing */}
                                           <div className={`pt-2 flex items-center justify-between gap-3 font-mono text-xs border-t ${workstationTheme === "light" ? "border-[#E2E8F0]" : "border-[#1C323B]/50"
                                             }`}>
@@ -2819,44 +2852,81 @@ export default function Investigation() {
                       }}
                     >
                       <div className="max-w-3xl mx-auto pointer-events-auto">
-                        {/* Staged Imagery Attachment Pill (if present) */}
-                        {stagedAsset && (
-                          <div className="mb-2 p-2 bg-[#0D171C]/95 border border-[#1C323B] flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md rounded-2xl">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <img
-                                src={stagedAsset.previewUrl}
-                                alt="Staged"
-                                className="w-8 h-8 object-cover border border-[#1C323B] flex-shrink-0 rounded-lg"
-                              />
-                              <div className="truncate">
-                                <span className="font-bold text-[#F0F6F8] truncate block text-[11px]">
-                                  {stagedAsset.name}
-                                </span>
-                                <span className="text-[9px] text-[#12A5B8] block">
-                                  {stagedAsset.metadata?.resolution || "0.5m GSD"} · STAGED FOR QUERY
-                                </span>
+                        {/* Staged Imagery Attachment Pills (Primary T1 / Optical & Secondary T2 / SAR) */}
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          {stagedAsset && (
+                            <div className="p-2 bg-[#0D171C]/95 border border-[#12A5B8]/40 flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md rounded-2xl">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <img
+                                  src={stagedAsset.previewUrl}
+                                  alt="Staged"
+                                  className="w-8 h-8 object-cover border border-[#12A5B8]/40 flex-shrink-0 rounded-lg"
+                                />
+                                <div className="truncate">
+                                  <span className="font-bold text-[#F0F6F8] truncate block text-[11px]">
+                                    {stagedAsset.name}
+                                  </span>
+                                  <span className="text-[9px] text-[#12A5B8] block font-semibold">
+                                    {stagedAsset.metadata?.resolution || "0.5m GSD"} · {(taskMode === "CHANGE" || taskMode === "CHANGE_UNDERSTANDING") ? "T1 BASELINE" : taskMode === "OPTICAL + SAR" ? "OPTICAL RGB" : "PRIMARY SCENE"}
+                                  </span>
+                                </div>
                               </div>
+                              <button
+                                onClick={() => setStagedAsset(null)}
+                                className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer rounded-md ml-2"
+                                title="Remove primary imagery"
+                              >
+                                <X size={14} />
+                              </button>
                             </div>
-                            <button
-                              onClick={() => setStagedAsset(null)}
-                              className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer rounded-md"
-                              title="Remove attached imagery"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        )}
+                          )}
+
+                          {stagedAssetT2 && (
+                            <div className="p-2 bg-[#1B1B15]/95 border border-[#D49A3A]/50 flex items-center justify-between font-mono text-xs max-w-sm backdrop-blur-md rounded-2xl">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <img
+                                  src={stagedAssetT2.previewUrl}
+                                  alt="Staged Secondary"
+                                  className="w-8 h-8 object-cover border border-[#D49A3A]/40 flex-shrink-0 rounded-lg"
+                                />
+                                <div className="truncate">
+                                  <span className="font-bold text-[#F0F6F8] truncate block text-[11px]">
+                                    {stagedAssetT2.name}
+                                  </span>
+                                  <span className="text-[9px] text-[#D49A3A] block font-semibold">
+                                    {stagedAssetT2.metadata?.resolution || "0.5m GSD"} · {(taskMode === "CHANGE" || taskMode === "CHANGE_UNDERSTANDING") ? "T2 POST-EVENT" : taskMode === "OPTICAL + SAR" ? "SAR RADAR" : "SECONDARY SCENE"}
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setStagedAssetT2(null)}
+                                className="p-1 text-[#8AA3AD] hover:text-[#B9654D] cursor-pointer rounded-md ml-2"
+                                title="Remove secondary imagery"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
 
                         {/* Composer Bar Container */}
                         <div className={`p-2.5 flex items-end gap-2 transition-all relative rounded-2xl border ${workstationTheme === "light"
                           ? "bg-white border-[#CBD5E1] shadow-[0_8px_30px_rgba(15,23,42,0.08)]"
                           : "bg-[#080E11]/90 backdrop-blur-xl border-[#1C323B] shadow-2xl"
                           }`}>
-                          {/* Hidden File Input for Image Upload */}
+                          {/* Hidden Primary File Input */}
                           <input
                             type="file"
                             ref={fileInputRef}
-                            onChange={(e) => handleFileUpload(Array.from(e.target.files))}
+                            onChange={(e) => handleFileUpload(Array.from(e.target.files), false)}
+                            accept="image/*,.tif,.tiff"
+                            className="hidden"
+                          />
+                          {/* Hidden Secondary File Input (T2 / SAR) */}
+                          <input
+                            type="file"
+                            ref={fileInputRefT2}
+                            onChange={(e) => handleFileUpload(Array.from(e.target.files), true)}
                             accept="image/*,.tif,.tiff"
                             className="hidden"
                           />
@@ -2888,7 +2958,7 @@ export default function Investigation() {
                                   animate={{ opacity: 1, y: 0, scale: 1 }}
                                   exit={{ opacity: 0, y: 8, scale: 0.98 }}
                                   transition={{ duration: 0.12 }}
-                                  className={`absolute bottom-full left-0 mb-3 w-56 border shadow-2xl p-1.5 font-sans text-xs z-50 rounded-xl overflow-hidden ${workstationTheme === "light" ? "bg-white border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
+                                  className={`absolute bottom-full left-0 mb-3 w-64 border shadow-2xl p-1.5 font-sans text-xs z-50 rounded-xl overflow-hidden ${workstationTheme === "light" ? "bg-white border-[#E2E8F0]" : "bg-[#0D171C] border-[#1C323B]"
                                     }`}
                                 >
                                   <button
@@ -2903,8 +2973,25 @@ export default function Investigation() {
                                   >
                                     <Upload size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"} />
                                     <div>
-                                      <div className="font-bold">Upload Image</div>
-                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>GeoTIFF, TIFF, Optical, SAR</div>
+                                      <div className="font-bold">Upload Image (T1 / Optical)</div>
+                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>GeoTIFF, TIFF, Primary Scene</div>
+                                    </div>
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      fileInputRefT2.current?.click();
+                                      setPlusMenuOpen(false);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left flex items-center gap-2.5 transition-colors cursor-pointer rounded-xl mt-1 ${workstationTheme === "light"
+                                      ? "text-[#0F172A] hover:text-[#D49A3A] hover:bg-[#F1F5F9]"
+                                      : "text-[#F0F6F8] hover:text-[#D49A3A] hover:bg-[#132127]"
+                                      }`}
+                                  >
+                                    <Layers size={14} className="text-[#D49A3A]" />
+                                    <div>
+                                      <div className="font-bold text-[#D49A3A]">Upload Target Image (T2 / SAR)</div>
+                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>Post-Event T2, Radar Backscatter</div>
                                     </div>
                                   </button>
 
@@ -2921,7 +3008,7 @@ export default function Investigation() {
                                     <Database size={14} className={workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#76AEB0]"} />
                                     <div>
                                       <div className="font-bold">Browse Benchmark Scenes</div>
-                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>Cartosat-3, Proba, Nepal</div>
+                                      <div className={`text-[10px] font-mono ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"}`}>Cartosat-3, Proba, Nepal Bi-Temporal</div>
                                     </div>
                                   </button>
                                 </motion.div>

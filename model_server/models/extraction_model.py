@@ -14,6 +14,11 @@ try:
 except ImportError:
     SatQueryVLM = None
 
+try:
+    from agent.api_fallback import SatQueryApiFallback
+except ImportError:
+    SatQueryApiFallback = None
+
 class InformationExtractionModel(nn.Module):
     def __init__(self, encoder):
         super().__init__()
@@ -65,6 +70,15 @@ class InformationExtractionModel(nn.Module):
                 spectral_info=f"Estimated coverage: {est_area_ha} hectares across {width}x{height} resolution.",
                 modality=modality,
                 image_path=img_path
+            )
+
+        if not ans_text and SatQueryApiFallback and SatQueryApiFallback.is_available():
+            ans_text = SatQueryApiFallback.query_vlm_api(
+                query=query or "Extract and summarize all prominent geospatial and structural details in this image.",
+                detected_classes=detected_classes,
+                modality=modality,
+                image_path=img_path,
+                context_extra=f"Resolution: {width}x{height} px (~{est_area_ha} ha). Classes: [{classes_str}]."
             )
 
         if not ans_text:

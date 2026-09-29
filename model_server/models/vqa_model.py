@@ -18,6 +18,11 @@ try:
 except ImportError:
     SatQueryVLM = None
 
+try:
+    from agent.api_fallback import SatQueryApiFallback
+except ImportError:
+    SatQueryApiFallback = None
+
 
 class RemoteSensingVQAModel(nn.Module):
     def __init__(self, encoder):
@@ -70,6 +75,16 @@ class RemoteSensingVQAModel(nn.Module):
                 spectral_info=spectral_info,
                 modality=modality,
                 image_path=img_path,  # Pass actual image for vision inference
+            )
+
+        # 3b. Cloud LLM / VLM API Fallback (Gemini / OpenAI / OpenRouter) if API key set in .env
+        if not ans and SatQueryApiFallback and SatQueryApiFallback.is_available():
+            ans = SatQueryApiFallback.query_vlm_api(
+                query=query,
+                detected_classes=detected_classes,
+                modality=modality,
+                image_path=img_path,
+                context_extra=spectral_info
             )
 
         # 4. Fallback to physical SceneCaptioner if VLM didn't answer
