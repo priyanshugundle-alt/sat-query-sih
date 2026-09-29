@@ -597,6 +597,7 @@ export default function Investigation() {
 
   // ── Refs ──────────────────────────────────────────────────────────
   const fileInputRef = useRef(null);
+  const fileInputRefT2 = useRef(null);
   const chatBottomRef = useRef(null);
   const composerInputRef = useRef(null);
   const profileMenuRef = useRef(null);
