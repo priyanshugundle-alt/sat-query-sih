@@ -1,7 +1,9 @@
 import axios from "axios";
 
-// Base URL configured via environment variable or default proxy
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+// Base URL configured via environment variable or default live Render backend URL
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? "https://satquery-java-backend.onrender.com" : "");
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

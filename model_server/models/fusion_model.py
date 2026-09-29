@@ -33,7 +33,7 @@ class OpticalSARFusionModel(nn.Module):
                     probs = out_joint["fused_probabilities"].cpu().numpy()[0]
                     top_idx = np.argsort(probs)[::-1]
                     classes_list = self.encoder.fusion_net.s1_classes_standard
-                    fused_classes = [classes_list[i] for i in top_idx if probs[i] >= 0.40]
+                    fused_classes = [classes_list[i] for i in top_idx if probs[i] >= 0.60]
                     if not fused_classes:
                         fused_classes = [classes_list[top_idx[0]]]
                     top_fused = fused_classes[0]

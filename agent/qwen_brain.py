@@ -53,8 +53,27 @@ class QwenBrain:
         return cls._instance
 
     def _initialize(self):
-        print("[Qwen Brain] Initializing Qwen2.5-VL-3B-Instruct with fine-tuned weights...")
-        
+        # Check system available memory before loading 3GB Qwen model into CPU RAM
+        if os.environ.get("SATQUERY_DISABLE_VLM") == "1":
+            print("[Qwen Brain] SATQUERY_DISABLE_VLM=1 flag set. Skipping VLM load.")
+            self.is_loaded = False
+            self.model = None
+            self.processor = None
+            return
+
+        try:
+            import psutil
+            mem = psutil.virtual_memory()
+            available_gb = mem.available / (1024 ** 3)
+            if available_gb < 3.5 and not torch.cuda.is_available():
+                print(f"[Qwen Brain] Available CPU memory is {available_gb:.1f}GB (< 3.5GB required). Skipping 3B VLM load.")
+                self.is_loaded = False
+                self.model = None
+                self.processor = None
+                return
+        except Exception:
+            pass
+
         has_cuda = torch.cuda.is_available()
         device_type = "GPU (CUDA)" if has_cuda else "CPU"
         print(f"[Qwen Brain] Device detected: {device_type}")

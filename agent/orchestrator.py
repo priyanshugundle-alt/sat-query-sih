@@ -62,7 +62,7 @@ class SatQueryAgent:
         g = np.clip((vh_arr - (-32.0)) / 27.0, 0.0, 1.0) * 255.0
         ratio = np.clip((vv_arr - vh_arr) / 15.0, 0.0, 1.0) * 255.0
         rgb = np.stack([r, g, ratio], axis=-1).astype(np.uint8)
-        pil_img = Image.fromarray(rgb).resize((256, 256), Image.Resampling.BILINEAR)
+        pil_img = Image.fromarray(rgb)
         buf = io.BytesIO()
         pil_img.save(buf, format="PNG")
         return buf.getvalue()

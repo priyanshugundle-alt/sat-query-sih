@@ -103,7 +103,7 @@ class QwenFeatureExtractor(nn.Module):
                     self.team_elite_vlm = SatQueryVLM.get_instance(str(ec))
                     print(f"     [Encoder] Team Elite Merged Multimodal VLM active ({ec}).")
                     break
-                except Exception as ex:
+                except (Exception, MemoryError, SystemError, BaseException) as ex:
                     print(f"     [Encoder] Team Elite VLM init notice: {ex}")
 
         # Backward compatibility alias
@@ -141,11 +141,10 @@ class QwenFeatureExtractor(nn.Module):
             mod = self.detect_modality(p) if modality == "auto" else modality
             try:
                 if mod == "SAR" and self.model_a is not None:
-                    # SAR Specialist extraction
+                    # Real SAR Specialist extraction on actual image pixels
                     with torch.no_grad():
-                        t_in = torch.randn(1, 2, 120, 120, device=self.device)
-                        feat = self.model_a.model.conv1(t_in)
-                        feat = torch.flatten(feat, 1)[:, :512]
+                        t_in = self.model_a.preprocess_patch(p, p)
+                        feat = self.model_a.model.extract_features(t_in)
                         feat = torch.nn.functional.normalize(feat, p=2, dim=-1)
                         embeddings.append(feat)
                 elif self.model_b is not None:
@@ -169,13 +168,12 @@ class QwenFeatureExtractor(nn.Module):
 
         if mod == "SAR" and self.model_a is not None:
             try:
-                # Use Model A SAR Inference
-                # If image is a single file, synthesize dual-polarization input
+                # Use Model A SAR Inference on real raster
                 res = self.model_a.analyze(image_path, image_path)
                 return {
                     "modality": "SAR",
                     "detected_classes": res.get("detected_classes", []),
-                    "probabilities": res.get("class_probabilities", {}),
+                    "probabilities": res.get("probabilities", res.get("all_probabilities", {})),
                     "confidence": res.get("confidence", 0.90),
                     "metrics": res.get("metrics", {})
                 }
