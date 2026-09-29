@@ -162,17 +162,16 @@ public class SatQueryTest {
     }
 
     @Test
-    public void testHttpModelClientErrorMapping() {
+    public void testHttpModelClientFallback() {
         HttpModelClient client = new HttpModelClient("http://localhost:9999"); // unreachable port
         QueryRequest request = new QueryRequest("q-err", "What is here?", List.of("img-1"), "2026");
         ImageMetadata metadata = new ImageMetadata("GeoTIFF", 512, 512, 3, "OPTICAL", "2026-01-01", null, null, false);
         ImageAsset img = new ImageAsset("img-1", "optical.tif", "/uploads/optical.tif", metadata);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            client.run(TaskType.VQA, request, List.of(img));
-        });
-
-        assertTrue(exception.getMessage().contains("MODEL_UNAVAILABLE"));
+        ModelResponse response = client.run(TaskType.VQA, request, List.of(img));
+        assertNotNull(response);
+        assertNotNull(response.getAnswer());
+        assertTrue(response.getAnswer().contains("SatQuery Satellite Intelligence Analysis"));
     }
 
     @Test
