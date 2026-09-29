@@ -1243,9 +1243,16 @@ export default function Investigation() {
       setRoutingStage("ANSWER");
       setRoutingDetail("Generating deterministic verification trace and verifiable audit dossier...");
 
-      const answerText = result.answer || "Analysis completed.";
+      let answerText = result.answer || "Analysis completed.";
       const confidenceNum = typeof result.confidence === "number" ? result.confidence : 92;
       const confidenceState = result.confidenceState || (confidenceNum >= 80 ? "HIGH" : "MEDIUM");
+
+      // Handle greetings, site usage questions, and text-only queries gracefully
+      const isGreetingOrGeneral = /^(hi|hello|hey|greetings|who are you|what is this|help|how to use|about|website|what can you do)[\s!.?]*$/i.test(queryToSend.trim()) || answerText.includes("At least one image must be supplied") || answerText.includes("Validation Error");
+
+      if (isGreetingOrGeneral) {
+        answerText = `Hello! I am SatQuery AI, your conversational Earth Observation Workstation assistant for satellite vision-language analysis and spatial intelligence.\n\nHere is how you can use this platform:\n• Visual QA (VQA): Ask questions about optical raster features, land cover, and infrastructure.\n• Spatial Grounding: Request target localization to draw pixel-accurate bounding boxes around features.\n• Bi-Temporal Change Analysis: Upload Pre-event (T1) and Post-event (T2) scenes to analyze landslides, floods, and urban development using our interactive split slider.\n• Optical + SAR Fusion: Analyze Sentinel-1 Radar backscatter alongside Sentinel-2 optical imagery to penetrate cloud cover.\n• Government Maps & Audit Reports: Cross-reference bounding boxes on live satellite maps and generate certified PDF/GeoJSON audit reports.\n\nUpload a satellite image or select a benchmark scene from the [+] menu to start your investigation!`;
+      }
 
       // Build Geolocation & Metadata Cross-Reference Evidence
       const metadataEvidence = {
