@@ -162,11 +162,21 @@ class SatQueryApiFallback:
     def _call_gemini(cls, api_key: str, system_prompt: str, prompt: str, image_path: Optional[str]) -> Optional[str]:
         parts = [{"text": f"{system_prompt}\n\n{prompt}"}]
 
-        if image_path and os.path.exists(image_path) and str(image_path).lower().endswith((".jpg", ".png", ".jpeg", ".webp")):
+        if image_path and os.path.exists(image_path) and str(image_path).lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".bmp", ".tif", ".tiff")):
             try:
                 with open(image_path, "rb") as img_f:
                     img_b64 = base64.b64encode(img_f.read()).decode("utf-8")
-                    mime = "image/png" if str(image_path).lower().endswith(".png") else "image/jpeg"
+                    ext = Path(image_path).suffix.lower()
+                    mime_map = {
+                        ".png": "image/png",
+                        ".webp": "image/webp",
+                        ".gif": "image/gif",
+                        ".bmp": "image/bmp",
+                        ".avif": "image/avif",
+                        ".tif": "image/tiff",
+                        ".tiff": "image/tiff"
+                    }
+                    mime = mime_map.get(ext, "image/jpeg")
                     parts.append({
                         "inline_data": {
                             "mime_type": mime,
