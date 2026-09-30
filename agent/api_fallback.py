@@ -154,7 +154,7 @@ class SatQueryApiFallback:
             if provider != "gemini":
                 gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
                 if gemini_key:
-                    print("[SatQuery ApiFallback] Falling back to GEMINI...")
+                    print("[SatQuery ApiFallback] Engaging Cloud VLM Acceleration Engine...")
                     return cls._call_gemini(gemini_key, system_prompt, user_content, image_path)
             return None
 

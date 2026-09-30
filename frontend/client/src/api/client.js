@@ -34,6 +34,27 @@ export async function checkJvmHealth() {
 }
 
 /**
+ * Check Engine Status (Active VLM / Cloud API)
+ */
+export async function checkEngineStatus() {
+  try {
+    const res = await apiClient.get("/api/status");
+    return {
+      connected: res.status === 200,
+      activeEngine: res.data?.active_engine || "ResNet-18 Specialist (Offline Rules)",
+      engineCode: res.data?.engine_code || "resnet_specialist",
+      data: res.data,
+    };
+  } catch (error) {
+    return {
+      connected: false,
+      activeEngine: "ResNet-18 Specialist (Offline Rules)",
+      engineCode: "resnet_specialist",
+    };
+  }
+}
+
+/**
  * Normalizes any filesystem path or URL to a valid browser web URL
  */
 export function toWebUrl(path, fallbackFileName = null) {

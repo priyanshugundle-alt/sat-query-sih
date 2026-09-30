@@ -29,6 +29,7 @@ import {
 import { toast } from "sonner";
 import {
   checkJvmHealth,
+  checkEngineStatus,
   uploadAsset,
   runQuery,
   downloadReportPdf,
@@ -603,8 +604,13 @@ export default function Investigation() {
   const profileMenuRef = useRef(null);
   const speechRecognitionRef = useRef(null);
 
-  // ── Backend Health Check ──────────────────────────────────────────
+  // ── Backend & Engine Health Check ─────────────────────────────────
   const [systemStatus, setSystemStatus] = useState("CHECKING");
+  const [engineInfo, setEngineInfo] = useState({
+    activeEngine: "Qwen2.5-VL (Local Offline)",
+    engineCode: "qwen_local",
+    status: "ONLINE"
+  });
 
   useEffect(() => {
     (async () => {
@@ -614,6 +620,14 @@ export default function Investigation() {
           setSystemStatus("ONLINE");
         } else {
           setSystemStatus("OFFLINE");
+        }
+        const eng = await checkEngineStatus();
+        if (eng && eng.activeEngine) {
+          setEngineInfo({
+            activeEngine: eng.activeEngine,
+            engineCode: eng.engineCode,
+            status: "ONLINE"
+          });
         }
       } catch {
         setSystemStatus("OFFLINE");
@@ -1976,6 +1990,30 @@ export default function Investigation() {
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
+                    {/* Real-Time Engine Status Badge */}
+                    <div
+                      className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 text-[11px] font-medium font-sans border transition-all ${
+                        engineInfo?.engineCode === "satquery_local"
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                          : engineInfo?.engineCode === "satquery_cloud"
+                          ? "bg-sky-500/10 text-sky-400 border-sky-500/30"
+                          : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                      }`}
+                      title={`Active Engine: ${engineInfo?.activeEngine}`}
+                    >
+                      <span className="relative flex h-2 w-2">
+                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                          engineInfo?.engineCode === "satquery_local" ? "bg-emerald-400" : engineInfo?.engineCode === "satquery_cloud" ? "bg-sky-400" : "bg-amber-400"
+                        }`}></span>
+                        <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                          engineInfo?.engineCode === "satquery_local" ? "bg-emerald-500" : engineInfo?.engineCode === "satquery_cloud" ? "bg-sky-500" : "bg-amber-500"
+                        }`}></span>
+                      </span>
+                      <span className="hidden md:inline font-mono font-semibold tracking-wide">
+                        {engineInfo?.activeEngine || "SatQuery RS-VLM Active"}
+                      </span>
+                    </div>
+
                     {/* Theme Toggle Switch */}
                     <ThemeToggle
                       theme={workstationTheme}
@@ -2855,6 +2893,68 @@ export default function Investigation() {
                       }}
                     >
                       <div className="max-w-3xl mx-auto pointer-events-auto">
+                        {/* ── OFFICIAL SIH REPRESENTATIVE QUERIES BAR (Shown in empty chat state) ── */}
+                        {isEmptyChat && (
+                          <div className="mb-3 space-y-1.5 font-sans">
+                            <div className="text-[11px] font-semibold tracking-wider uppercase text-[#12A5B8] flex items-center gap-1.5 px-1 font-mono">
+                              <Sparkles size={13} /> Official SIH Representative Queries
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <button
+                                onClick={() => {
+                                  setQueryText("Describe the land-cover and major objects visible in this image.");
+                                  setTaskMode("CAPTIONING");
+                                }}
+                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
+                              >
+                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">01. CAPTIONING / VQA</span>
+                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
+                                  "Describe the land-cover and major objects visible in this image."
+                                </span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setQueryText("Highlight the water body referred to in the query.");
+                                  setTaskMode("GROUNDING");
+                                }}
+                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
+                              >
+                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">02. SPATIAL GROUNDING</span>
+                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
+                                  "Highlight the water body referred to in the query."
+                                </span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setQueryText("What changed between these two dates, and where did the change occur?");
+                                  setTaskMode("CHANGE");
+                                }}
+                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
+                              >
+                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">03. BI-TEMPORAL CHANGE</span>
+                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
+                                  "What changed between these two dates, and where did the change occur?"
+                                </span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setQueryText("Use the optical and SAR images together to identify built-up and water-covered regions.");
+                                  setTaskMode("OPTICAL + SAR");
+                                }}
+                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
+                              >
+                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">04. OPTICAL + SAR FUSION</span>
+                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
+                                  "Use optical & SAR images together to identify built-up & water regions."
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Staged Imagery Attachment Pills (Primary T1 / Optical & Secondary T2 / SAR) */}
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           {stagedAsset && (

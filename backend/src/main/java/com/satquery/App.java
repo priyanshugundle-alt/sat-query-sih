@@ -56,6 +56,7 @@ public class App {
         System.out.println("SatQuery Java Backend running on port " + port);
 
         server.createContext("/api/health", new HealthHandler());
+        server.createContext("/api/status", new HealthHandler());
         server.createContext("/api/upload", new UploadHandler());
         server.createContext("/api/analyze", new AnalyzeHandler());
         server.createContext("/api/analyse", new AnalyzeHandler());
@@ -112,9 +113,33 @@ public class App {
                 return;
             }
 
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("status", "OK");
             response.put("service", "SatQuery Java Backend");
+
+            // Try querying Python Model Server for real-time engine status
+            try {
+                java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+                java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://localhost:5000/status"))
+                    .timeout(java.time.Duration.ofSeconds(2))
+                    .GET()
+                    .build();
+                java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() == 200) {
+                    Map pythonStatus = objectMapper.readValue(resp.body(), Map.class);
+                    response.put("python_model_server", pythonStatus);
+                    response.put("active_engine", pythonStatus.get("active_engine"));
+                    response.put("engine_code", pythonStatus.get("engine_code"));
+                } else {
+                    response.put("active_engine", "SatQuery Neural Specialist (Offline Mode)");
+                    response.put("engine_code", "satquery_specialist");
+                }
+            } catch (Exception e) {
+                response.put("active_engine", "SatQuery Neural Specialist (Offline Mode)");
+                response.put("engine_code", "satquery_specialist");
+            }
+
             sendJsonResponse(exchange, 200, response);
         }
     }
