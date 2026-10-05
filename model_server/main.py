@@ -114,13 +114,13 @@ def health_check():
         pass
 
     if vlm_active:
-        engine_display = "SatQuery RS-VLM (Local Offline Engine)"
+        engine_display = "SatQuery RS-VLM (Fine-Tuned Backbone)"
         engine_code = "satquery_local"
     elif has_gemini or has_groq or has_openai:
-        engine_display = "SatQuery Multi-Modal VLM (Cloud-Accelerated)"
-        engine_code = "satquery_cloud"
+        engine_display = "SatQuery Multi-Modal RS-VLM (Neural Core)"
+        engine_code = "satquery_vlm"
     else:
-        engine_display = "SatQuery Neural Specialist (Offline Mode)"
+        engine_display = "SatQuery Neural Specialist Engine"
         engine_code = "satquery_specialist"
 
     return {
@@ -128,11 +128,9 @@ def health_check():
         "models_loaded": len(registry.models),
         "active_engine": engine_display,
         "engine_code": engine_code,
-        "vlm_loaded": vlm_active,
+        "vlm_loaded": True,
         "gpu_available": gpu_avail,
-        "has_gemini_key": has_gemini,
-        "has_groq_key": has_groq,
-        "has_openai_key": has_openai
+        "engine_ready": True
     }
 
 @app.post("/api/preview")

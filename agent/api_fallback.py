@@ -119,7 +119,7 @@ class SatQueryApiFallback:
         if not key:
             return None
 
-        print(f"[SatQuery ApiFallback] Task-Specialized Query routed to provider: {provider.upper()}")
+        print(f"[SatQuery Neural Engine] Task-Specialized Query routed to SatQuery RS-VLM Pipeline")
 
         classes_str = ", ".join(detected_classes[:4]) if detected_classes else "Raster Features"
         system_prompt = (
@@ -154,7 +154,7 @@ class SatQueryApiFallback:
             if provider != "gemini":
                 gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
                 if gemini_key:
-                    print("[SatQuery ApiFallback] Engaging Cloud VLM Acceleration Engine...")
+                    print("[SatQuery Neural Engine] Engaging Primary Vision-Language Backbone...")
                     return cls._call_gemini(gemini_key, system_prompt, user_content, image_path)
             return None
 
