@@ -44,6 +44,14 @@ set "PATH=%JAVA_HOME%\bin;%PATH%"
 echo [OK] JAVA_HOME set to: %JAVA_HOME%
 echo.
 
+REM Auto-create model_server\.env from template if missing
+if not exist "%~dp0model_server\.env" (
+    if exist "%~dp0model_server\.env.example" (
+        echo [SETUP] Auto-creating missing model_server\.env from .env.example...
+        copy "%~dp0model_server\.env.example" "%~dp0model_server\.env" >nul
+    )
+)
+
 REM 1. Check and start Python Model Server on Port 5000
 netstat -ano | findstr /C:":5000 " | findstr /I "LISTENING" >nul
 if %errorlevel% neq 0 (

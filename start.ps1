@@ -26,6 +26,14 @@ if (-not (Test-Path "$scriptDir\frontend\node_modules")) {
     Pop-Location
 }
 
+# Auto-create model_server\.env from .env.example if missing
+if (-not (Test-Path "$scriptDir\model_server\.env")) {
+    if (Test-Path "$scriptDir\model_server\.env.example") {
+        Write-Host "Auto-creating missing model_server\.env from template..." -ForegroundColor Cyan
+        Copy-Item "$scriptDir\model_server\.env.example" "$scriptDir\model_server\.env"
+    }
+}
+
 # Check Port 5000 (Agentic PyTorch Model Server)
 $port5000Active = Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
 if (-not $port5000Active) {

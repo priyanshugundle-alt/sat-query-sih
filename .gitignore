@@ -6,7 +6,8 @@ dist/
 # Local environment variables & API keys
 .env
 *.env
-model_server/.env
+# model_server/.env is tracked so default template is shared across team
+!model_server/.env
 backend/.env
 frontend/.env
 
