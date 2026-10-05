@@ -2245,15 +2245,24 @@ html.light [data-sonner-toast] svg {
 
 /* Background surfaces */
 .workstation-light .bg-\[\#080E11\],
+.workstation-light .bg-\[\#080E11\]\/90,
+.workstation-light .bg-\[\#080E11\]\/95,
+.workstation-light .bg-\[\#080E11\]\/85,
+.workstation-light .bg-\[\#080E11\]\/80,
+.workstation-light .bg-\[\#080E11\]\/70,
+.workstation-light .bg-\[\#080E11\]\/50,
 .workstation-light .bg-\[\#040708\] {
   background-color: #F1F5F9 !important;
 }
 
-.workstation-light .bg-\[\#0D171C\] {
+.workstation-light .bg-\[\#0D171C\],
+.workstation-light .bg-\[\#0D171C\]\/95,
+.workstation-light .bg-\[\#0D171C\]\/90 {
   background-color: #FFFFFF !important;
 }
 
-.workstation-light .bg-\[\#132127\] {
+.workstation-light .bg-\[\#132127\],
+.workstation-light .bg-\[\#132127\]\/90 {
   background-color: #F1F5F9 !important;
 }
 

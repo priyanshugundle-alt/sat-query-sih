@@ -1990,29 +1990,6 @@ export default function Investigation() {
 
                   {/* Actions Right */}
                   <div className="flex items-center gap-2">
-                    {/* Real-Time Engine Status Badge */}
-                    <div
-                      className={`px-2.5 py-1 rounded-full flex items-center gap-1.5 text-[11px] font-medium font-sans border transition-all ${
-                        engineInfo?.engineCode === "satquery_local"
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                          : engineInfo?.engineCode === "satquery_cloud"
-                          ? "bg-sky-500/10 text-sky-400 border-sky-500/30"
-                          : "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                      }`}
-                      title={`Active Engine: ${engineInfo?.activeEngine}`}
-                    >
-                      <span className="relative flex h-2 w-2">
-                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                          engineInfo?.engineCode === "satquery_local" ? "bg-emerald-400" : engineInfo?.engineCode === "satquery_cloud" ? "bg-sky-400" : "bg-amber-400"
-                        }`}></span>
-                        <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                          engineInfo?.engineCode === "satquery_local" ? "bg-emerald-500" : engineInfo?.engineCode === "satquery_cloud" ? "bg-sky-500" : "bg-amber-500"
-                        }`}></span>
-                      </span>
-                      <span className="hidden md:inline font-mono font-semibold tracking-wide">
-                        {engineInfo?.activeEngine || "SatQuery RS-VLM Active"}
-                      </span>
-                    </div>
 
                     {/* Theme Toggle Switch */}
                     <ThemeToggle
@@ -2523,7 +2500,7 @@ export default function Investigation() {
                             {/* Physical spacer that reserves the exact visual footprint of the centered composer */}
                             <div className="h-[80px] w-full mt-6 mb-2 pointer-events-none" />
 
-                            {/* Quick-Query Suggestions (positioned below centered composer) */}
+                            {/* Official SIH Representative Queries Suggestions (positioned below centered composer) */}
                             <motion.div
                               initial={{ opacity: 0, y: 15 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -2533,55 +2510,66 @@ export default function Investigation() {
                                 transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
                               }}
                               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                              className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-3 text-left font-sans"
+                              className="w-full mt-3 text-left font-sans space-y-2"
                             >
-                              {[
-                                {
-                                  title: "Land Cover Analysis",
-                                  prompt: "What type of land cover dominates this region?",
-                                  mode: "VQA",
-                                },
-                                {
-                                  title: "Built-up Area Detection",
-                                  prompt: "Where are the major built-up areas?",
-                                  mode: "GROUNDING",
-                                },
-                                {
-                                  title: "Temporal Difference",
-                                  prompt: "Did this region change between 2023 and 2026?",
-                                  mode: "CHANGE",
-                                },
-                                {
-                                  title: "Radar Penetration",
-                                  prompt: "Corroborate with SAR radar through cloud cover.",
-                                  mode: "OPTICAL + SAR",
-                                },
-                              ].map((card) => (
-                                <div
-                                  key={card.title}
-                                  onClick={() => {
-                                    setQueryText(card.prompt);
-                                    setTaskMode(card.mode);
-                                    composerInputRef.current?.focus();
-                                  }}
-                                  className={`p-3.5 cursor-pointer transition-colors duration-200 group rounded-xl border ${workstationTheme === "light"
-                                    ? "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1] hover:border-[#0E7C8A]/50 shadow-sm"
-                                    : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] hover:border-[#8AA3AD]/50"
-                                    }`}
-                                >
-                                  <div className={`text-xs font-semibold tracking-wide flex items-center justify-between ${workstationTheme === "light"
-                                    ? "text-[#0F172A] group-hover:text-[#0E7C8A]"
-                                    : "text-[#F0F6F8] group-hover:text-[#12A5B8]"
-                                    }`}>
-                                    <span>{card.title}</span>
-                                    <ArrowUpRight size={14} className={workstationTheme === "light" ? "text-[#94A3B8] group-hover:text-[#0E7C8A]" : "text-[#8AA3AD] group-hover:text-[#12A5B8]"} />
-                                  </div>
-                                  <div className={`text-[11px] mt-1.5 leading-relaxed font-medium ${workstationTheme === "light" ? "text-[#64748B]" : "text-[#8AA3AD]"
-                                    }`}>
-                                    "{card.prompt}"
-                                  </div>
-                                </div>
-                              ))}
+                              <div className={`text-[11px] font-semibold tracking-wider uppercase flex items-center gap-1.5 px-1 font-mono ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                }`}>
+                                <Sparkles size={13} /> Official SIH Representative Queries
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {[
+                                  {
+                                    num: "01",
+                                    title: "CAPTIONING / VQA",
+                                    prompt: "Describe the land-cover and major objects visible in this image.",
+                                    mode: "CAPTIONING",
+                                  },
+                                  {
+                                    num: "02",
+                                    title: "SPATIAL GROUNDING",
+                                    prompt: "Highlight the water body referred to in the query.",
+                                    mode: "GROUNDING",
+                                  },
+                                  {
+                                    num: "03",
+                                    title: "BI-TEMPORAL CHANGE",
+                                    prompt: "What changed between these two dates, and where did the change occur?",
+                                    mode: "CHANGE",
+                                  },
+                                  {
+                                    num: "04",
+                                    title: "OPTICAL + SAR FUSION",
+                                    prompt: "Use optical & SAR images together to identify built-up & water regions.",
+                                    mode: "OPTICAL + SAR",
+                                  },
+                                ].map((card) => (
+                                  <button
+                                    key={card.num}
+                                    onClick={() => {
+                                      setQueryText(card.prompt);
+                                      setTaskMode(card.mode);
+                                      composerInputRef.current?.focus();
+                                    }}
+                                    className={`p-3.5 cursor-pointer transition-all duration-200 group rounded-xl border text-left shadow-sm ${workstationTheme === "light"
+                                      ? "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1] hover:border-[#0E7C8A]/50"
+                                      : "bg-[#0D171C] hover:bg-[#132127] border-[#1C323B] hover:border-[#12A5B8]/50"
+                                      }`}
+                                  >
+                                    <div className={`text-[10px] font-mono font-bold flex items-center justify-between ${workstationTheme === "light" ? "text-[#0E7C8A]" : "text-[#12A5B8]"
+                                      }`}>
+                                      <span>{card.num}. {card.title}</span>
+                                      <ArrowUpRight size={13} className={`transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${workstationTheme === "light" ? "text-[#94A3B8] group-hover:text-[#0E7C8A]" : "text-[#8AA3AD] group-hover:text-[#12A5B8]"
+                                        }`} />
+                                    </div>
+                                    <div className={`text-xs mt-1.5 leading-relaxed font-medium transition-colors ${workstationTheme === "light"
+                                      ? "text-[#0F172A] group-hover:text-[#0E7C8A]"
+                                      : "text-[#F0F6F8] group-hover:text-[#12A5B8]"
+                                      }`}>
+                                      "{card.prompt}"
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
                             </motion.div>
                           </motion.div>
                         ) : (
@@ -2885,7 +2873,7 @@ export default function Investigation() {
                       className="absolute left-4 right-4 z-40 pointer-events-none"
                       initial={false}
                       animate={{
-                        bottom: isEmptyChat ? "calc(50% - 70px)" : "24px",
+                        bottom: isEmptyChat ? "calc(50% - 35px)" : "24px",
                       }}
                       transition={{
                         duration: 0.65,
@@ -2893,67 +2881,6 @@ export default function Investigation() {
                       }}
                     >
                       <div className="max-w-3xl mx-auto pointer-events-auto">
-                        {/* ── OFFICIAL SIH REPRESENTATIVE QUERIES BAR (Shown in empty chat state) ── */}
-                        {isEmptyChat && (
-                          <div className="mb-3 space-y-1.5 font-sans">
-                            <div className="text-[11px] font-semibold tracking-wider uppercase text-[#12A5B8] flex items-center gap-1.5 px-1 font-mono">
-                              <Sparkles size={13} /> Official SIH Representative Queries
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <button
-                                onClick={() => {
-                                  setQueryText("Describe the land-cover and major objects visible in this image.");
-                                  setTaskMode("CAPTIONING");
-                                }}
-                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
-                              >
-                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">01. CAPTIONING / VQA</span>
-                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
-                                  "Describe the land-cover and major objects visible in this image."
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setQueryText("Highlight the water body referred to in the query.");
-                                  setTaskMode("GROUNDING");
-                                }}
-                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
-                              >
-                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">02. SPATIAL GROUNDING</span>
-                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
-                                  "Highlight the water body referred to in the query."
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setQueryText("What changed between these two dates, and where did the change occur?");
-                                  setTaskMode("CHANGE");
-                                }}
-                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
-                              >
-                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">03. BI-TEMPORAL CHANGE</span>
-                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
-                                  "What changed between these two dates, and where did the change occur?"
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setQueryText("Use the optical and SAR images together to identify built-up and water-covered regions.");
-                                  setTaskMode("OPTICAL + SAR");
-                                }}
-                                className="p-2.5 rounded-xl border border-[#1C323B] bg-[#080E11]/90 backdrop-blur-md hover:bg-[#132127] hover:border-[#12A5B8]/50 text-left transition-all group cursor-pointer shadow-md"
-                              >
-                                <span className="text-[10px] font-mono text-[#12A5B8] block font-bold">04. OPTICAL + SAR FUSION</span>
-                                <span className="text-xs text-[#F0F6F8] group-hover:text-[#12A5B8] transition-colors leading-snug block">
-                                  "Use optical & SAR images together to identify built-up & water regions."
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
 
                         {/* Staged Imagery Attachment Pills (Primary T1 / Optical & Secondary T2 / SAR) */}
                         <div className="flex flex-wrap items-center gap-2 mb-2">
