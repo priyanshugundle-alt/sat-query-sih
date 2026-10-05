@@ -141,6 +141,7 @@ def generate_preview(req: dict):
         from PIL import Image
         import numpy as np
         im = Image.open(image_path)
+        out_img = im
         arr = np.array(im, dtype=np.float32)
         if arr.ndim == 2:
             norm = ((arr - arr.min()) / (arr.max() - arr.min() + 1e-6) * 255.0).clip(0, 255).astype(np.uint8)
