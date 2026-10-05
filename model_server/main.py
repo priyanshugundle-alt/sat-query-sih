@@ -54,7 +54,24 @@ async def analyze_query(request: QueryRequest, req: Request):
         specialized_model = registry.get_model(task)
         
         # 2. Execute Model Inference
-        target_images = request.images or request.image_paths or []
+        raw_images = request.images or request.image_paths or []
+        target_images = []
+        import base64, tempfile, uuid
+        for idx, img_item in enumerate(raw_images):
+            if isinstance(img_item, str) and (img_item.startswith("data:image") or len(img_item) > 500):
+                try:
+                    img_data = img_item.split(",", 1)[1] if "," in img_item else img_item
+                    raw_bytes = base64.b64decode(img_data)
+                    tmp_file = Path(tempfile.gettempdir()) / f"satquery_upload_{idx}_{uuid.uuid4().hex[:6]}.png"
+                    with open(tmp_file, "wb") as f:
+                        f.write(raw_bytes)
+                    target_images.append(str(tmp_file))
+                except Exception as ex:
+                    print(f"[Model Server] Base64 decode notice: {ex}")
+                    target_images.append(img_item)
+            else:
+                target_images.append(img_item)
+
         result = specialized_model.run(
             query=request.query or "",
             image_paths=target_images,

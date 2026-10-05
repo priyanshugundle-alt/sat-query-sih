@@ -8,8 +8,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +40,24 @@ public class HttpModelClient implements ModelClient {
             
             List<String> paths = new ArrayList<>();
             for (ImageAsset img : images) {
-                paths.add(img.getFilePath());
+                try {
+                    Path p = Paths.get(img.getFilePath());
+                    if (!Files.exists(p)) {
+                        p = Paths.get("backend", img.getFilePath());
+                    }
+                    if (!Files.exists(p)) {
+                        p = Paths.get("uploads", Paths.get(img.getFilePath()).getFileName().toString());
+                    }
+                    if (Files.exists(p)) {
+                        byte[] bytes = Files.readAllBytes(p);
+                        String b64 = Base64.getEncoder().encodeToString(bytes);
+                        paths.add("data:image/png;base64," + b64);
+                    } else {
+                        paths.add(img.getFilePath());
+                    }
+                } catch (Exception e) {
+                    paths.add(img.getFilePath());
+                }
             }
             requestBody.put("images", paths);
 
