@@ -130,7 +130,7 @@ public class App {
                     .build();
                 java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
                 if (resp.statusCode() == 200) {
-                    Map pythonStatus = objectMapper.readValue(resp.body(), Map.class);
+                    Map<?, ?> pythonStatus = objectMapper.readValue(resp.body(), Map.class);
                     response.put("python_model_server", pythonStatus);
                     response.put("active_engine", pythonStatus.get("active_engine"));
                     response.put("engine_code", pythonStatus.get("engine_code"));
