@@ -27,7 +27,8 @@ public class App {
     private static final Map<String, TaskResult> reportRegistry = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ImageMetadataReader metadataReader = new ImageMetadataReader();
-    private static final ModelClient modelClient = new HttpModelClient("http://localhost:5000");
+    private static final String DEFAULT_MODEL_URL = System.getenv().getOrDefault("MODEL_SERVER_URL", "https://resulting-llc-recommendation-entrepreneurs.trycloudflare.com");
+    private static final ModelClient modelClient = new HttpModelClient(DEFAULT_MODEL_URL);
     private static final AgentController agentController = new AgentController(modelClient);
 
     private static int getPort() {
@@ -48,6 +49,8 @@ public class App {
 
         // Initialize SQLite DB
         com.satquery.database.DatabaseManager.initialize();
+        // Register default model spaces
+        com.satquery.routing.SpaceRouter.registerDefaultSpaces(List.of(DEFAULT_MODEL_URL));
         // Register EvidenceObserver
         com.satquery.observer.TraceLogger.addObserver(new com.satquery.observer.EvidenceObserver());
 

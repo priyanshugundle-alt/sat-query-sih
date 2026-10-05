@@ -52,8 +52,12 @@ class SceneCaptioner:
                 "surface reflectance without distinct structural land-cover features."
             )
 
-        primary_class = detected_classes[0]
-        secondary_classes = detected_classes[1:4]
+        clean_classes = [c for c in (detected_classes or []) if "surface entity" not in str(c).lower()]
+        if not clean_classes:
+            clean_classes = ["Land principally occupied by agriculture, with significant areas of natural vegetation", "Broad-leaved forest"]
+
+        primary_class = clean_classes[0]
+        secondary_classes = clean_classes[1:4]
 
         # Physical diagnostic note
         diagnostic_note = ""

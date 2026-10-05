@@ -189,9 +189,14 @@ class SatQueryVLM:
                                     import numpy as np
                                     tiff_img = Image.open(p_img)
                                     arr = np.array(tiff_img, dtype=np.float32)
+                                    if arr.ndim == 3:
+                                        if arr.shape[0] in [2, 3, 4, 12]:
+                                            arr = arr[0]
+                                        elif arr.shape[2] in [2, 3, 4, 12]:
+                                            arr = arr[:, :, 0]
                                     p2, p98 = np.percentile(arr, (2, 98))
                                     norm = np.clip((arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8) if p98 > p2 else np.clip(arr, 0, 255).astype(np.uint8)
-                                    prev = Image.fromarray(norm)
+                                    prev = Image.fromarray(norm).convert("RGB")
                                     prev.save(candidate_png)
                                     img_to_feed = candidate_png
                                 except Exception as ex:

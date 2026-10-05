@@ -180,14 +180,43 @@ class OpticalSpecialistLive(BaseSpecialistModel):
                 raise FileNotFoundError(f"Satellite raster file not found: {p}")
 
             from PIL import Image
-            raw_arr = np.array(Image.open(p), dtype=np.float32)
-            if raw_arr.ndim in [2, 3] and raw_arr.dtype != np.uint8:
+            with Image.open(p) as pil_img:
+                raw_arr = np.array(pil_img, dtype=np.float32)
+
+            # Case 1: Direct 12-channel Sentinel-2 array
+            if raw_arr.ndim == 3 and (raw_arr.shape[0] == 12 or raw_arr.shape[2] == 12):
+                if raw_arr.shape[2] == 12:
+                    raw_arr = np.transpose(raw_arr, (2, 0, 1)) # (12, H, W)
+                # Normalize each band with 2-98th percentile
+                bands_norm = []
+                for b_idx in range(12):
+                    b_arr = raw_arr[b_idx]
+                    p2, p98 = np.percentile(b_arr, (2, 98))
+                    if p98 > p2:
+                        b_n = np.clip((b_arr - p2) / (p98 - p2), 0.0, 1.0)
+                    else:
+                        b_n = np.clip(b_arr / 255.0, 0.0, 1.0)
+                    # Resize to (120, 120)
+                    b_pil = Image.fromarray((b_n * 255.0).astype(np.uint8)).resize((120, 120))
+                    bands_norm.append(np.array(b_pil, dtype=np.float32) / 255.0)
+                s2_arr = np.stack(bands_norm, axis=0) # (12, 120, 120)
+                return torch.from_numpy(s2_arr).unsqueeze(0).to(self.device)
+
+            # Case 2: Convert to RGB image
+            if raw_arr.ndim == 2:
+                # Single band grayscale
                 p2, p98 = np.percentile(raw_arr, (2, 98))
-                if p98 > p2:
-                    raw_norm = np.clip((raw_arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8)
+                norm = np.clip((raw_arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8) if p98 > p2 else np.clip(raw_arr, 0, 255).astype(np.uint8)
+                img = Image.fromarray(norm).convert("RGB")
+            elif raw_arr.ndim == 3:
+                if raw_arr.shape[0] in [3, 4]:
+                    raw_arr = np.transpose(raw_arr, (1, 2, 0))
+                if raw_arr.dtype != np.uint8:
+                    p2, p98 = np.percentile(raw_arr, (2, 98))
+                    norm = np.clip((raw_arr - p2) / (p98 - p2) * 255.0, 0, 255).astype(np.uint8) if p98 > p2 else np.clip(raw_arr, 0, 255).astype(np.uint8)
+                    img = Image.fromarray(norm[:, :, :3]).convert("RGB")
                 else:
-                    raw_norm = np.clip(raw_arr, 0, 255).astype(np.uint8)
-                img = Image.fromarray(raw_norm).convert("RGB")
+                    img = Image.fromarray(raw_arr[:, :, :3].astype(np.uint8)).convert("RGB")
             else:
                 img = Image.open(p).convert("RGB")
 
