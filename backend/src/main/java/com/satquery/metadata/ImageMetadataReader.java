@@ -131,7 +131,8 @@ public class ImageMetadataReader {
 
     private void extractModality(String fileNameLower, ImageMetadata metadata) {
         if (fileNameLower.contains("sar") || fileNameLower.contains("radar") || fileNameLower.contains("sentinel1") || 
-            fileNameLower.contains("s1") || fileNameLower.contains("vv") || fileNameLower.contains("vh") || fileNameLower.contains("asf")) {
+            fileNameLower.contains("sentinel-1") || fileNameLower.contains("_s1_") || fileNameLower.endsWith("_s1") ||
+            fileNameLower.contains("_vv") || fileNameLower.contains("_vh") || fileNameLower.contains("asf")) {
             metadata.setModality("SAR");
             metadata.setSensorPlatform("Sentinel-1 C-SAR");
             metadata.setCloudCoverPercent(0.0);

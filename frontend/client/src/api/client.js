@@ -1,7 +1,9 @@
 import axios from "axios";
 
-// Base URL configured via environment variable or default proxy
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+// Base URL configured via environment variable or default live Render backend URL
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? "https://satquery-java-backend.onrender.com" : "");
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -27,6 +29,27 @@ export async function checkJvmHealth() {
       connected: false,
       error: error.message || "JVM Backend is unreachable",
       status: "OFFLINE",
+    };
+  }
+}
+
+/**
+ * Check Engine Status (Active VLM / Cloud API)
+ */
+export async function checkEngineStatus() {
+  try {
+    const res = await apiClient.get("/api/status");
+    return {
+      connected: res.status === 200,
+      activeEngine: res.data?.active_engine || "ResNet-18 Specialist (Offline Rules)",
+      engineCode: res.data?.engine_code || "resnet_specialist",
+      data: res.data,
+    };
+  } catch (error) {
+    return {
+      connected: false,
+      activeEngine: "ResNet-18 Specialist (Offline Rules)",
+      engineCode: "resnet_specialist",
     };
   }
 }

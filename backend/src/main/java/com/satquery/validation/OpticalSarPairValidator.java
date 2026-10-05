@@ -14,11 +14,12 @@ public class OpticalSarPairValidator {
         String mod1 = images.get(0).getMetadata().getModality();
         String mod2 = images.get(1).getMetadata().getModality();
 
-        boolean hasOptical = "OPTICAL".equalsIgnoreCase(mod1) || "OPTICAL".equalsIgnoreCase(mod2);
+        boolean hasOptical = "OPTICAL".equalsIgnoreCase(mod1) || "MULTISPECTRAL".equalsIgnoreCase(mod1) ||
+                             "OPTICAL".equalsIgnoreCase(mod2) || "MULTISPECTRAL".equalsIgnoreCase(mod2);
         boolean hasSar = "SAR".equalsIgnoreCase(mod1) || "SAR".equalsIgnoreCase(mod2);
 
         if (!hasOptical || !hasSar) {
-            errors.add("Optical–SAR analysis requires one optical image and one SAR image.");
+            errors.add("Optical–SAR analysis requires one optical/multispectral image and one SAR image.");
         }
     }
 }

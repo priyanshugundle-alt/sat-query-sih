@@ -21,7 +21,7 @@ public class QueryClassifier {
             boolean hasSar = false;
             for (ImageAsset img : images) {
                 String mod = (img.getMetadata() != null) ? img.getMetadata().getModality() : "OPTICAL";
-                if ("OPTICAL".equalsIgnoreCase(mod)) hasOptical = true;
+                if ("OPTICAL".equalsIgnoreCase(mod) || "MULTISPECTRAL".equalsIgnoreCase(mod)) hasOptical = true;
                 if ("SAR".equalsIgnoreCase(mod)) hasSar = true;
             }
             

@@ -5,6 +5,12 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 
+try:
+    from agent.api_fallback import SatQueryApiFallback
+except ImportError:
+    SatQueryApiFallback = None
+
+
 class ChangeUnderstandingModel(nn.Module):
     def __init__(self, encoder):
         super().__init__()
@@ -38,11 +44,22 @@ class ChangeUnderstandingModel(nn.Module):
         t1_str = ", ".join(t1_classes[:2]) if t1_classes else "Primary Landscape"
         t2_str = ", ".join(t2_classes[:2]) if t2_classes else "Modified State"
 
-        ans_text = (
-            f"Multi-temporal change understanding identifies structural surface transition across observations: "
-            f"T1 initially exhibited [{t1_str}], with observed progression in T2 toward [{t2_str}]. "
-            f"Spectral and physical feature shifts mapped across the temporal scene."
-        )
+        ans_text = None
+        if SatQueryApiFallback and SatQueryApiFallback.is_available():
+            ans_text = SatQueryApiFallback.query_vlm_api(
+                query=query or "Analyze surface change transition across these temporal satellite rasters.",
+                detected_classes=t1_classes + t2_classes,
+                modality="Bi-Temporal Pair",
+                image_path=img_t2,
+                context_extra=f"T1 ({Path(img_t1).name}): [{t1_str}] ➔ T2 ({Path(img_t2).name}): [{t2_str}]."
+            )
+
+        if not ans_text:
+            ans_text = (
+                f"Multi-temporal change understanding identifies structural surface transition across observations: "
+                f"T1 initially exhibited [{t1_str}], with observed progression in T2 toward [{t2_str}]. "
+                f"Spectral and physical feature shifts mapped across the temporal scene."
+            )
 
         return {
             "answer": ans_text,

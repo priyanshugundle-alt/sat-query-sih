@@ -20,8 +20,8 @@ public class InputValidator {
         List<String> warnings = new ArrayList<>();
 
         if (images == null || images.isEmpty()) {
-            errors.add("At least one image must be supplied.");
-            return new ValidationResult(false, errors, warnings, "Upload a satellite image to begin.");
+            // Allow text-only queries (greetings, general remote sensing questions, site usage guidance) to pass validation
+            return new ValidationResult(true, errors, warnings, "Text-only query mode active.");
         }
 
         // 1. Format and Benchmark Context checks

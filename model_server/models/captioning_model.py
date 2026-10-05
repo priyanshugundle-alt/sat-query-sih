@@ -18,6 +18,11 @@ try:
 except ImportError:
     SatQueryVLM = None
 
+try:
+    from agent.api_fallback import SatQueryApiFallback
+except ImportError:
+    SatQueryApiFallback = None
+
 
 class CaptioningModel(nn.Module):
     def __init__(self, encoder):
@@ -66,6 +71,15 @@ class CaptioningModel(nn.Module):
                 probabilities=probabilities,
                 spectral_info=spectral_info,
                 modality=modality
+            )
+
+        if not ans_text and SatQueryApiFallback and SatQueryApiFallback.is_available():
+            ans_text = SatQueryApiFallback.query_vlm_api(
+                query=query or "Provide a detailed land-cover caption for this satellite scene.",
+                detected_classes=detected_classes,
+                modality=modality,
+                image_path=img_path,
+                context_extra=spectral_info
             )
 
         if not ans_text:

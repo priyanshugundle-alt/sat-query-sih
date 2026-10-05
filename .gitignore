@@ -3,6 +3,13 @@ backend/target/
 frontend/dist/
 dist/
 
+# Local environment variables & API keys
+.env
+*.env
+model_server/.env
+backend/.env
+frontend/.env
+
 # Local databases and SQLite runtime
 *.db
 *.db-journal
@@ -37,6 +44,12 @@ frontend/node_modules/
 venv/
 env/
 *.egg-info/
+
+# Java crash logs & output masks
+hs_err_pid*.log
+outputs/*.png
+samples/test_t1.png
+samples/test_t2.png
 
 # OS specific files
 .DS_Store

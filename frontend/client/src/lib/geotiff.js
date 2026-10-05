@@ -8,7 +8,18 @@ export async function parseGeoTiffFile(file) {
   const isTiff = /\.tif(f)?$/i.test(file.name);
 
   if (!isTiff) {
-    // For standard JPG / PNG files
+    // For standard WEBP, AVIF, PNG, JPG, BMP, GIF, JP2, SVG files
+    let formatName = "PNG";
+    const extMatch = file.name.match(/\.([a-z0-9]+)$/i);
+    if (extMatch) {
+      const ext = extMatch[1].toUpperCase();
+      if (ext === "JPG") formatName = "JPEG";
+      else if (ext === "TIF") formatName = "TIFF";
+      else formatName = ext;
+    } else if (file.type) {
+      formatName = file.type.split("/").pop().toUpperCase();
+    }
+
     return new Promise((resolve) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
@@ -18,7 +29,7 @@ export async function parseGeoTiffFile(file) {
           width: img.naturalWidth || 512,
           height: img.naturalHeight || 512,
           bands: 3,
-          format: file.type || "image/png",
+          format: formatName,
           isGeoTiff: false,
           sensorPlatform: "Standard Aerial / Sensor",
           resolution: "0.5m GSD",
@@ -31,7 +42,7 @@ export async function parseGeoTiffFile(file) {
           width: 512,
           height: 512,
           bands: 3,
-          format: file.type || "image/png",
+          format: formatName,
           isGeoTiff: false,
           sensorPlatform: "Standard Aerial / Sensor",
           resolution: "0.5m GSD",

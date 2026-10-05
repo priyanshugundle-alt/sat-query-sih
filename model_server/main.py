@@ -94,8 +94,46 @@ async def analyze_query(request: QueryRequest, req: Request):
         raise HTTPException(status_code=500, detail="Internal Model Error")
 
 @app.get("/health")
+@app.get("/status")
 def health_check():
-    return {"status": "ONLINE", "models_loaded": len(registry.models)}
+    import torch
+    has_gemini = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
+    has_groq = bool(os.environ.get("GROQ_API_KEY"))
+    has_openai = bool(os.environ.get("OPENAI_API_KEY"))
+    gpu_avail = torch.cuda.is_available()
+
+    vlm_active = False
+    vlm_name = "None"
+    try:
+        from agent.vlm_engine import SatQueryVLM
+        inst = SatQueryVLM.get_instance()
+        if inst and inst.is_loaded:
+            vlm_active = True
+            vlm_name = inst.model_id
+    except Exception:
+        pass
+
+    if vlm_active:
+        engine_display = "SatQuery RS-VLM (Local Offline Engine)"
+        engine_code = "satquery_local"
+    elif has_gemini or has_groq or has_openai:
+        engine_display = "SatQuery Multi-Modal VLM (Cloud-Accelerated)"
+        engine_code = "satquery_cloud"
+    else:
+        engine_display = "SatQuery Neural Specialist (Offline Mode)"
+        engine_code = "satquery_specialist"
+
+    return {
+        "status": "ONLINE",
+        "models_loaded": len(registry.models),
+        "active_engine": engine_display,
+        "engine_code": engine_code,
+        "vlm_loaded": vlm_active,
+        "gpu_available": gpu_avail,
+        "has_gemini_key": has_gemini,
+        "has_groq_key": has_groq,
+        "has_openai_key": has_openai
+    }
 
 @app.post("/api/preview")
 def generate_preview(req: dict):

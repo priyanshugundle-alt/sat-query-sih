@@ -6,13 +6,18 @@ import java.util.*;
 public class ToolRegistry {
     private static final Map<String, ToolDefinition> registry = new HashMap<>();
 
+    private static final List<String> ALL_SUPPORTED_FORMATS = List.of(
+            "TIFF", "GEOTIFF", "PNG", "JPEG", "JPG", "WEBP", "AVIF", "BMP", "GIF", 
+            "JP2", "JPEG2000", "JPEG-2000", "SVG", "HDF", "HDF5", "NC", "NETCDF", "UNKNOWN", "RASTER"
+    );
+
     static {
         // 1. VQA_TOOL definition
         registry.put("VQA_TOOL", new ToolDefinition(
                 "VQA_TOOL",
                 "Single-image visual question answering",
                 List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 1,
                 List.of(
                         new ParameterRule("maxQueryLength", "INT", 1, 200),
@@ -25,7 +30,7 @@ public class ToolRegistry {
                 "GROUNDING_TOOL",
                 "Text-guided visual region grounding / object localization",
                 List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 1,
                 List.of(new ParameterRule("outputMode", "STRING", 3, 20)) // e.g. "bbox", "mask", "polygon"
         ));
@@ -35,7 +40,7 @@ public class ToolRegistry {
                 "CHANGE_TOOL",
                 "Bi-temporal change detection and analysis",
                 List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 2,
                 List.of(new ParameterRule("changeThreshold", "DOUBLE", 0.0, 1.0))
         ));
@@ -45,7 +50,7 @@ public class ToolRegistry {
                 "FUSION_TOOL",
                 "Cross-modal Optical-SAR joint sensor fusion reasoning",
                 List.of("OPTICAL", "SAR", "MULTISPECTRAL"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 2,
                 List.of(new ParameterRule("alignmentMode", "STRING", 2, 20))
         ));
@@ -55,7 +60,7 @@ public class ToolRegistry {
                 "CAPTIONING_TOOL",
                 "Satellite scene multi-modal descriptive captioning",
                 List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 1,
                 List.of()
         ));
@@ -65,7 +70,7 @@ public class ToolRegistry {
                 "CHANGE_UNDERSTANDING_TOOL",
                 "Bi-temporal change description and reasoning",
                 List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 2,
                 List.of(new ParameterRule("changeThreshold", "DOUBLE", 0.0, 1.0))
         ));
@@ -75,7 +80,7 @@ public class ToolRegistry {
                 "EXTRACTION_TOOL",
                 "Structured geographic information and attribute extraction",
                 List.of("OPTICAL", "MULTISPECTRAL", "SAR", "UNKNOWN"),
-                List.of("TIFF", "GEOTIFF", "PNG", "JPEG"),
+                ALL_SUPPORTED_FORMATS,
                 1,
                 List.of()
         ));
@@ -109,10 +114,10 @@ public class ToolRegistry {
                                     "', which is not accepted by " + toolName + ".");
                 }
 
-                String format = img.getMetadata().getFormat().toUpperCase();
+                String format = (img.getMetadata().getFormat() != null ? img.getMetadata().getFormat() : "UNKNOWN").toUpperCase();
                 if ("JPG".equals(format)) format = "JPEG";
                 if ("TIF".equals(format)) format = "TIFF";
-                if (!tool.getAcceptedFormats().contains(format)) {
+                if (!tool.getAcceptedFormats().contains(format) && !ALL_SUPPORTED_FORMATS.contains(format)) {
                     result.addError("Image " + img.getFileName() + " has format '" + img.getMetadata().getFormat() + 
                                     "', which is not accepted by " + toolName + ". Expected formats: " + 
                                     tool.getAcceptedFormats());

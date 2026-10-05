@@ -495,9 +495,9 @@ export function CinematicLanding({
                     step: "04",
                     badge: "RS-VLMS",
                     title: "MULTI-VLM SERVING",
-                    engine: "FastAPI :8000 (PyTorch)",
+                    engine: "FastAPI :5000 (PyTorch)",
                     desc: "Specialist Adapter Ingestion",
-                    sub: "Dispatches tensor payload to GeoChat, VisTA, or BigEarthNet-MM backbones.",
+                    sub: "Dispatches tensor payload to Qwen2.5-1.5B QLoRA VLM and PyTorch ResNet-18 backbones.",
                     color: "#22D3EE",
                   },
                   {
@@ -546,7 +546,7 @@ export function CinematicLanding({
                 </div>
                 <div className="font-mono text-xs sm:text-[12.5px] text-[#8AA3AD]">
                   <span>SERVING PORT: </span>
-                  <span className="text-[#22D3EE] font-bold">PYTHON FASTAPI :8000</span>
+                  <span className="text-[#22D3EE] font-bold">PYTHON FASTAPI :5000</span>
                 </div>
               </div>
 
@@ -555,21 +555,21 @@ export function CinematicLanding({
                 {[
                   {
                     id: "geochat",
-                    name: "UniRSAdapter · GeoChat",
+                    name: "VqaTaskHandler · Qwen2.5 VLM",
                     task: "Single-Image RS-VQA & Grounding",
-                    tag: "MBZUAI / VRSBench",
+                    tag: "Qwen2.5-1.5B LoRA / VRSBench",
                   },
                   {
                     id: "vista",
-                    name: "ChangeQaAdapter · VisTA",
+                    name: "ChangeDetectionTaskHandler · CDVQA",
                     task: "Bi-Temporal Change Reasoning",
-                    tag: "CDVQA Benchmark",
+                    tag: "CDVQA Pixel Delta",
                   },
                   {
                     id: "bigearthnet",
-                    name: "EarthGptAdapter · BigEarthNet",
+                    name: "FusionTaskHandler · SatQueryNet",
                     task: "Optical + SAR Cross-Sensor Fusion",
-                    tag: "110GB Dual Sentinel Dataset",
+                    tag: "Dual-Stream Sentinel-1 SAR + Sentinel-2",
                   },
                 ].map((spec) => {
                   const isActive = activeSpecialist === spec.id;
@@ -577,6 +577,7 @@ export function CinematicLanding({
                     <button
                       key={spec.id}
                       onClick={() => setActiveSpecialist(spec.id)}
+                      onMouseEnter={() => setActiveSpecialist(spec.id)}
                       className={`p-3.5 sm:p-4 text-left transition-all rounded-xl cursor-pointer border ${
                         isActive
                           ? "bg-[#12A5B8]/20 border-[#12A5B8] text-[#FFFFFF] shadow-[0_0_14px_rgba(18,165,184,0.3)]"
@@ -604,7 +605,7 @@ export function CinematicLanding({
                         <span className="text-[#FFFFFF] font-bold text-sm sm:text-base">Zero-Shot Natural Language RS-VQA & Target Grounding</span>
                       </div>
                       <p className="font-sans text-xs sm:text-[13.5px] text-[#D0E3EA] leading-relaxed">
-                        Fine-tuned on 120,000 remote-sensing visual question pairs (VRSBench & RSVQA). Ingests high-resolution optical rasters, reasons across land cover and infrastructure, and localizes targets with normalized spatial bounding boxes <code className="text-[#22D3EE] bg-white/[0.08] px-1.5 py-0.5 rounded font-mono">[ymin, xmin, ymax, xmax]</code>.
+                        Fine-tuned Qwen2.5-1.5B LoRA VLM backbone. Ingests high-resolution optical rasters, reasons across land cover and infrastructure, and localizes targets with normalized spatial bounding boxes <code className="text-[#22D3EE] bg-white/[0.08] px-1.5 py-0.5 rounded font-mono">[ymin, xmin, ymax, xmax]</code>.
                       </p>
                       <div className="pt-2 flex flex-wrap gap-2 text-xs">
                         <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">VQA BLEU-4: 94.2%</span>
@@ -614,8 +615,8 @@ export function CinematicLanding({
                     </div>
                     <div className="md:col-span-5 space-y-2 border-t md:border-t-0 md:border-l border-white/[0.08] pt-3 md:pt-0 md:pl-5 text-xs sm:text-[12.5px]">
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
-                        <span className="text-[#8AA3AD]">JAVA ADAPTER</span>
-                        <span className="text-[#FFFFFF] font-bold">UniRSAdapter.java</span>
+                        <span className="text-[#8AA3AD]">JAVA HANDLERS</span>
+                        <span className="text-[#FFFFFF] font-bold">VqaTaskHandler.java / GroundingTaskHandler.java</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">TOOL BINDING</span>
@@ -641,7 +642,7 @@ export function CinematicLanding({
                         <span className="text-[#FFFFFF] font-bold text-sm sm:text-base">Bi-Temporal Multi-Year Change Detection & Disaster Forensics</span>
                       </div>
                       <p className="font-sans text-xs sm:text-[13.5px] text-[#D0E3EA] leading-relaxed">
-                        Trained on the CDVQA paired change detection dataset. Compares co-registered pre-event (T1) and post-event (T2) satellite rasters. Discriminates real structural changes (floods, landslides, new construction) from seasonal canopy and atmospheric illumination noise.
+                        Evaluates co-registered pre-event (T1) and post-event (T2) satellite rasters. Discriminates real structural changes (floods, landslides, new construction) from seasonal canopy and atmospheric illumination noise.
                       </p>
                       <div className="pt-2 flex flex-wrap gap-2 text-xs">
                         <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">Change F1 Score: 89.1%</span>
@@ -651,12 +652,12 @@ export function CinematicLanding({
                     </div>
                     <div className="md:col-span-5 space-y-2 border-t md:border-t-0 md:border-l border-white/[0.08] pt-3 md:pt-0 md:pl-5 text-xs sm:text-[12.5px]">
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
-                        <span className="text-[#8AA3AD]">JAVA ADAPTER</span>
-                        <span className="text-[#FFFFFF] font-bold">ChangeQaAdapter.java</span>
+                        <span className="text-[#8AA3AD]">JAVA HANDLER</span>
+                        <span className="text-[#FFFFFF] font-bold">ChangeDetectionTaskHandler.java</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">TOOL BINDING</span>
-                        <span className="text-[#22D3EE] font-semibold">CHANGE_UNDERSTANDING_TOOL</span>
+                        <span className="text-[#22D3EE] font-semibold">CHANGE_TOOL</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">SPATIAL OUTPUT</span>
@@ -678,18 +679,18 @@ export function CinematicLanding({
                         <span className="text-[#FFFFFF] font-bold text-sm sm:text-base">All-Weather Cross-Modal Sentinel-1 SAR + Sentinel-2 Optical Fusion</span>
                       </div>
                       <p className="font-sans text-xs sm:text-[13.5px] text-[#D0E3EA] leading-relaxed">
-                        Foundation Remote-Sensing VLM fine-tuned on the 110GB BigEarthNet-v2.0 dataset (59GB Sentinel-1 C-band SAR + 51GB Sentinel-2 MSI). Leverages radar microwave backscatter to penetrate dense monsoon clouds and smoke while retaining optical spectral band accuracy.
+                        Dual-stream SatQueryUnifiedFusionNet architecture (Sentinel-1 C-band SAR ResNet-18 + Sentinel-2 MSI). Leverages radar microwave backscatter to penetrate dense monsoon clouds and smoke while retaining optical spectral band accuracy.
                       </p>
                       <div className="pt-2 flex flex-wrap gap-2 text-xs">
-                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">Dataset: BigEarthNet-MM (110GB)</span>
+                        <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#22D3EE] font-medium">Model: SatQueryUnifiedFusionNet</span>
                         <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#12A5B8] font-medium">Cloud Resilience: 100% (SAR Penetration)</span>
                         <span className="px-2.5 py-1 bg-white/[0.08] border border-white/[0.1] rounded-md text-[#10B981] font-medium">Modalities: Dual-Pass SAR + Optical</span>
                       </div>
                     </div>
                     <div className="md:col-span-5 space-y-2 border-t md:border-t-0 md:border-l border-white/[0.08] pt-3 md:pt-0 md:pl-5 text-xs sm:text-[12.5px]">
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
-                        <span className="text-[#8AA3AD]">JAVA ADAPTER</span>
-                        <span className="text-[#FFFFFF] font-bold">EarthGptAdapter.java</span>
+                        <span className="text-[#8AA3AD]">JAVA HANDLER</span>
+                        <span className="text-[#FFFFFF] font-bold">FusionTaskHandler.java</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-white/[0.06]">
                         <span className="text-[#8AA3AD]">TOOL BINDING</span>

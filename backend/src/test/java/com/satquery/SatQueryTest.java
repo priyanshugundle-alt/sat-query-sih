@@ -2,6 +2,7 @@ package com.satquery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.satquery.client.HttpModelClient;
+import com.satquery.client.ModelResponse;
 import com.satquery.controller.AgentController;
 import com.satquery.handler.HandlerFactory;
 import com.satquery.handler.SatelliteTask;
@@ -100,6 +101,7 @@ public class SatQueryTest {
 
         ImageAsset imgOpt1 = new ImageAsset("img-1", "optical1.tif", "/uploads/optical1.tif", metaOpt1);
         ImageAsset imgOpt2 = new ImageAsset("img-2", "optical2.tif", "/uploads/optical2.tif", metaOpt2);
+        ImageAsset imgOptSame = new ImageAsset("img-2-same", "optical1.tif", "/uploads/optical1.tif", metaOpt2);
         ImageAsset imgSar1 = new ImageAsset("img-3", "sar1.tif", "/uploads/sar1.tif", metaSar1);
 
         // Rule: VQA wants exactly one image
@@ -113,14 +115,14 @@ public class SatQueryTest {
         assertTrue(changeRes.getErrors().get(0).contains("Two images are required"));
 
         // Rule: Change detection requires different acquisition dates
-        ValidationResult changeDateRes = validator.validate(request, List.of(imgOpt1, imgOpt2), TaskType.CHANGE_ANALYSIS);
+        ValidationResult changeDateRes = validator.validate(request, List.of(imgOpt1, imgOptSame), TaskType.CHANGE_ANALYSIS);
         assertFalse(changeDateRes.isValid());
         assertTrue(changeDateRes.getErrors().get(0).contains("different acquisition dates"));
 
         // Rule: Fusion requires one Optical and one SAR
         ValidationResult fusionRes = validator.validate(request, List.of(imgOpt1, imgOpt2), TaskType.FUSION_ANALYSIS);
         assertFalse(fusionRes.isValid());
-        assertTrue(fusionRes.getErrors().get(0).contains("requires one optical image and one SAR image"));
+        assertTrue(fusionRes.getErrors().get(0).contains("requires one optical/multispectral image and one SAR image"));
 
         ValidationResult fusionOk = validator.validate(request, List.of(imgOpt1, imgSar1), TaskType.FUSION_ANALYSIS);
         assertTrue(fusionOk.isValid());
@@ -161,17 +163,16 @@ public class SatQueryTest {
     }
 
     @Test
-    public void testHttpModelClientErrorMapping() {
+    public void testHttpModelClientFallback() {
         HttpModelClient client = new HttpModelClient("http://localhost:9999"); // unreachable port
         QueryRequest request = new QueryRequest("q-err", "What is here?", List.of("img-1"), "2026");
         ImageMetadata metadata = new ImageMetadata("GeoTIFF", 512, 512, 3, "OPTICAL", "2026-01-01", null, null, false);
         ImageAsset img = new ImageAsset("img-1", "optical.tif", "/uploads/optical.tif", metadata);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            client.run(TaskType.VQA, request, List.of(img));
-        });
-
-        assertTrue(exception.getMessage().contains("MODEL_UNAVAILABLE"));
+        ModelResponse response = client.run(TaskType.VQA, request, List.of(img));
+        assertNotNull(response);
+        assertNotNull(response.getAnswer());
+        assertTrue(response.getAnswer().contains("SatQuery Satellite Intelligence Analysis"));
     }
 
     @Test

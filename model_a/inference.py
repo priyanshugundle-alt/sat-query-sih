@@ -56,16 +56,12 @@ class ModelAInference:
         self.model.eval()
 
     def _read_tiff_band(self, tiff_path: Union[str, Path]) -> np.ndarray:
+        """
+        Reads raw TIFF raster band at 100% original untouched free image dimensions (H, W).
+        No resizing, no cropping, no dimensional alterations.
+        """
         with Image.open(tiff_path) as img:
-            arr = np.array(img, dtype=np.float32)
-        if arr.shape != (self.config.dataset.img_height, self.config.dataset.img_width):
-            img_pil = Image.fromarray(arr)
-            img_pil = img_pil.resize(
-                (self.config.dataset.img_width, self.config.dataset.img_height),
-                Image.BILINEAR
-            )
-            arr = np.array(img_pil, dtype=np.float32)
-        return arr
+            return np.array(img, dtype=np.float32)
 
     def preprocess_patch(
         self,
@@ -73,7 +69,8 @@ class ModelAInference:
         vv_input: Union[str, Path, np.ndarray]
     ) -> torch.Tensor:
         """
-        Loads and normalizes a VH and VV band into a (1, 2, 120, 120) float32 tensor.
+        Loads and normalizes VH and VV bands preserving native resolution (H, W).
+        PyTorch ResNet-18 AdaptiveAvgPool2d dynamically processes any image dimensions.
         """
         if isinstance(vh_input, (str, Path)):
             vh_arr = self._read_tiff_band(vh_input)
@@ -85,9 +82,16 @@ class ModelAInference:
         else:
             vv_arr = vv_input.astype(np.float32)
 
-        sar_2ch = np.stack([vh_arr, vv_arr], axis=0)  # (2, 120, 120)
+        # Match dimensions if VH and VV differ in resolution
+        if vh_arr.shape != vv_arr.shape:
+            max_h = max(vh_arr.shape[0], vv_arr.shape[0])
+            max_w = max(vh_arr.shape[1], vv_arr.shape[1])
+            vh_arr = np.array(Image.fromarray(vh_arr).resize((max_w, max_h), Image.LANCZOS), dtype=np.float32)
+            vv_arr = np.array(Image.fromarray(vv_arr).resize((max_w, max_h), Image.LANCZOS), dtype=np.float32)
+
+        sar_2ch = np.stack([vh_arr, vv_arr], axis=0)  # (2, H, W)
         sar_norm = self.normalizer(sar_2ch)
-        sar_tensor = torch.from_numpy(sar_norm).unsqueeze(0).float()  # (1, 2, 120, 120)
+        sar_tensor = torch.from_numpy(sar_norm).unsqueeze(0).float()  # (1, 2, H, W)
         return sar_tensor.to(self.device)
 
     @torch.no_grad()
@@ -103,7 +107,7 @@ class ModelAInference:
         self,
         vh_input: Union[str, Path, np.ndarray],
         vv_input: Union[str, Path, np.ndarray],
-        threshold: float = 0.4
+        threshold: float = 0.55
     ) -> Dict[str, Any]:
         """
         Standardized Model A Inference method.

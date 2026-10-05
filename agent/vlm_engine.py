@@ -68,6 +68,24 @@ class SatQueryVLM:
         self._load_vlm()
 
     def _load_vlm(self):
+        # Check system available memory before loading 3GB Qwen model into CPU RAM
+        if os.environ.get("SATQUERY_DISABLE_VLM") == "1":
+            print("[SatQuery VLM] SATQUERY_DISABLE_VLM=1 flag set. ResNet specialists active.")
+            self.is_loaded = False
+            return
+
+        try:
+            import psutil
+            mem = psutil.virtual_memory()
+            available_gb = mem.available / (1024 ** 3)
+            if available_gb < 3.5 and not torch.cuda.is_available():
+                print(f"[SatQuery VLM] Available CPU memory is {available_gb:.1f}GB (< 3.5GB required). Skipping 3B VLM load.")
+                print("[SatQuery VLM] ResNet-18 specialist neural models active for fast inference.")
+                self.is_loaded = False
+                return
+        except Exception:
+            pass
+
         cached = _model_is_cached(self.model_id)
         if not cached:
             print(f"[SatQuery VLM] Model {self.model_id} not in local cache.")
@@ -140,13 +158,15 @@ class SatQueryVLM:
             self.is_loaded = True
             print(f"[SatQuery VLM] [OK] {self.model_id} loaded successfully (Vision-Language: {is_vl}).")
 
-        except Exception as e:
+        except (Exception, MemoryError, SystemError, BaseException) as e:
             err_str = str(e)
             if "getaddrinfo" in err_str or "connection" in err_str.lower() or "network" in err_str.lower():
                 print(f"[SatQuery VLM] Network unavailable — cannot download model.")
+            elif "memory" in err_str.lower() or "allocation" in err_str.lower():
+                print(f"[SatQuery VLM] Low CPU RAM detected — VLM model disabled. ResNet specialists active.")
             else:
                 print(f"[SatQuery VLM] Load notice: {e}")
-            print("[SatQuery VLM] Using specialist rule-based engine for responses.")
+            print("[SatQuery VLM] Using ResNet specialist neural models & rule-based engine.")
             self.is_loaded = False
 
     def answer_query(

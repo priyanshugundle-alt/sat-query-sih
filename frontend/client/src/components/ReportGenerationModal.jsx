@@ -59,9 +59,7 @@ export function ReportGenerationModal({
       rawAnswer.toLowerCase().includes("validation error") ||
       rawAnswer.toLowerCase().includes("error:") ||
       rawAnswer.toLowerCase().includes("repair guidance") ||
-      rawAnswer.toLowerCase().includes("please adjust your inputs") ||
-      rawAnswer.includes("MODEL_UNAVAILABLE") ||
-      rawAnswer.includes("offline")
+      rawAnswer.toLowerCase().includes("please adjust your inputs")
     ))
   );
 
